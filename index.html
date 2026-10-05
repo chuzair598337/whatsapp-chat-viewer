@@ -81,6 +81,7 @@
       <button class="ibtn" id="starBtn" aria-label="Starred messages" title="Starred messages"><span class="sbadge" id="starBadge" hidden></span></button>
       <button class="ibtn" id="statsBtn" aria-label="Chat statistics" title="Chat statistics"></button>
       <button class="ibtn" id="themeBtn"></button>
+      <button class="ibtn" id="tourBtn" aria-label="Help and guided tour" title="Help and guided tour"></button>
       <button class="ibtn hide-sm" id="openBtn" aria-label="Open a chat export" title="Open a chat export"></button>
     </header>
     <div id="sstrip" class="sstrip" hidden>
@@ -146,6 +147,34 @@
   <div class="lb-top"><div class="lb-who"><b id="pdfTitle"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer"></button></div>
   <div class="pdf-pages" id="pdfPages"></div>
 </div>
+<div id="tourWelcome" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="twTitle" aria-describedby="twLead">
+  <div class="sheet narrow tw">
+    <header><h2 id="twTitle">Welcome to Chat Viewer</h2><button class="ibtn" id="twClose" aria-label="Close"></button></header>
+    <div class="body">
+      <p class="lead" id="twLead">Read your exported WhatsApp chats with photos, voice notes and search. Everything happens on this device; nothing is uploaded.</p>
+      <p class="tw-note" id="twNote" hidden>The tour uses the sample chat, so the chat you have open will close. Your file isn't changed, and you can open it again afterwards.</p>
+      <div class="tw-opts">
+        <button class="tw-opt" id="twDemo"><span class="tw-ic" id="twDemoIc"></span><span><b>Explore the sample chat</b><small>A made-up group chat and a five-step tour of the viewer</small></span></button>
+        <button class="tw-opt" id="twOwn"><span class="tw-ic" id="twOwnIc"></span><span><b>Open your own chat</b><small>Pick an exported .zip or .txt, or drop it anywhere on the page</small></span></button>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="tour" class="tour" hidden>
+  <svg class="tour-dim" id="tourDim" aria-hidden="true"><path id="tourDimPath" fill-rule="evenodd"/></svg>
+  <div class="tour-spot" id="tourSpot"></div>
+  <div class="tour-pop" id="tourPop" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourText">
+    <div class="tour-step" id="tourStep"></div>
+    <h2 id="tourTitle"></h2>
+    <p id="tourText"></p>
+    <div class="tour-nav">
+      <button class="linkbtn" id="tourSkip">Skip tour</button>
+      <span class="tour-dots" id="tourDots" aria-hidden="true"></span>
+      <button class="btn" id="tourBack">Back</button>
+      <button class="btn primary" id="tourNext">Next</button>
+    </div>
+  </div>
+</div>
 <div id="toast" class="toast" hidden role="status"></div>
 <input type="file" id="file" accept=".txt,.zip,text/plain,application/zip" multiple hidden>
 
@@ -153,6 +182,8 @@
 <script src="js/parser.js"></script>
 <script src="js/media.js"></script>
 <script src="js/viewer.js"></script>
+<script src="js/demo-data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/tour-controller.js"></script>
 </body>
 </html>

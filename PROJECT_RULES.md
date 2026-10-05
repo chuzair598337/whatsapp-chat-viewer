@@ -9,7 +9,7 @@ These rules apply to everyone changing this repository, people and coding agents
 
 - Everything runs in the browser. No chat text, file name or media may leave the device, whether through `fetch`, XHR, beacons, WebSockets, image pixels, or anything else.
 - Don't add network dependencies: no CDNs, web fonts, analytics or link-preview fetches. Vendor libraries into `js/vendor/` with their license.
-- Don't store chat content. Only display preferences go in `localStorage`. Starred messages and filters live in memory for the open chat. See [deferred.md](deferred.md).
+- Don't store chat content. Only display preferences and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [deferred.md](deferred.md).
 - Treat every export as hostile input:
   - Escape text before formatting it.
   - Only link `http(s)`, `tel:` and `mailto:` URLs.
@@ -57,6 +57,6 @@ Test both before calling a change done.
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `parser`, `media`, `viewer`, `app`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `parser`, `media`, `viewer`, `demo-data`, `app`, `tour-controller`. There is no build step.
   - Match the surrounding style.
 - **Records.** Track work in [todo.md](todo.md), user-facing changes in [CHANGELOG.md](CHANGELOG.md), and behaviour in [docs/features.md](docs/features.md).

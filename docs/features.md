@@ -14,7 +14,8 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 8. [Statistics](#8-statistics)
 9. [Themes](#9-themes)
 10. [Performance](#10-performance)
-11. [Code layout](#11-code-layout)
+11. [Welcome screen, sample chat and guided tour](#11-welcome-screen-sample-chat-and-guided-tour)
+12. [Code layout](#12-code-layout)
 
 ---
 
@@ -27,7 +28,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **Local preferences only.** The theme, the date order and "which one is you" are stored in `localStorage`. Chat contents are never stored.
+- **Local preferences only.** The theme, the date order, "which one is you" and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. Chat contents are never stored.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -174,7 +175,35 @@ The statistics window shows:
 - **Lazy media work:** waveforms and posters are decoded on demand, one at a time, and cached until the next file is opened.
 - **Benchmark:** 60,000 messages parse in about 1.4 s in headless Chromium, and scrolling stays smooth.
 
-## 11. Code layout
+## 11. Welcome screen, sample chat and guided tour
+
+- **Sample chat:** the viewer opens with a made-up group chat (`js/demo-data.js`), so it is never an empty screen. It covers:
+  - text across several days, formatting, lists, emoji and an edited message;
+  - the encryption notice, group events, a disappearing-message timer change and a security-code change;
+  - missed and answered calls, a poll, a location, links, reactions and a deleted message;
+  - photos, a video, a GIF, a sticker, a voice note, a music file, a PDF and a text file;
+  - a "video omitted" placeholder.
+
+  All of its media is drawn or synthesised on the device.
+- **Welcome dialog:** on the first visit, a dialog offers two choices:
+  - **Explore the sample chat** starts the guided tour.
+  - **Open your own chat** opens the file picker.
+
+  Closing the dialog, skipping the tour or finishing it all set the `has_completed_walkthrough` flag in `localStorage`, so the dialog doesn't come back. The flag holds no chat data. Opening a file also dismisses the dialog.
+- **Help button (`?`):** in the header, it brings the welcome dialog back at any time. If one of your own chats is open, the dialog warns that the tour will switch to the sample chat. Your file isn't changed.
+- **The tour:** five steps, each dimming the page and highlighting one part with a spotlight:
+  1. Opening a chat.
+  2. The timeline.
+  3. Search and filters.
+  4. A photo in the chat, for the media viewers.
+  5. The theme button.
+- **Controls:**
+  - Every step has **Skip tour**, **Back** (from step 2) and **Next**, which becomes **Finish** on the last step.
+  - Keyboard: `→` and `←` move between steps, `Esc` skips, and focus stays inside the tour card.
+- **Layout:** the card is placed next to the highlighted part and follows it when the window is resized or the chat scrolls. On a phone it is a full-width card above or below the spotlight, and step 3 points at the search button and explains where the filters are.
+- **No dependencies:** the tour is written for this app (`js/tour-controller.js`) instead of using a tour library, so the page still makes no network requests.
+
+## 12. Code layout
 
 The scripts are plain browser scripts with no build step. They share globals and load in this order:
 
@@ -185,5 +214,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |
 | `js/media.js` | ZIP reading (worker, JSZip, native), the media map and blob-URL lifecycle, shared audio controller |
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
-| `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer and the sample chat |
+| `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
+| `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
+| `js/tour-controller.js` | Welcome dialog, guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |

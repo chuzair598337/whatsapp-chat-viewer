@@ -91,6 +91,27 @@ These are the suggestions from the audit of official export features. Each one w
 - [x] **Reactions.** *Existed (1.3.0).*
 - [x] **Date and time detection** across iPhone and Android (`DD/MM/YY`, `MM/DD/YY`, `[YYYY-MM-DD, HH:mm:ss]`, `hh:mm a`). *Existed.*
 
+## Phase 5: onboarding (2026-10-05)
+
+- [x] **Welcome dialog on the first visit.** *New (Phase 5).*
+  - "Explore the sample chat" or "Open your own chat".
+  - Closing it, skipping the tour or finishing it sets `has_completed_walkthrough` in `localStorage`, which is the only thing stored.
+- [x] **Help (`?`) button** in the header, to bring the dialog and tour back. *New (Phase 5).*
+- [x] **Demo chat** covering every message type, in `js/demo-data.js`.
+  - *Existed* as the built-in sample chat.
+  - *New (Phase 5):* moved into its own file, plus a timer change, a security-code change and reactions.
+- [x] **Five-step guided tour** in `js/tour-controller.js`. *New (Phase 5).*
+  - Steps: opening a chat, the timeline, search and filters, the media viewer, and themes.
+  - The spotlight targets the app's real elements (`openBtn`, `scroller`, `searchSec` and `filterSec`, a photo bubble, `themeBtn`).
+  - Phones use `sampleOpen` and `searchBtn` instead.
+  - Written without Driver.js or any other library.
+- [x] **Tour controls.** *New (Phase 5).*
+  - Skip, Back, Next and Finish buttons.
+  - `Esc`, `←` and `→`.
+  - Focus kept in the card.
+  - Repositions on resize and scroll, with a phone layout.
+- Not done, on purpose: the plan's step 5 mentioned exporting chat summaries. Exports are out of scope (see [deferred.md](deferred.md)), so that step only covers themes and the `?` button.
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

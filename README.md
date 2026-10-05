@@ -23,6 +23,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
+- A sample chat and a five-step guided tour for first-time visitors. The **?** button brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
 The full feature list is in **[docs/features.md](docs/features.md)**, and release notes are in **[CHANGELOG.md](CHANGELOG.md)**.
@@ -61,7 +62,9 @@ whatsapp-chat-viewer/
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── viewer.js                         # formatting, virtual list, media players
-│   └── app.js                            # file loading, search, stats, theme, boot
+│   ├── demo-data.js                      # made-up sample chat and its generated media
+│   ├── app.js                            # file loading, search, stats, theme, boot
+│   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
 ├── PROJECT_RULES.md                      # rules for every change (privacy, both export types, performance, a11y)
@@ -113,7 +116,7 @@ python3 -m http.server 8000      # or: npx serve .
 ```
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `parser` → `media` → `viewer` → `app`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `parser` → `media` → `viewer` → `demo-data` → `app` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
