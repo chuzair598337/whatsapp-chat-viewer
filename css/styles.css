@@ -151,7 +151,7 @@ mark.cur { background: var(--hl-cur); }
 .name { font-size: 12.8px; font-weight: 500; line-height: 22px; margin-top: -3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc0 { color: var(--n0); } .nc1 { color: var(--n1); } .nc2 { color: var(--n2); } .nc3 { color: var(--n3); } .nc4 { color: var(--n4); }
 .nc5 { color: var(--n5); } .nc6 { color: var(--n6); } .nc7 { color: var(--n7); } .nc8 { color: var(--n8); } .nc9 { color: var(--n9); }
-.txt { white-space: normal; line-height: 19px; font-size: 14.2px; }
+.txt { white-space: pre-wrap; line-height: 19px; font-size: 14.2px; }
 .txt.jumbo { font-size: 38px; line-height: 46px; }
 .txt.del { color: var(--ink-3); font-style: italic; display: flex; gap: 5px; align-items: center; }
 .txt.del svg { width: 16px; height: 16px; flex: none; }
@@ -574,3 +574,11 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 [data-theme="dark"] .tour-dots i:not(.on) { background: #3b4a54; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tour-dots i:not(.on) { background: #3b4a54; } }
 @media (max-width: 380px) { .tour-dots { display: none; } }
+
+/* ---------- Read more / Show less ---------- */
+.read-more-btn { border: 0; background: transparent; padding: 0 2px; margin: 0; font: inherit; font-weight: 500; color: var(--accent-ink); cursor: pointer; border-radius: 4px; }
+.read-more-btn:hover { text-decoration: underline; }
+.rm-tail { white-space: nowrap; }
+.rm-tail .read-more-btn { margin-left: 4px; }
+.rm-less { margin-top: 2px; }
+.rm-less .read-more-btn { padding-left: 0; }

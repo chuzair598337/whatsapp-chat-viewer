@@ -61,6 +61,7 @@ whatsapp-chat-viewer/
 │   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
+│   ├── text-truncator.js                 # Read more / Show less for long messages
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
@@ -116,7 +117,7 @@ python3 -m http.server 8000      # or: npx serve .
 ```
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `parser` → `media` → `viewer` → `demo-data` → `app` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 

@@ -2,6 +2,12 @@
 
 ## Unreleased (on `development`)
 
+- **Read more:** messages over 450 characters or with more than 6 line breaks are shortened, with "… Read more" and "Show less".
+  - The cut never splits a word, a formatting span or a code block.
+  - A search match in the hidden part opens the message automatically.
+  - The list re-measures the row, so scrolling stays smooth.
+  - New file: `js/text-truncator.js`.
+- **Spacing:** message text keeps runs of spaces exactly as typed (`white-space: pre-wrap`).
 - **Welcome and guided tour:** first-time visitors see a welcome dialog with two choices:
   - **Explore the sample chat** starts a five-step tour: opening a chat, the timeline, search and filters, media, and themes.
   - **Open your own chat** opens the file picker.

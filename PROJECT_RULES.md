@@ -57,6 +57,6 @@ Test both before calling a change done.
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `parser`, `media`, `viewer`, `demo-data`, `app`, `tour-controller`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `tour-controller`. There is no build step.
   - Match the surrounding style.
 - **Records.** Track work in [todo.md](todo.md), user-facing changes in [CHANGELOG.md](CHANGELOG.md), and behaviour in [docs/features.md](docs/features.md).

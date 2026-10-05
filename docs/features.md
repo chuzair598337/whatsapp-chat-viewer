@@ -94,6 +94,13 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 - Markers only count at word boundaries, the way WhatsApp applies them, so `2*3*4` stays as typed.
 - Messages that are only emoji (up to three) are shown large.
+- **Long messages** are shortened like in WhatsApp.
+  - Which ones: any message over 450 characters or with more than 6 line breaks shows its first part (at most 6 lines), then "… **Read more**".
+  - Expanding and collapsing: clicking Read more shows the whole message with **Show less** at the bottom. After Show less, the start of the message is scrolled back into view if needed.
+  - Where the cut goes: at a word break, never inside a `*bold*`, `_italic_`, `~strike~` or `` `code` `` span. A message that starts with a ```` ``` ```` block is cut inside it, and the block is closed; otherwise the cut goes before the block.
+  - Search: if a search match is in the hidden part, the message opens automatically, so the highlight is visible.
+  - The expanded or collapsed state lasts while the chat is open, and the list re-measures the row so scrolling stays smooth.
+  - Code: `js/text-truncator.js`.
 
 ## 6. Rich media
 
@@ -213,6 +220,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/vendor/pdfjs/` | pdf.js 3.11.174 legacy build (Apache-2.0), loaded on demand |
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |
 | `js/media.js` | ZIP reading (worker, JSZip, native), the media map and blob-URL lifecycle, shared audio controller |
+| `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |

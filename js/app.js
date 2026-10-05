@@ -340,8 +340,7 @@ $('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
 function toggleStar(i) {
   if (!S.starred) S.starred = new Set();
   if (S.starred.has(i)) S.starred.delete(i); else S.starred.add(i);
-  const k = S.m2i[i], old = VL.nodes.get(k);
-  if (old) { const el = makeRow(S.items[k], k); el.dataset.i = k; el.style.transform = old.style.transform; old.replaceWith(el); VL.nodes.set(k, el); VL.remeasure(k); }
+  rerenderRow(S.m2i[i]);
   renderStars();
   toast(S.starred.has(i) ? 'Message starred' : 'Star removed');
 }

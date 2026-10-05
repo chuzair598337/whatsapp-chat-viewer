@@ -26,7 +26,8 @@ The chat never renders every message. `VL` in `js/viewer.js` keeps only the rows
 
 - **Estimate close to the real height.** When a row type changes height (a new badge, a reaction pill, a card), update `estimate()` too. Bad estimates make the scrollbar jump.
 - **When a rendered row changes height later** (an image loads, a video learns its size), call `VL.remeasure(index)`. It adjusts the tree and keeps the reading position anchored.
-- **To redraw visible rows in place**, for example after search highlights or a "which one is you" change, use `VL.refresh()`. For a single row, rebuild it with `makeRow`, swap it into `VL.nodes`, and call `VL.remeasure(k)` (see `toggleStar`).
+- **To redraw visible rows in place**, for example after search highlights or a "which one is you" change, use `VL.refresh()`. For a single row, call `rerenderRow(k)`. It swaps in a fresh row and dispatches a `message-resize` event, which `layer` turns into `VL.remeasure(k)`. Read more / Show less and stars use it.
+- **Truncated messages:** `estimate()` must use `shownText(it)`, which returns the preview or the full text. Otherwise collapsed long messages are over-estimated.
 - **Width changes go through `VL.relayout()`**, which re-estimates the rows and keeps the position.
 - **Handle row clicks with delegation** on `layer`, not with listeners per row. Rows are recycled.
 - **Keep work out of the hot path.** Never query layout (`offsetHeight`, `getBoundingClientRect`) inside a loop over all items. Only rendered rows may be measured. `makeRow` must stay cheap: no decoding, no network, nothing synchronous over about 1 ms. Hand heavy work (waveforms, posters, PDF thumbnails) to the lazy queues in `viewer.js`.

@@ -112,6 +112,18 @@ These are the suggestions from the audit of official export features. Each one w
   - Repositions on resize and scroll, with a phone layout.
 - Not done, on purpose: the plan's step 5 mentioned exporting chat summaries. Exports are out of scope (see [deferred.md](deferred.md)), so that step only covers themes and the `?` button.
 
+## Phase 6: long messages (2026-10-05)
+
+- [x] **Read more / Show less.** *New (Phase 6).*
+  - Applies to messages over 450 characters or with more than 6 line breaks.
+  - Per-message `isExpanded` state for the open chat.
+  - The `.read-more-btn` uses the theme's green.
+  - Expanding or collapsing dispatches a `message-resize` event, and the virtual list re-measures that row.
+  - The cut is made safe for formatting and code blocks.
+  - Search matches in the hidden part open the message.
+  - The helper is `js/text-truncator.js`. It lives in `js/` rather than `js/utils/`, to match the flat script layout.
+  - Message text now uses `white-space: pre-wrap`, so runs of spaces are kept as typed. Line breaks were already kept.
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

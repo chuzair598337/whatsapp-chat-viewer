@@ -255,7 +255,8 @@ function estimate(it, W) {
   else if (m.kind === 'deleted') return h + 19;
   if (m.message) {
     if (it.jumbo) return h + 46;
-    const ls = m.message.split('\n');
+    const sv = shownText(it), ls = sv.text.split('\n');
+    if (sv.state === 'expanded') h += 21;
     for (let k = 0; k < ls.length; k++) h += 19 * Math.max(1, Math.ceil((ls[k].length * cw + (k === ls.length - 1 ? 64 : 0)) / bw));
   } else if (m.kind !== 'text') h += 8;
   return h;
@@ -715,6 +716,41 @@ function locHTML(x) {
   return '<div class="locw"><a class="loc" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" title="Open in maps">' + map + info + '</a>' +
     (has ? '<button class="lcopy" data-copy="' + esc(coord) + '" aria-label="Copy coordinates" title="Copy coordinates">' + ICON.copy + '</button>' : '') + '</div>';
 }
+/* Which text a bubble shows. state: '' (short message), 'collapsed', 'expanded' (by the reader),
+   or 'search' (opened because a search match is in the hidden part). */
+function shownText(it) {
+  const m = it.m;
+  if (it.jumbo || !m.message) return { text: m.message, state: '' };
+  if (m.trunc === undefined) m.trunc = truncateText(m.message);
+  const tr = m.trunc;
+  if (!tr.truncated) return { text: m.message, state: '' };
+  if (m.isExpanded) return { text: m.message, state: 'expanded' };
+  if (S.re && S.matchSet.has(it.i) && S.q) {
+    const ql = S.q.trim().toLowerCase(), at = ql ? m.message.toLowerCase().indexOf(ql, Math.max(0, tr.cut - ql.length + 1)) : -1;
+    if (at >= 0) return { text: m.message, state: 'search' };
+  }
+  return { text: tr.preview, state: 'collapsed' };
+}
+// Re-renders one visible row in place and lets the virtual list re-measure it.
+function rerenderRow(k) {
+  const old = VL.nodes.get(k);
+  if (!old) return null;
+  const el = makeRow(S.items[k], k);
+  el.dataset.i = k; el.style.transform = old.style.transform;
+  old.replaceWith(el); VL.nodes.set(k, el);
+  el.dispatchEvent(new CustomEvent('message-resize', { bubbles: true, detail: { index: k } }));
+  return el;
+}
+function toggleExpand(i) {
+  const m = S.msgs[i], k = S.m2i[i];
+  m.isExpanded = !m.isExpanded;
+  const el = rerenderRow(k);
+  if (!el) return;
+  const b = el.querySelector('.read-more-btn');
+  if (b) b.focus({ preventScroll: true });
+  // After "Show less" on a very long message, bring the message's start back into view.
+  if (!m.isExpanded && el.getBoundingClientRect().top < scroller.getBoundingClientRect().top) VL.scrollTo(k);
+}
 function makeRow(it, idx) {
   const el = document.createElement('div');
   if (it.type === 'date') { el.className = 'row daterow'; el.innerHTML = '<span class="pill">' + esc(dateLabel(it.dateKey)) + '</span>'; return el; }
@@ -765,7 +801,11 @@ function makeRow(it, idx) {
     }
   }
   if (tailText) {
-    if (m.message && m.kind !== 'poll' && m.kind !== 'call') body += '<div class="txt' + (it.jumbo ? ' jumbo' : '') + '">' + hl(formatText(m.message), it.i) + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
+    if (m.message && m.kind !== 'poll' && m.kind !== 'call') {
+      const sv = shownText(it), btn = (label, open) => '<button class="read-more-btn" data-more="' + it.i + '" aria-expanded="' + open + '">' + label + '</button>';
+      const more = sv.state === 'collapsed' ? '<span class="rm-tail">…' + btn('Read more', false) + '</span>' : sv.state === 'expanded' ? '<div class="rm-less">' + btn('Show less', true) + '</div>' : '';
+      body += '<div class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
+    }
     else body += '<div class="mline"></div>';
   }
   if (stk) el.className += ' stk';
@@ -900,6 +940,8 @@ layer.addEventListener('click', e => {
   if (pd) { const w = pd.closest('.mdocw'); openPdf(pd.dataset.pdf, w && w.querySelector('.mdoc b') ? w.querySelector('.mdoc b').textContent : ''); return; }
   const vc = t.closest('[data-vcard]');
   if (vc) { openContact(vc.dataset.vcard); return; }
+  const rm = t.closest('[data-more]');
+  if (rm) { toggleExpand(+rm.dataset.more); return; }
   const sb = t.closest('[data-star]');
   if (sb) { toggleStar(+sb.dataset.star); return; }
   // Phones have no hover: tapping a bubble's plain area reveals its star button.
@@ -909,6 +951,8 @@ layer.addEventListener('click', e => {
     if (on && row.querySelector('.starbtn')) row.classList.add('tapped');
   }
 });
+// A row changed height (Read more / Show less, a star): update its slot in the virtual list.
+layer.addEventListener('message-resize', e => VL.remeasure(e.detail.index));
 layer.addEventListener('input', e => {
   const vs = e.target.closest('.vseek');
   if (vs) { const v = vs.closest('.mvid').querySelector('video'); if (isFinite(v.duration)) v.currentTime = vs.value / 1000 * v.duration; return; }
