@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="description" content="Offline WhatsApp chat viewer. Your chat never leaves your device.">
+<title>Offline Chat Viewer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpath fill=%27%2325d366%27 d=%27M16 3C8.8 3 3 8.4 3 15c0 2.4.8 4.7 2.1 6.6L4 29l7.7-1.9c1.3.4 2.8.7 4.3.7 7.2 0 13-5.4 13-12S23.2 3 16 3z%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<div id="app" class="app">
+  <aside id="sidebar" class="sidebar" aria-label="Chat details">
+    <div class="sb-top">
+      <div class="brand"><span class="logo" id="logo"></span><div>Chat Viewer<small>for WhatsApp exports, offline</small></div></div>
+      <button class="ibtn" id="sbOpen" aria-label="Open a chat export" title="Open a chat export"></button>
+      <button class="ibtn sb-close" id="sbClose" aria-label="Close panel"></button>
+    </div>
+    <div class="sb-scroll" id="sbScroll">
+      <section class="sb-sec chatcard">
+        <div class="av" id="cardAv"></div>
+        <h2 id="cardTitle"></h2>
+        <div class="sub" id="cardSub"></div>
+        <dl class="facts" id="facts"></dl>
+        <div class="btn-row">
+          <button class="btn" id="cardStats"></button>
+          <button class="btn primary" id="cardOpen"></button>
+        </div>
+      </section>
+      <section class="sb-sec" id="searchSec">
+        <h3><label for="q1">Search messages</label><span id="count1" class="count"></span></h3>
+        <div class="searchbox">
+          <span id="sIcon1"></span>
+          <input id="q1" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search">
+          <button class="ibtn sm" id="prev1" aria-label="Previous match (older)" title="Previous match (Shift+Enter)"></button>
+          <button class="ibtn sm" id="next1" aria-label="Next match (newer)" title="Next match (Enter)"></button>
+        </div>
+        <div class="results" id="results"></div>
+      </section>
+      <section class="sb-sec" id="mediaSec">
+        <h3>Media <span id="mediaTotal"></span></h3>
+        <div class="mgrid" id="mediaGrid"></div>
+        <p class="mnote" id="mediaNote"></p>
+      </section>
+      <section class="sb-sec">
+        <h3>View</h3>
+        <div class="field"><label for="meSel">You are<small>Your messages show on the right</small></label><select id="meSel"></select></div>
+        <div class="field"><label for="orderSel">Date format<small id="orderNote"></small></label>
+          <select id="orderSel"><option value="auto">Automatic</option><option value="dmy">Day / Month</option><option value="mdy">Month / Day</option></select></div>
+        <div class="field"><label for="jumpDate">Jump to date<small>First message on or after</small></label><input type="date" id="jumpDate"></div>
+        <div class="field"><label for="doodle">Background pattern</label><input type="checkbox" class="switch" id="doodle" checked></div>
+      </section>
+      <section class="sb-sec">
+        <h3>Participants <span id="pCount"></span></h3>
+        <div class="people" id="people"></div>
+      </section>
+      <p class="privacy"><span id="lockIc"></span><span>Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</span></p>
+    </div>
+  </aside>
+  <div id="scrim" class="scrim" hidden></div>
+  <main class="main">
+    <header class="chat-head">
+      <button class="ibtn menu-btn" id="menuBtn" aria-label="Show chat details"></button>
+      <button class="who" id="whoBtn" aria-label="Chat details">
+        <span class="av" id="headAv"></span>
+        <div><div class="t" id="headTitle"></div><div class="s" id="headSub"></div></div>
+      </button>
+      <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)"></button>
+      <button class="ibtn" id="statsBtn" aria-label="Chat statistics" title="Chat statistics"></button>
+      <button class="ibtn" id="themeBtn"></button>
+      <button class="ibtn hide-sm" id="openBtn" aria-label="Open a chat export" title="Open a chat export"></button>
+    </header>
+    <div id="sstrip" class="sstrip" hidden>
+      <button class="ibtn sm" id="sClose" aria-label="Close search"></button>
+      <div class="searchbox">
+        <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat">
+        <span id="count2" class="count"></span>
+      </div>
+      <button class="ibtn sm" id="prev2" aria-label="Previous match (older)"></button>
+      <button class="ibtn sm" id="next2" aria-label="Next match (newer)"></button>
+      <button class="ibtn sm" id="sList" aria-label="Show all results"></button>
+    </div>
+    <div id="samplebar" class="samplebar" hidden>
+      <span>This is a made-up sample chat. Its photos, video, GIF, sticker, audio and files are generated on this device.</span>
+      <button id="sampleOpen">Open your own export (.txt or .zip)</button>
+    </div>
+    <div class="thread-wrap">
+      <div id="scroller" class="scroller" tabindex="0" aria-label="Messages"><div id="spacer" class="spacer"><div id="layer" class="layer"></div></div></div>
+      <div id="sticky" class="sticky-date" hidden><span class="pill" id="stickyPill"></span></div>
+      <button id="fabTop" class="fab top" hidden aria-label="Jump to first message" title="Jump to first message"></button>
+      <button id="fab" class="fab" hidden aria-label="Jump to latest message" title="Jump to latest message"></button>
+    </div>
+  </main>
+</div>
+
+<div id="drop" class="dropzone" hidden><div>Drop your WhatsApp export here<br><small>.txt or .zip</small></div></div>
+<div id="loading" class="loading" hidden><div class="box"><b id="loadTitle">Reading chat</b><div class="prog"><i id="progBar"></i></div><small id="loadNote">Parsing on this device</small></div></div>
+
+<div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="sheet">
+    <header><h2 id="statsTitle">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics"></button></header>
+    <div class="body" id="statsBody"></div>
+  </div>
+</div>
+<div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle">
+  <div class="sheet narrow">
+    <header><h2 id="meTitle">Which one is you?</h2><button class="ibtn" data-close aria-label="Close"></button></header>
+    <div class="body"><p class="lead">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
+    <div class="foot"><button class="btn primary" id="meDone">Show chat</button></div>
+  </div>
+</div>
+<div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
+  <div class="lb-top"><div class="lb-who"><b id="lbWho"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer"></button></div>
+  <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo"></button><img id="lbImg" alt=""><button class="lb-nav" id="lbNext" aria-label="Next photo"></button></div>
+  <div class="lb-cap txt" id="lbCap"></div>
+</div>
+<div id="toast" class="toast" hidden role="status"></div>
+<input type="file" id="file" accept=".txt,.zip,text/plain,application/zip" hidden>
+
+<script src="js/vendor/jszip.min.js"></script>
+<script src="js/parser.js"></script>
+<script src="js/media.js"></script>
+<script src="js/viewer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

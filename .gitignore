@@ -1,0 +1,24 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+*~
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Dependencies (none are needed, but keep them out if added locally)
+node_modules/
+
+# Local chat exports used for testing: never commit real chats
+*.zip
+*.txt
+!docs/**/*.txt
+WhatsApp Chat*/
+test-chats/
+
+# Logs
+*.log
+npm-debug.log*
