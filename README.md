@@ -22,7 +22,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Light, dark and system themes, and a responsive layout for desktop and phone.
 - Handles chats of 50,000+ messages smoothly.
 
-The full feature list is in **[docs/features.md](docs/features.md)**.
+The full feature list is in **[docs/features.md](docs/features.md)**, and release notes are in **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Architecture
 
@@ -59,6 +59,7 @@ whatsapp-chat-viewer/
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   └── app.js                            # file loading, search, stats, theme, boot
+├── CHANGELOG.md                          # release notes
 ├── .gitignore
 └── README.md
 ```

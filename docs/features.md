@@ -57,6 +57,7 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
   - Calls.
   - Deleted messages and edited messages.
   - Media attachments and "media omitted" placeholders.
+  - Documents keep the title and page count that iPhone writes before the file (`Report.pdf • 2 pages <attached: …>`) and that Android writes before `(file attached)`.
 - **Wall-clock times:** times are shown exactly as they appear in the export, whatever the viewer's time zone.
 
 ## 4. Responsive layout
