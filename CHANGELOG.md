@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.2.0 (unreleased, on `development`)
+## 1.2.0 (2026-10-05)
 
 - **Events:** WhatsApp exports an event as an empty `Name:` line, without any event details.
   - Before, the viewer showed this line as a grey system notice with just the sender's name.

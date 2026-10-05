@@ -16,7 +16,8 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 
 - Opens a plain `.txt` export or a full `.zip` export with media.
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
-- Shows photos (with a zoomable viewer), stickers, GIFs, videos, voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
+- Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
+- Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
 - Search with highlighting and match navigation, plus jump-to-date and jump-to-bottom.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
@@ -82,6 +83,15 @@ whatsapp-chat-viewer/
 3. Pick which participant is you, so your messages show on the right.
 
 To use the viewer with no internet connection, download the repository and open `index.html` straight from disk.
+
+### What WhatsApp exports leave out
+
+The viewer can only show what's in the export file. WhatsApp leaves out:
+- **Reactions.**
+- **Replies:** which earlier message a reply was answering.
+- **Events:** the export has an empty line in their place, and the viewer marks it.
+- **View-once media.**
+- **Media** you chose not to include when exporting.
 
 ## Local development
 
