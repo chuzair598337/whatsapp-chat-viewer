@@ -22,6 +22,13 @@ function parserModule() {
     if (ext === 'vcf') return 'contact';
     return 'document';
   }
+  // "Title • 2 pages" (the text WhatsApp writes before a document) -> { title, detail }.
+  function docInfo(prefix) {
+    const p = (prefix || '').trim();
+    if (!p || p.indexOf('•') < 0) return null;
+    const parts = p.split(/\s*•\s*/), title = parts.shift();
+    return { title, detail: parts.filter(Boolean).join(' · ') };
+  }
   function media(type, name, caption, omitted, edited, more) {
     return { kind: 'media', text: (caption || '').trim(), att: [Object.assign({ type, name: name || null, omitted, url: null }, more || {})], edited };
   }
@@ -35,8 +42,12 @@ function parserModule() {
       return { kind: 'deleted', text: t, att: [], edited };
     if (one && (m = /^(Missed |Silenced |Declined )?(group )?(voice|video) call(?:,\s*(.*))?$/i.exec(t)))
       return { kind: 'call', text: t, att: [], edited, extra: { missed: !!m[1], video: /video/i.test(m[3]), group: !!m[2], label: (m[1] || '') + (m[2] || '') + m[3] + ' call', detail: (m[4] || '').trim() } };
-    if ((m = /^<attached: ([^>]+)>\s*([\s\S]*)$/.exec(t))) return media(typeFromName(m[1]), m[1].trim(), m[2], false, edited);
-    if ((m = /^(.+?\.[A-Za-z0-9]{1,6}) \(file attached\)\s*([\s\S]*)$/.exec(t))) return media(typeFromName(m[1]), m[1].trim(), m[2], false, edited);
+    // iOS puts a document's title and page count in front of the file: "Report.pdf • 2 pages <attached: 00000022-Report.pdf>".
+    if ((m = /^([^\n<]*?)\s*<attached: ([^>]+)>\s*([\s\S]*)$/.exec(t))) {
+      const d = docInfo(m[1]);
+      return media(typeFromName(m[2]), m[2].trim(), d ? m[3] : (m[1] + '\n' + m[3]), false, edited, d);
+    }
+    if ((m = /^([^\n]*?\s•\s\d+\s+pages?\s)?(\S[^\n]*?\.[A-Za-z0-9]{1,6}) \(file attached\)\s*([\s\S]*)$/.exec(t))) return media(typeFromName(m[2]), m[2].trim(), m[3], false, edited, m[1] ? docInfo(m[1]) : null);
     if ((m = /^([\s\S]*?)\s*(<Media omitted>|image omitted|video omitted|audio omitted|sticker omitted|GIF omitted|document omitted|Contact card omitted|video note omitted|view once [\w ]+? omitted)$/i.exec(t))) {
       const w = m[2].toLowerCase();
       const viewOnce = w.startsWith('view once');

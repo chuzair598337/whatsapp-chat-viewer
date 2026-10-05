@@ -22,7 +22,9 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 
 - **Nothing leaves the device.** The page makes no network requests after it loads: no analytics, no fonts, no CDNs, no link previews and no fetched favicons. Every test run checks that the request log is empty.
 - **No server code.** GitHub Pages only serves the static files. Opening a chat reads it with the browser's `File` API in memory.
-- **Bundled dependencies.** JSZip 3.10.1 ships in `js/vendor/`, so the viewer also works when opened straight from disk with no internet connection.
+- **Bundled dependencies.** JSZip 3.10.1 and pdf.js 3.11.174 ship in `js/vendor/`, so the viewer also works when opened straight from disk with no internet connection.
+  - pdf.js is only loaded when a chat contains a PDF.
+  - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
 - **Local preferences only.** The theme, the date order and "which one is you" are stored in `localStorage`. Chat contents are never stored.
@@ -81,7 +83,7 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 ## 6. Rich media
 
-Media from a ZIP is matched to its message by file name. If a referenced file isn't in the archive, the message shows a muted dashed card with the file name and **"Asset not included in ZIP"**. For a `.txt`-only import the card says the chat was opened as text only.
+Media from a ZIP is matched to its message by file name. WhatsApp's invisible direction marks in file names are ignored when matching. If a referenced file isn't in the archive, the message shows a muted dashed card with the file name and **"Asset not included in ZIP"**. For a `.txt`-only import the card says the chat was opened as text only.
 
 | Type | How it is shown |
 |---|---|
@@ -91,9 +93,25 @@ Media from a ZIP is matched to its message by file name. If a referenced file is
 | **Video** | Custom controls: play/pause, elapsed and total time, a seek bar, mute and full screen. A poster image is taken from the first frame. Only one video or voice note plays at a time. |
 | **Voice notes** (`PTT-`, iPhone `-AUDIO-`, `.opus`) | Card with the sender's avatar and a mic badge. Its 36-bar waveform is decoded from the audio with the Web Audio API. Tap or drag the waveform to seek, and switch speed between 1×, 1.5× and 2×. |
 | **Audio files** (`AUD-`, `.mp3`, `.m4a`, …) | Music-file card with the file name, play button, seek bar and duration. |
-| **Documents** | Card with a coloured type badge (PDF, Word, Excel, PowerPoint, archive, text), the file size and a download button. |
+| **Documents** | Card with a coloured type badge (PDF, Word, Excel, PowerPoint, archive, text), the document's title, the file size and a download button. |
+| **PDFs** | Like WhatsApp: a preview of the first page above the card, plus the page count. Tapping it opens the in-app PDF viewer (details below). If a PDF is damaged or password protected, the card says so, and the file can still be downloaded. |
 | **Links** | Clickable inline. A card under the message shows the site name and address with a coloured letter badge drawn locally, plus a copy button. When a message has several links, the card adds "+ N more links". |
-| **Contacts** (`.vcf`) | Contact card badge. |
+| **Contacts** (`.vcf`) | Card with the contact's photo or initials, name, and number, or "and N other contacts" when several were shared together. **View contact** opens the details (details below). **Save .vcf** downloads the card so it can be added to a phone's contacts. |
+
+**PDF viewer**
+- Every page is drawn on the device with pdf.js. Only the pages near the screen are rendered.
+- Zoom with the buttons or the `+`, `-` and `0` keys.
+- A download button, and `Esc` closes it.
+
+**Contact details**
+- Shows each contact in the file: phone numbers with their labels (Mobile, Home, Work, and whether they're on WhatsApp), email addresses and websites.
+- WhatsApp Business details are included: the business name and the business description, with WhatsApp formatting.
+- Numbers open the phone dialler (`tel:`) and have a copy button.
+- Reads the variations WhatsApp writes:
+  - Several cards joined by `_$!<VCard-Separator>!$_`.
+  - Unfolded multi-line values.
+  - Quoted-printable text.
+  - Embedded photos.
 
 **Full-screen photo viewer**
 - Zoom with the buttons, the mouse wheel, a double-click, pinch, or the `+`, `-` and `0` keys.
@@ -145,8 +163,9 @@ The scripts are plain browser scripts with no build step. They share globals and
 | File | Responsibility |
 |---|---|
 | `js/vendor/jszip.min.js` | JSZip 3.10.1 (MIT) |
+| `js/vendor/pdfjs/` | pdf.js 3.11.174 legacy build (Apache-2.0), loaded on demand |
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |
 | `js/media.js` | ZIP reading, the media map and blob-URL lifecycle, shared audio controller |
-| `js/viewer.js` | Formatting, the virtual list, row rendering, media players, the photo viewer |
+| `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
 | `js/app.js` | File opening, search, statistics, modals, theme, drawer and the sample chat |
 | `css/styles.css` | All styles and theme tokens |

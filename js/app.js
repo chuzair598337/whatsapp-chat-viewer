@@ -425,6 +425,13 @@ window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefaul
 
 /* ---------- Keyboard ---------- */
 document.addEventListener('keydown', e => {
+  if (!$('pdfv').hidden) {
+    if (e.key === 'Escape') closePdf();
+    else if (e.key === '+' || e.key === '=') pdfZoom(1);
+    else if (e.key === '-') pdfZoom(-1);
+    else if (e.key === '0') pdfZoom(0);
+    return;
+  }
   if (!$('lb').hidden) {
     if (e.key === 'Escape') closeLightbox();
     else if (e.key === 'ArrowLeft') lbStep(-1);
@@ -436,7 +443,7 @@ document.addEventListener('keydown', e => {
   }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
-    for (const id of ['statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
+    for (const id of ['vcModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
   }
 });
@@ -450,6 +457,10 @@ $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').inn
 $('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="18" height="18"') + 'Statistics';
 $('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + 'Open chat';
 for (const b of document.querySelectorAll('[data-close]')) b.innerHTML = ICON.close;
+$('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('pdfIn').innerHTML = ICON.plus; $('pdfOut').innerHTML = ICON.minus; $('pdfFit').innerHTML = ICON.fit;
+$('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
+$('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
+$('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
 $('lbClose').innerHTML = ICON.close; $('lbDl').innerHTML = ICON.download; $('lbPrev').innerHTML = ICON.back; $('lbNext').innerHTML = ICON.next; $('lbIn').innerHTML = ICON.plus; $('lbOut').innerHTML = ICON.minus; $('lbFit').innerHTML = ICON.fit;
 
 /* =====================================================================

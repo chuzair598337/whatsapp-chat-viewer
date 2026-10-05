@@ -54,8 +54,10 @@ const baseName = n => String(n || '').split('/').pop().trim();
 const extOf = n => { const b = baseName(n); return b.includes('.') ? b.split('.').pop().toLowerCase() : ''; };
 const clampR = r => Math.min(1.7, Math.max(0.68, r));
 const Media = {
-  map: new Map(), dims: new Map(), posters: new Map(), waves: new Map(),
-  key: n => baseName(n).toLowerCase(),
+  map: new Map(), dims: new Map(), posters: new Map(), waves: new Map(), cards: new Map(), thumbs: new Map(),
+  // Lookup key: the chat text has WhatsApp's invisible direction marks stripped, but file names in the
+  // ZIP can still contain them (e.g. "00000020-\u200eName.vcf"), so both sides drop them before matching.
+  key: n => baseName(n).replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, '').normalize('NFC').toLowerCase(),
   // Adds one extracted file to a staging map; the live map is only swapped once the chat has parsed.
   stage(into, path, blob) {
     const name = baseName(path), mime = blob.type || MIME[extOf(name)] || 'application/octet-stream';
@@ -68,7 +70,9 @@ const Media = {
   reset() {
     AudioCtl.stop(); closeLightbox(true); this.discard(this.map); this.map = new Map(); this.dims.clear(); this.waves.clear();
     for (const u of this.posters.values()) if (u) URL.revokeObjectURL(u);
-    this.posters.clear();
+    for (const u of this.thumbs.values()) if (u) URL.revokeObjectURL(u);
+    this.posters.clear(); this.thumbs.clear(); this.cards.clear();
+    if (typeof PdfView !== 'undefined') PdfView.reset();
   }
 };
 

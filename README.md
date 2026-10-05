@@ -16,7 +16,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 
 - Opens a plain `.txt` export or a full `.zip` export with media.
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
-- Shows photos (with a zoomable viewer), stickers, GIFs, videos, voice notes with waveforms, audio files, documents and link cards.
+- Shows photos (with a zoomable viewer), stickers, GIFs, videos, voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
 - Search with highlighting and match navigation, plus jump-to-date and jump-to-bottom.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
@@ -39,7 +39,7 @@ flowchart LR
 ```
 
 - **Static site:** plain HTML, CSS and JavaScript with no build step and no server code.
-- **One dependency:** JSZip, vendored in `js/vendor/`.
+- **Two dependencies, both vendored in `js/vendor/`:** JSZip, and pdf.js for PDF previews, which is only loaded when a chat has a PDF.
 - **Parsing:** runs in a Web Worker created from an inline Blob URL, so large chats don't freeze the page.
 - **Media:** stays in memory as `blob:` URLs, which are revoked when another chat is opened.
 - **Rendering:** only the rows on screen exist in the DOM. A Fenwick tree tracks row heights for fast scrolling.
@@ -54,6 +54,7 @@ whatsapp-chat-viewer/
 ├── css/styles.css                        # styles and light/dark theme tokens
 ├── js/
 │   ├── vendor/jszip.min.js               # JSZip 3.10.1 (MIT)
+│   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── viewer.js                         # formatting, virtual list, media players
@@ -115,4 +116,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), and pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`).

@@ -47,6 +47,9 @@ const ICON = {
   download: ic('<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>'),
   play: ic('<path d="M8.5 5.5v13l10-6.5z" fill="currentColor" stroke="none"/>'),
   pause: ic('<path d="M8.5 5.5v13M15.5 5.5v13" stroke-width="3.2"/>'),
+  mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
+  link: ic('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+  check: ic('<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
   volume: ic('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
@@ -227,12 +230,13 @@ function estimate(it, W) {
   if (m.kind === 'media') {
     const a = m.attachments[0], w2 = Math.min(330, bw);
     if (a && a.url) {
-      const d = Media.dims.get(baseName(a.name));
+      const d = Media.dims.get((Media.get(a.name) || a).name);
       if (a.type === 'image' || a.type === 'gif') h += w2 / (d ? clampR(d.w / d.h) : 4 / 3) - (m.message ? 0 : 14);
       else if (a.type === 'video') h += w2 / (d ? clampR(d.w / d.h) : 16 / 9);
       else if (a.type === 'sticker') h += 140;
       else if (a.type === 'audio') h += isVoice(a.name) ? 58 : 72;
-      else h += 66;
+      else if (a.type === 'contact') h += 108;
+      else h += extOf(a.name) === 'pdf' && !PdfView.failed.has(a.name) ? 66 + 146 : 66;
     } else h += 74;
   }
   if (it.hasLink) h += 70;
@@ -364,12 +368,265 @@ function videoHTML(e, gif) {
     '<button class="vmute" aria-label="Mute">' + ICON.volume + '</button><button class="vfs" aria-label="Full screen">' + ICON.full + '</button></div></div>';
 }
 const DX = { pdf: 'pdf', doc: 'doc', docx: 'doc', rtf: 'doc', odt: 'doc', pages: 'doc', xls: 'xls', xlsx: 'xls', csv: 'xls', ods: 'xls', numbers: 'xls', ppt: 'ppt', pptx: 'ppt', key: 'ppt', odp: 'ppt', zip: 'zip', rar: 'zip', '7z': 'zip', gz: 'zip', txt: 'txt', md: 'txt', json: 'txt', log: 'txt' };
-function docHTML(e, type) {
-  const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4);
-  const badge = type === 'contact' ? '<span class="dext">' + ICON.contact + '</span>' : '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>';
-  return '<div class="mdoc"><a class="mdoc-main" href="' + e.url + '" target="_blank" rel="noopener">' + badge +
-    '<span class="attt"><b title="' + esc(e.name) + '">' + esc(e.name) + '</b><small>' + (type === 'contact' ? 'Contact card' : esc(label) + ' file') + ' · ' + fmtSize(e.size) + '</small></span></a>' +
-    '<a class="dl" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="Download ' + esc(e.name) + '" title="Download">' + ICON.download.replace('width="22" height="22"', 'width="20" height="20"') + '</a></div>';
+function docHTML(e, type, a) {
+  if (type === 'contact') return contactHTML(e);
+  const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4), pdf = ext === 'pdf';
+  const title = (a && a.title) || e.name;
+  const pages = pdf ? PdfView.pages.get(e.name) : 0;
+  const detail = pages ? pages + ' page' + (pages === 1 ? '' : 's') : (a && a.detail) || '';
+  const info = (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size);
+  const main = pdf
+    ? '<button class="mdoc-main" data-pdf="' + esc(e.name) + '" aria-label="Open ' + esc(title) + '">'
+    : '<a class="mdoc-main" href="' + e.url + '" target="_blank" rel="noopener">';
+  const row = '<div class="mdoc">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
+    '<span class="attt"><b title="' + esc(title) + '">' + esc(title) + '</b><small class="dinfo">' + info + '</small></span>' + (pdf ? '</button>' : '</a>') +
+    '<a class="dl" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="Download ' + esc(title) + '" title="Download">' + ICON.download.replace('width="22" height="22"', 'width="20" height="20"') + '</a></div>';
+  if (!pdf) return row;
+  const thumb = Media.thumbs.get(e.name);
+  if (thumb === undefined) PdfView.thumb(e.name);
+  if (thumb === null && Media.thumbs.has(e.name) && PdfView.failed.has(e.name)) return '<div class="mdocw">' + row + '</div>';
+  return '<div class="mdocw"><button class="pdfprev" data-pdf="' + esc(e.name) + '" aria-label="Open ' + esc(title) + '">' +
+    (thumb ? '<img src="' + thumb + '" alt="">' : '<span class="pdfph">' + ICON.document + '</span>') + '</button>' + row + '</div>';
+}
+
+/* ---------- Contact cards (.vcf) ----------
+   The vCard is read from the ZIP and parsed here. WhatsApp joins several contacts with
+   "_$!<VCard-Separator>!$_" and writes multi-line values without folding, so the parser is lenient. */
+const VC_PROP = /^(?:[A-Za-z0-9-]+\.)?(VERSION|N|FN|TEL|EMAIL|ORG|TITLE|ROLE|PHOTO|ADR|URL|NOTE|BDAY|NICKNAME|CATEGORIES|LABEL|REV|UID|PRODID|IMPP|GEO|TZ|SOUND|LOGO|KEY|SOURCE|KIND|X-[A-Za-z0-9-]+)((?:;[^:\n]*)?):(.*)$/i;
+const VC_TEL = { CELL: 'Mobile', MOBILE: 'Mobile', IPHONE: 'iPhone', HOME: 'Home', WORK: 'Work', MAIN: 'Main', FAX: 'Fax', PAGER: 'Pager', OTHER: 'Other' };
+function parseVCards(text) {
+  const out = [];
+  for (const chunk of text.replace(/\r\n?/g, '\n').split(/END:VCARD/i)) {
+    const at = chunk.search(/BEGIN:VCARD/i);
+    if (at < 0) continue;
+    const props = [];
+    for (const line of chunk.slice(at + 11).split('\n')) {
+      const last = props[props.length - 1];
+      if (last && /^[ \t]/.test(line)) { last.raw += line.slice(1); continue; } // folded line
+      if (last && last.qp && last.raw.endsWith('=')) { last.raw = last.raw.slice(0, -1) + line; continue; } // quoted-printable soft break
+      const m = VC_PROP.exec(line);
+      if (m) {
+        const g = /^([A-Za-z0-9-]+)\./.exec(line);
+        props.push({ group: g ? g[1].toLowerCase() : '', name: m[1].toUpperCase(), params: m[2], raw: m[3], qp: /QUOTED-PRINTABLE/i.test(m[2]) });
+      } else if (last) last.raw += '\n' + line; // WhatsApp's unescaped multi-line values
+    }
+    const val = p => {
+      let v = p.raw;
+      if (p.qp) {
+        const bytes = []; v.replace(/=([0-9A-Fa-f]{2})|([\s\S])/g, (s, h, c) => { if (h) bytes.push(parseInt(h, 16)); else for (const b of new TextEncoder().encode(c)) bytes.push(b); return ''; });
+        v = new TextDecoder().decode(new Uint8Array(bytes));
+      }
+      return v.replace(/\\n/gi, '\n').replace(/\\([,;:\\])/g, '$1').trim();
+    };
+    const labels = new Map();
+    for (const p of props) if (p.name === 'X-ABLABEL' && p.group) labels.set(p.group, val(p).replace(/^_\$!<(.*)>!\$_$/, '$1'));
+    const types = p => (p.params.match(/(?:TYPE=)?([A-Za-z-]+)(?=[;,]|$)/gi) || []).map(s => s.replace(/^TYPE=/i, '').toUpperCase());
+    const c = { name: '', phones: [], emails: [], urls: [], org: '', title: '', biz: '', about: '', photo: '' };
+    let n = '';
+    for (const p of props) {
+      const v = val(p);
+      if (p.name === 'FN') c.name = c.name || v;
+      else if (p.name === 'N') { const f = v.split(';'); n = [f[3], f[1], f[2], f[0], f[4]].filter(x => x && x.trim()).join(' '); }
+      else if (p.name === 'TEL' && v) {
+        const t = types(p), wa = /waid=(\d+)/i.exec(p.params);
+        c.phones.push({ value: v, label: labels.get(p.group) || VC_TEL[t.find(x => VC_TEL[x])] || 'Phone', wa: !!wa });
+      }
+      else if (p.name === 'EMAIL' && v) c.emails.push(v);
+      else if (p.name === 'URL' && v) c.urls.push(v);
+      else if (p.name === 'ORG') c.org = v.split(';').filter(Boolean).join(' · ');
+      else if (p.name === 'TITLE') c.title = v;
+      else if (p.name === 'X-WA-BIZ-NAME') c.biz = v;
+      else if (p.name === 'X-WA-BIZ-DESCRIPTION' || p.name === 'NOTE') c.about = c.about || v;
+      else if (p.name === 'PHOTO') {
+        const b64 = p.raw.replace(/\s+/g, ''), kind = (/TYPE=(JPE?G|PNG|GIF|WEBP)/i.exec(p.params) || [, 'JPEG'])[1].toLowerCase().replace('jpg', 'jpeg');
+        if (/^[A-Za-z0-9+/]+=*$/.test(b64) && b64.length < 3e6) c.photo = 'data:image/' + kind + ';base64,' + b64;
+      }
+    }
+    c.name = c.name || n || c.org || c.biz || (c.phones[0] && c.phones[0].value) || 'Contact';
+    out.push(c);
+  }
+  return out;
+}
+const vcFileName = n => baseName(n).replace(/^\d+-/, '').replace(/\.vcf$/i, '').trim() || 'Contact';
+const Cards = {
+  q: [], busy: false,
+  request(name) { if (Media.cards.has(name)) return; Media.cards.set(name, null); this.q.push(name); this.pump(); },
+  async pump() {
+    if (this.busy) return;
+    this.busy = true;
+    while (this.q.length) {
+      const name = this.q.shift(), e = Media.get(name);
+      if (!e) continue;
+      let list = [];
+      try { if (e.size < 8e6) list = parseVCards(await e.blob.text()); } catch (err) { /* keep the file-name card */ }
+      if (Media.get(name) !== e) continue; // a different chat was opened meanwhile
+      Media.cards.set(name, list);
+      layer.querySelectorAll('.vcard[data-vcf="' + CSS.escape(name) + '"]').forEach(el => {
+        const row = el.closest('.row'); el.outerHTML = contactHTML(e); if (row) VL.remeasure(+row.dataset.i);
+      });
+    }
+    this.busy = false;
+  }
+};
+function vcAvatar(c, cls) {
+  return '<span class="av vc-av ' + cls + ' c' + colorIdx(c.name) + '">' + (c.photo ? '<img src="' + c.photo + '" alt="">' : esc(initials(c.name))) + '</span>';
+}
+function contactHTML(e) {
+  const list = Media.cards.get(e.name);
+  if (list === undefined) Cards.request(e.name);
+  let name, sub, av;
+  if (list && list.length) {
+    const c = list[0], more = list.length - 1;
+    name = c.name; av = vcAvatar(c, '');
+    sub = more ? 'and ' + more + ' other contact' + (more > 1 ? 's' : '') : c.phones.length ? c.phones[0].value : c.emails[0] || (c.biz ? 'Business account' : 'Contact card');
+  } else {
+    name = vcFileName(e.name); sub = 'Contact card'; av = '<span class="av vc-av c' + colorIdx(name) + '">' + ICON.contact + '</span>';
+  }
+  const many = list && list.length > 1;
+  return '<div class="vcard" data-vcf="' + esc(e.name) + '"><button class="vc-main" data-vcard="' + esc(e.name) + '" aria-label="View contact">' + av +
+    '<span class="attt"><b title="' + esc(name) + '">' + esc(name) + '</b><small>' + esc(sub) + '</small></span></button>' +
+    '<div class="vc-acts"><button data-vcard="' + esc(e.name) + '">' + (many ? 'View all' : 'View contact') + '</button>' +
+    '<a href="' + e.url + '" download="' + esc(e.name) + '">Save .vcf</a></div></div>';
+}
+function openContact(name) {
+  const e = Media.get(name);
+  if (!e) return;
+  const list = Media.cards.get(name);
+  if (!list) { Cards.request(name); setTimeout(() => { if (Media.cards.get(name)) openContact(name); }, 150); return; }
+  $('vcTitle').textContent = list.length > 1 ? list.length + ' contacts' : 'Contact';
+  $('vcBody').innerHTML = list.length ? list.map(c =>
+    '<section class="vc-one">' + vcAvatar(c, 'big') + '<div class="vc-name"><b>' + esc(c.name) + '</b>' +
+      (c.biz ? '<small>' + ICON.check + 'Business account' + (c.biz !== c.name ? ' · ' + esc(c.biz) : '') + '</small>' : '') +
+      (c.org || c.title ? '<small>' + esc([c.title, c.org].filter(Boolean).join(' · ')) + '</small>' : '') + '</div>' +
+      c.phones.map(p => '<div class="vc-row"><span class="vc-ic">' + ICON.phone + '</span><span class="vc-v"><a href="tel:' + esc(p.value.replace(/[^\d+*#]/g, '')) + '">' + esc(p.value) + '</a><small>' + esc(p.label) + (p.wa ? ' · on WhatsApp' : '') + '</small></span><button class="ibtn vc-copy" data-what="Number" data-copy="' + esc(p.value) + '" aria-label="Copy number" title="Copy number">' + ICON.copy + '</button></div>').join('') +
+      c.emails.map(m => '<div class="vc-row"><span class="vc-ic">' + ICON.mail + '</span><span class="vc-v"><a href="mailto:' + esc(m) + '">' + esc(m) + '</a><small>Email</small></span><button class="ibtn vc-copy" data-what="Email" data-copy="' + esc(m) + '" aria-label="Copy email" title="Copy email">' + ICON.copy + '</button></div>').join('') +
+      c.urls.map(u => { const s = safeUrl(u); return s ? '<div class="vc-row"><span class="vc-ic">' + ICON.link + '</span><span class="vc-v"><a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a><small>Website</small></span></div>' : ''; }).join('') +
+      (c.about ? '<div class="vc-about txt">' + formatText(c.about) + '</div>' : '') +
+    '</section>').join('') : '<p class="lead">This contact card has no readable details.</p>';
+  const dl = $('vcSave'); dl.href = e.url; dl.setAttribute('download', e.name);
+  openModal('vcModal');
+}
+
+/* ---------- PDF preview and viewer ----------
+   pdf.js is vendored (js/vendor/pdfjs) and only loaded when a chat contains a PDF. It runs with
+   eval disabled and with no font or CMap URLs, so it never fetches anything. */
+const PdfView = {
+  lib: null, docs: new Map(), pages: new Map(), failed: new Set(), q: [], busy: false,
+  load() {
+    if (!this.lib) this.lib = new Promise((res, rej) => {
+      if (window.pdfjsLib) return res(window.pdfjsLib);
+      const inline = document.getElementById('pdfjs-lib'), wk = document.getElementById('pdfjs-worker');
+      const s = document.createElement('script');
+      s.src = inline ? URL.createObjectURL(new Blob([inline.textContent], { type: 'text/javascript' })) : 'js/vendor/pdfjs/pdf.min.js';
+      s.onload = () => {
+        const L = window.pdfjsLib;
+        if (!L) return rej(new Error('PDF reader missing'));
+        L.GlobalWorkerOptions.workerSrc = wk ? URL.createObjectURL(new Blob([wk.textContent], { type: 'text/javascript' })) : 'js/vendor/pdfjs/pdf.worker.min.js';
+        res(L);
+      };
+      s.onerror = () => { this.lib = null; rej(new Error('PDF reader could not load')); };
+      document.head.appendChild(s);
+    });
+    return this.lib;
+  },
+  doc(name) {
+    if (!this.docs.has(name)) {
+      const e = Media.get(name);
+      this.docs.set(name, this.load().then(async L => L.getDocument({ data: new Uint8Array(await e.blob.arrayBuffer()), isEvalSupported: false, enableXfa: false, useSystemFonts: true }).promise));
+    }
+    return this.docs.get(name);
+  },
+  thumb(name) { if (Media.thumbs.has(name)) return; Media.thumbs.set(name, null); this.q.push(name); this.pump(); },
+  async pump() {
+    if (this.busy) return;
+    this.busy = true;
+    while (this.q.length) {
+      const name = this.q.shift(), e = Media.get(name);
+      if (!e) continue;
+      let url = null;
+      try {
+        const doc = await this.doc(name), page = await doc.getPage(1);
+        const v0 = page.getViewport({ scale: 1 }), scale = 640 / v0.width, vp = page.getViewport({ scale });
+        const cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.min(Math.ceil(vp.height), 400);
+        const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, cv.width, cv.height);
+        await page.render({ canvasContext: g, viewport: vp }).promise;
+        const blob = await new Promise(r => cv.toBlob(r, 'image/jpeg', 0.85));
+        if (Media.get(name) !== e) continue;
+        this.pages.set(name, doc.numPages);
+        url = blob ? URL.createObjectURL(blob) : null;
+      } catch (err) { if (Media.get(name) !== e) continue; this.failed.add(name); }
+      Media.thumbs.set(name, url);
+      layer.querySelectorAll('.pdfprev[data-pdf="' + CSS.escape(name) + '"]').forEach(el => {
+        const w = el.closest('.mdocw'), row = el.closest('.row');
+        const it = row && VL.items[+row.dataset.i], a = it && it.m.attachments.find(x => Media.get(x.name) === e);
+        if (w) w.outerHTML = docHTML(e, 'document', a);
+        if (row) VL.remeasure(+row.dataset.i);
+      });
+    }
+    this.busy = false;
+  },
+  reset() {
+    for (const p of this.docs.values()) p.then(d => d.destroy(), () => {});
+    this.docs.clear(); this.pages.clear(); this.failed.clear(); this.q = [];
+    if (!$('pdfv').hidden) closePdf();
+  }
+};
+const PV = { name: '', z: 1, obs: null, gen: 0 };
+async function openPdf(name, title) {
+  const e = Media.get(name);
+  if (!e) return;
+  pauseVideos(); if (AudioCtl.el && !AudioCtl.el.paused) AudioCtl.el.pause();
+  PV.name = name; PV.z = 1; PV.gen++;
+  $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = 'Opening…';
+  const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
+  const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
+  $('pdfv').hidden = false; $('pdfClose').focus();
+  const gen = PV.gen;
+  try {
+    const doc = await PdfView.doc(name);
+    if (gen !== PV.gen) return;
+    const v1 = (await doc.getPage(1)).getViewport({ scale: 1 });
+    $('pdfInfo').textContent = doc.numPages + ' page' + (doc.numPages === 1 ? '' : 's');
+    PdfView.pages.set(name, doc.numPages);
+    let html = '';
+    for (let i = 1; i <= doc.numPages; i++) html += '<div class="pdfpage" data-p="' + i + '" style="aspect-ratio:' + (v1.width / v1.height).toFixed(4) + '"><span class="pdfpn">' + i + '</span></div>';
+    box.innerHTML = html;
+    pdfZoom(0);
+  } catch (err) {
+    if (gen !== PV.gen) return;
+    const pw = err && err.name === 'PasswordException';
+    $('pdfInfo').textContent = '';
+    box.innerHTML = '<div class="pdferr">' + ICON.warn + '<b>' + (pw ? 'This PDF is password protected' : "This PDF couldn't be shown here") + '</b><small>You can still download it and open it in another app.</small></div>';
+  }
+}
+function pdfZoom(d) {
+  PV.z = d === 0 ? 1 : Math.min(3, Math.max(0.5, PV.z * (d > 0 ? 1.25 : 0.8)));
+  const box = $('pdfPages');
+  box.style.setProperty('--pz', PV.z);
+  $('pdfZoom').textContent = Math.round(PV.z * 100) + '%';
+  if (PV.obs) PV.obs.disconnect();
+  PV.obs = new IntersectionObserver(ents => { for (const en of ents) if (en.isIntersecting) renderPdfPage(en.target); }, { root: box, rootMargin: '600px 0px' });
+  box.querySelectorAll('.pdfpage').forEach(p => { p.dataset.z = ''; PV.obs.observe(p); });
+}
+async function renderPdfPage(el) {
+  const z = String(PV.z), gen = PV.gen;
+  if (el.dataset.z === z) return;
+  el.dataset.z = z;
+  try {
+    const doc = await PdfView.doc(PV.name), page = await doc.getPage(+el.dataset.p);
+    const v0 = page.getViewport({ scale: 1 }), w = el.clientWidth || 600, dpr = Math.min(2, window.devicePixelRatio || 1);
+    const vp = page.getViewport({ scale: w * dpr / v0.width });
+    const cv = document.createElement('canvas'); cv.width = Math.ceil(vp.width); cv.height = Math.ceil(vp.height);
+    await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+    if (gen !== PV.gen || el.dataset.z !== z) return;
+    el.style.aspectRatio = (v0.width / v0.height).toFixed(4);
+    el.querySelectorAll('canvas').forEach(c => c.remove());
+    el.appendChild(cv);
+  } catch (err) { el.dataset.z = ''; }
+}
+function closePdf() {
+  PV.gen++; if (PV.obs) PV.obs.disconnect();
+  $('pdfv').hidden = true; $('pdfPages').innerHTML = '';
 }
 function attHTML(a, m) {
   const e = a.url ? Media.get(a.name) : null;
@@ -383,7 +640,7 @@ function attHTML(a, m) {
     if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="Sticker" loading="lazy">';
     if (a.type === 'video') return videoHTML(e, false);
     if (a.type === 'audio') return audioHTML(e, m);
-    return docHTML(e, a.type);
+    return docHTML(e, a.type, a);
   }
   const missing = !!a.name && !a.omitted;
   const kind = a.note || (a.type === 'audio' && a.name && isVoice(a.name) ? 'Voice message' : TYPE_LABEL[a.type]) || 'File';
@@ -543,15 +800,16 @@ function toggleFullscreen(box) {
   if (req) { const pr = req.call(box); if (pr && pr.catch) pr.catch(() => {}); }
   else if (v && v.webkitEnterFullscreen) v.webkitEnterFullscreen();
 }
-async function copyText(text) {
-  try { await navigator.clipboard.writeText(text); toast('Link copied'); return; } catch (e) { /* fall back */ }
+async function copyText(text, what) {
+  what = what || 'Link';
+  try { await navigator.clipboard.writeText(text); toast(what + ' copied'); return; } catch (e) { /* fall back */ }
   const ta = document.createElement('textarea');
   ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:0;top:0';
   document.body.appendChild(ta); ta.select();
   let ok = false;
   try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
   ta.remove();
-  toast(ok ? 'Link copied' : "Couldn't copy here. Long-press or right-click the link to copy it.");
+  toast(ok ? what + ' copied' : "Couldn't copy here. Select the text and copy it instead.");
 }
 let waveDrag = null;
 layer.addEventListener('pointerdown', e => {
@@ -582,7 +840,11 @@ layer.addEventListener('click', e => {
   if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }
   if (t.closest('.aspeed')) { AudioCtl.speed(); return; }
   const im = t.closest('[data-lb]');
-  if (im) openLightbox(im.dataset.lb);
+  if (im) { openLightbox(im.dataset.lb); return; }
+  const pd = t.closest('[data-pdf]');
+  if (pd) { const w = pd.closest('.mdocw'); openPdf(pd.dataset.pdf, w && w.querySelector('.mdoc b') ? w.querySelector('.mdoc b').textContent : ''); return; }
+  const vc = t.closest('[data-vcard]');
+  if (vc) openContact(vc.dataset.vcard);
 });
 layer.addEventListener('input', e => {
   const vs = e.target.closest('.vseek');

@@ -398,3 +398,49 @@ mark.cur { background: var(--hl-cur); }
   .fab { right: 12px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* ---------- PDF preview card ---------- */
+.mdocw { width: 290px; max-width: 100%; margin: 0 -2px 4px; border-radius: 6px; overflow: hidden; background: var(--quote); }
+.mdocw .mdoc { margin: 0; width: auto; background: transparent; }
+.pdfprev { display: block; width: 100%; aspect-ratio: 2 / 1; padding: 0; border: 0; background: #fff; cursor: pointer; overflow: hidden; position: relative; }
+.pdfprev img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+.pdfph { position: absolute; inset: 0; display: grid; place-items: center; color: #8696a0; background: repeating-linear-gradient(180deg, #fff 0 14px, #f0f2f5 14px 16px); }
+button.mdoc-main { border: 0; background: transparent; font: inherit; text-align: left; cursor: pointer; }
+
+/* ---------- PDF viewer ---------- */
+.pdf-pages { flex: 1; min-height: 0; overflow: auto; padding: 8px 12px 24px; overscroll-behavior: contain; --pz: 1; }
+.pdfpage { position: relative; width: calc(min(900px, 100%) * var(--pz)); margin: 0 auto 12px; background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, .35); }
+.pdfpage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.pdfpn { position: absolute; inset: 0; display: grid; place-items: center; color: #aab4ba; font-size: 13px; }
+.pdferr { margin: 12vh auto 0; max-width: 360px; display: grid; justify-items: center; gap: 8px; text-align: center; color: #e9edef; }
+.pdferr small { color: #8696a0; }
+
+/* ---------- Contact cards ---------- */
+.vcard { width: 270px; max-width: 100%; margin: 0 -2px 2px; }
+.vc-main { display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 4px 10px; border: 0; background: transparent; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.vc-main .attt { display: grid; min-width: 0; }
+.vc-main b { font-weight: 500; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-main small { color: var(--ink-3); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vc-av { width: 46px; height: 46px; overflow: hidden; }
+.vc-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.vc-av svg { width: 24px; height: 24px; }
+.vc-acts { display: flex; border-top: 1px solid var(--line); margin: 0 -9px -2px; }
+.vc-acts > * { flex: 1; padding: 10px 6px 6px; border: 0; background: transparent; font: inherit; font-size: 14px; font-weight: 500; color: var(--accent-ink); text-align: center; text-decoration: none; cursor: pointer; }
+.vc-acts > * + * { border-left: 1px solid var(--line); }
+.vc-acts > *:hover { text-decoration: underline; }
+.vc-body { gap: 0; padding-top: 4px; }
+.vc-one { display: grid; justify-items: center; gap: 4px; padding: 16px 0; }
+.vc-one + .vc-one { border-top: 1px solid var(--line); }
+.vc-av.big { width: 76px; height: 76px; font-size: 26px; }
+.vc-name { display: grid; justify-items: center; text-align: center; gap: 2px; margin-bottom: 8px; }
+.vc-name b { font-size: 18px; font-weight: 500; }
+.vc-name small { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-3); font-size: 13px; }
+.vc-name small svg { width: 15px; height: 15px; color: var(--accent); }
+.vc-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 6px 0; }
+.vc-ic { width: 36px; display: grid; place-items: center; color: var(--ink-3); flex: none; }
+.vc-v { flex: 1; min-width: 0; display: grid; }
+.vc-v a { color: var(--ink); text-decoration: none; font-size: 15px; overflow-wrap: anywhere; }
+.vc-v a:hover { text-decoration: underline; }
+.vc-v small { color: var(--ink-3); font-size: 12.5px; }
+.vc-about { width: 100%; margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--quote); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.foot a.btn { text-decoration: none; color: inherit; }
