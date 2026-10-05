@@ -14,11 +14,13 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 
 ## Highlights
 
-- Opens a plain `.txt` export or a full `.zip` export with media.
+- Opens a plain `.txt` export or a full `.zip` export with media, or several chats at once with a chat list to switch between them.
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
 - Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
 - Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
-- Search with highlighting and match navigation, plus jump-to-date and jump-to-bottom.
+- Search with highlighting and match navigation (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
+- Star messages to collect them in a side panel while you read (never saved).
+- Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
 - Handles chats of 50,000+ messages smoothly.
@@ -41,7 +43,7 @@ flowchart LR
 
 - **Static site:** plain HTML, CSS and JavaScript with no build step and no server code.
 - **Two dependencies, both vendored in `js/vendor/`:** JSZip, and pdf.js for PDF previews, which is only loaded when a chat has a PDF.
-- **Parsing:** runs in a Web Worker created from an inline Blob URL, so large chats don't freeze the page.
+- **Parsing and unzipping:** run in Web Workers created from inline Blob URLs, so large chats don't freeze the page.
 - **Media:** stays in memory as `blob:` URLs, which are revoked when another chat is opened.
 - **Rendering:** only the rows on screen exist in the DOM. A Fenwick tree tracks row heights for fast scrolling.
 
@@ -60,7 +62,11 @@ whatsapp-chat-viewer/
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   └── app.js                            # file loading, search, stats, theme, boot
+├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
+├── PROJECT_RULES.md                      # rules for every change (privacy, both export types, performance, a11y)
+├── todo.md                               # work list by priority
+├── deferred.md                           # out of scope, and why
 ├── .gitignore
 └── README.md
 ```
@@ -87,7 +93,7 @@ To use the viewer with no internet connection, download the repository and open 
 ### What WhatsApp exports leave out
 
 The viewer can only show what's in the export file. WhatsApp leaves out:
-- **Reactions.**
+- **Reactions.** If your export does contain `reacted … to "…"` lines, the viewer shows them as reaction pills.
 - **Replies:** which earlier message a reply was answering.
 - **Events:** the export has an empty line in their place, and the viewer marks it.
 - **View-once media.**
@@ -112,6 +118,8 @@ Notes:
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
 ## Branching and contributions
+
+Read [PROJECT_RULES.md](PROJECT_RULES.md) first. Planned work is in [todo.md](todo.md), and ideas that were ruled out are in [deferred.md](deferred.md).
 
 | Branch | Purpose |
 |---|---|

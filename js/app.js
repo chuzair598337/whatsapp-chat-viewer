@@ -23,23 +23,78 @@ async function detectKind(file) {
   if (n.endsWith('.zip') || /zip|compressed/.test(t)) return 'zip';
   return 'txt';
 }
-async function openFile(file) {
-  if (!file) return;
+/* ---------- Opening files: one or more exports, or a ZIP holding several chats ----------
+   Every chat found goes into S.library; the sidebar lists them when there is more than one. */
+const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || /^WhatsApp Chat.*\.txt$/i.test(baseName(n));
+async function openFiles(list) {
+  const files = [...(list || [])].filter(Boolean);
+  if (!files.length) return;
   closeDrawer();
-  showLoading('Opening ' + file.name);
-  const staged = new Map();
+  if (files.length === 1) { // one file: open it straight away; a ZIP with several chats fills the library as it opens
+    const entry = { file: files[0], label: hintFrom(files[0].name) || files[0].name.replace(/\.(txt|zip)$/i, ''), discover: true };
+    S.found = null;
+    const ok = await openEntry(entry);
+    if (ok) { S.library = S.found || [entry]; S.libIdx = S.foundIdx || 0; S.found = null; renderLibrary(); }
+    return;
+  }
+  const lib = [];
+  showLoading('Opening ' + nf(files.length) + ' files');
   try {
-    const kind = await detectKind(file);
-    let blob = file, hint = hintFrom(file.name), arc = null, chatPath = null;
+    for (const file of files) {
+      const kind = await detectKind(file);
+      if (kind !== 'zip') { lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.txt$/i, '') }); continue; }
+      setNote('Looking for chats in ' + file.name); setProgress(-1);
+      let arc = null;
+      try { arc = await openArchive(file); } catch (e) { lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name }); continue; }
+      const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
+      if (chats.length > 1 || (inner.length && !chats.length)) {
+        for (const c of chats) lib.push({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name });
+        for (const z of inner) lib.push({ file, kind, inner: z, label: hintFrom(z) || baseName(z) });
+      } else lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.zip$/i, '') });
+      if (arc.close) arc.close();
+    }
+  } catch (e) { toast(e && e.message ? e.message : 'Could not read these files.'); $('loading').hidden = true; return; }
+  $('loading').hidden = true;
+  if (!lib.length) return;
+  const ok = await openEntry(lib[0]);
+  if (ok) { S.library = lib; S.libIdx = 0; renderLibrary(); }
+}
+async function openFile(file) { return openFiles([file]); }
+async function openEntry(entry) {
+  let { file } = entry;
+  showLoading('Opening ' + entry.label);
+  const staged = new Map();
+  let arc = null;
+  try {
+    let kind = entry.kind || await detectKind(file);
+    if (entry.inner) { // an export ZIP stored inside another ZIP
+      setNote('Unpacking ' + baseName(entry.inner)); setProgress(-1);
+      const outer = await openArchive(file);
+      const blob = await outer.extract(entry.inner);
+      if (outer.close) outer.close();
+      file = new File([blob], baseName(entry.inner), { type: 'application/zip' }); kind = 'zip';
+    }
+    let blob = file, hint = entry.label || hintFrom(file.name), chatPath = null;
     if (kind === 'zip') {
       setNote('Reading ZIP archive · ' + fmtSize(file.size)); setProgress(-1);
       arc = await openArchive(file);
       const txts = arc.names.filter(n => /\.txt$/i.test(n)).sort((a, b) => a.split('/').length - b.split('/').length);
-      chatPath = txts.find(n => baseName(n) === '_chat.txt') || txts.find(n => /^WhatsApp Chat/i.test(baseName(n))) || txts[0];
+      if (entry.discover) {
+        const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
+        if (chats.length > 1 || (inner.length && !chats.length)) {
+          const lib = chats.map(c => ({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name }))
+            .concat(inner.map(z => ({ file, kind, inner: z, label: hintFrom(z) || baseName(z) })));
+          if (!chats.length) { if (arc.close) arc.close(); arc = null; const ok = await openEntry(lib[0]); if (ok) { S.found = lib; S.foundIdx = 0; } return ok; }
+          S.found = lib; S.foundIdx = 0; entry.path = chats[0]; entry.label = lib[0].label;
+        }
+      }
+      chatPath = entry.path || txts.find(n => baseName(n) === '_chat.txt') || txts.find(n => /^WhatsApp Chat/i.test(baseName(n))) || txts[0];
       if (!chatPath) throw new Error("This ZIP doesn't contain a chat text file. Look for _chat.txt or 'WhatsApp Chat with ….txt' inside it.");
       blob = await arc.extract(chatPath);
-      hint = hint || hintFrom(chatPath);
-      const list = arc.names.filter(n => n !== chatPath);
+      hint = hintFrom(chatPath) || hint;
+      // With several chats in one ZIP, only take the media stored next to this chat's text file.
+      const dir = chatPath.includes('/') ? chatPath.slice(0, chatPath.lastIndexOf('/') + 1) : '';
+      const list = arc.names.filter(n => n !== chatPath && !isChatTxt(n) && !/\.zip$/i.test(n) && (!entry.path || (n.startsWith(dir) && !n.slice(dir.length).includes('/'))));
       let next = 0, done = 0, failed = 0;
       setProgress(0); setNote(list.length ? 'Extracting media · 0 of ' + nf(list.length) : 'No media in this ZIP');
       const work = async () => {
@@ -58,15 +113,29 @@ async function openFile(file) {
     if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
     // Success: swap in the new media (revoking the previous chat's URLs) and show the chat.
     Media.adopt(staged);
-    S.source = { blob, name: file.name, size: file.size, hint, sample: false, zip: kind === 'zip' };
+    S.source = { blob, name: entry.path ? file.name + ' › ' + entry.label : file.name, size: file.size, hint, sample: false, zip: kind === 'zip' };
     S.order = 'auto'; $('orderSel').value = 'auto';
     applyResult(res, false);
     if (S.res.participants.length > 1) openMeModal();
+    return true;
   } catch (e) {
     Media.discard(staged);
     toast(e && e.message ? e.message : 'Could not read this file.');
-  } finally { $('loading').hidden = true; }
+    return false;
+  } finally { if (arc && arc.close) arc.close(); $('loading').hidden = true; }
 }
+function renderLibrary() {
+  const lib = S.library || [], sec = $('chatsSec');
+  sec.hidden = lib.length < 2;
+  if (lib.length < 2) return;
+  $('chatsCount').textContent = nf(lib.length);
+  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b>' + esc(c.label) + '</b><small>' + esc(c.inner ? 'ZIP inside ' + c.file.name : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
+}
+$('chatList').addEventListener('click', async e => {
+  const b = e.target.closest('.chatrow'); if (!b) return;
+  const k = +b.dataset.k; if (k === S.libIdx) { if (isNarrow()) closeDrawer(); return; }
+  if (await openEntry(S.library[k])) { S.libIdx = k; renderLibrary(); }
+});
 async function parseAndShow(keepMe) {
   const res = await runParse(S.source.blob, { order: S.order }, setProgress);
   if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
@@ -80,7 +149,29 @@ function guessMe(res, hint) {
   if (names.length === 1) return null;
   return names[0] || null;
 }
+/* Reactions: WhatsApp's own exports leave them out, but some exports and tools write them as
+   messages like 'Reacted ❤️ to "message text"'. Those are folded onto the message they react to. */
+const RE_REACT = /^(?:reacted|reaction)\s*:?\s*(\S{1,16}?)\s+to\s+["“'‘](.+?)["”'’]?\s*$/i;
+const RE_REACT_SYS = /^(.+?)\s+reacted\s+(\S{1,16}?)\s+to\s+["“'‘](.+?)["”'’]?\s*$/i;
+function foldReactions(msgs) {
+  const out = [];
+  for (const m of msgs) {
+    let by = null, emoji = null, snip = null, r;
+    if (!m.isSystem && m.kind === 'text' && (r = RE_REACT.exec(m.message))) { by = m.sender; emoji = r[1]; snip = r[2]; }
+    else if (m.isSystem && (r = RE_REACT_SYS.exec(m.message))) { by = r[1]; emoji = r[2]; snip = r[3]; }
+    if (emoji && /\p{Extended_Pictographic}/u.test(emoji)) {
+      const key = snip.replace(/(…|\.\.\.)\s*$/, '').trim().toLowerCase();
+      let target = null;
+      for (let k = out.length - 1, n = 0; key && k >= 0 && n < 3000; k--, n++) if (!out[k].isSystem && out[k].message.toLowerCase().startsWith(key)) { target = out[k]; break; }
+      if (target) { (target.reactions || (target.reactions = [])).push({ emoji, by }); continue; }
+    }
+    out.push(m);
+  }
+  return out;
+}
 function applyResult(res, keepMe) {
+  if (!res.folded) { res.messages = foldReactions(res.messages); res.folded = true; }
+  if (!keepMe) { S.starred = new Set(); S.filter = { from: '', to: '', sender: '' }; }
   S.res = res; S.msgs = res.messages; S.lc = null; S.stats = null;
   linkMedia();
   const names = res.participants.map(p => p.name);
@@ -144,11 +235,22 @@ function setMe(name, silent) {
   S.title = computeTitle();
   if (!silent) { buildItems(); VL.items = S.items; VL.refresh(); renderChrome(); }
 }
+const filterOn = () => !!(S.filter && (S.filter.from || S.filter.to || S.filter.sender));
+function passes(m) {
+  const f = S.filter;
+  if (!f) return true;
+  if (f.from && m.dateKey < f.from) return false;
+  if (f.to && m.dateKey > f.to) return false;
+  if (f.sender && (m.isSystem || m.sender !== f.sender)) return false;
+  return true;
+}
 function buildItems() {
-  const msgs = S.msgs, items = [], m2i = new Int32Array(msgs.length), dIdx = [];
-  let prevKey = null, prev = null, curDate = -1;
+  const msgs = S.msgs, items = [], m2i = new Int32Array(msgs.length).fill(-1), dIdx = [];
+  let prevKey = null, prev = null, curDate = -1, shown = 0;
   for (let i = 0; i < msgs.length; i++) {
     const m = msgs[i];
+    if (!passes(m)) continue;
+    if (!m.isSystem) shown++;
     if (m.dateKey !== prevKey) { curDate = items.length; items.push({ type: 'date', dateKey: m.dateKey }); dIdx.push(curDate); prevKey = m.dateKey; prev = null; }
     const first = m.isSystem || !prev || prev.isSystem || prev.sender !== m.sender;
     const it = { type: m.isSystem ? 'sys' : 'msg', m, i, first };
@@ -159,7 +261,8 @@ function buildItems() {
     }
     m2i[i] = items.length; items.push(it); dIdx.push(curDate); prev = m;
   }
-  S.items = items; S.m2i = m2i; S.dateIdx = Int32Array.from(dIdx);
+  S.items = items; S.m2i = m2i; S.dateIdx = Int32Array.from(dIdx); S.shown = shown;
+  renderFilterBar();
 }
 
 /* ---------- Chrome: header, sidebar ---------- */
@@ -198,8 +301,74 @@ function renderChrome() {
     '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><div style="min-width:0"><div class="nm">' + esc(p.name) + (p.name === S.me ? '<em>You</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
     (pN > 80 ? '<div class="res-more">and ' + nf(pN - 80) + ' more</div>' : '');
   renderMediaSummary();
+  renderFilterUI(); renderStars();
   document.title = S.source.sample ? 'Offline Chat Viewer' : S.title + ' · Chat Viewer';
 }
+
+/* ---------- Filters: date range and sender ---------- */
+function renderFilterUI() {
+  const f = S.filter || (S.filter = { from: '', to: '', sender: '' }), first = S.msgs[0].dateKey, last = S.msgs[S.msgs.length - 1].dateKey;
+  for (const id of ['fFrom', 'fTo']) { $(id).min = first; $(id).max = last; }
+  $('fFrom').value = f.from; $('fTo').value = f.to;
+  $('fSender').innerHTML = '<option value="">Everyone</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? p.name + ' (you)' : p.name) + '</option>').join('');
+  $('fSender').value = f.sender;
+}
+function renderFilterBar() {
+  const on = filterOn(), f = S.filter || {};
+  $('filterbar').hidden = !on; $('fClear').hidden = !on;
+  if (!on) return;
+  const parts = [];
+  if (f.sender) parts.push('from ' + f.sender);
+  if (f.from && f.to) parts.push(shortFmt.format(dkToT(f.from)) + ' – ' + shortFmt.format(dkToT(f.to)));
+  else if (f.from) parts.push('since ' + shortFmt.format(dkToT(f.from)));
+  else if (f.to) parts.push('until ' + shortFmt.format(dkToT(f.to)));
+  $('fText').textContent = S.shown ? 'Showing ' + nf(S.shown) + ' of ' + nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length) + ' messages · ' + parts.join(' · ') : 'No messages ' + parts.join(' · ') + '.';
+}
+function applyFilter() {
+  let from = $('fFrom').value, to = $('fTo').value;
+  if (from && to && from > to) { [from, to] = [to, from]; $('fFrom').value = from; $('fTo').value = to; }
+  S.filter = { from, to, sender: $('fSender').value };
+  buildItems(); VL.set(S.items, { i: 0, off: 0 });
+  if (S.q && S.q.trim()) runSearch(S.q); else updateCounts();
+}
+function clearFilters() { S.filter = { from: '', to: '', sender: '' }; renderFilterUI(); applyFilter(); }
+for (const id of ['fFrom', 'fTo', 'fSender']) $(id).addEventListener('change', applyFilter);
+$('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
+
+/* ---------- Starred messages (this session only; nothing is saved) ---------- */
+function toggleStar(i) {
+  if (!S.starred) S.starred = new Set();
+  if (S.starred.has(i)) S.starred.delete(i); else S.starred.add(i);
+  const k = S.m2i[i], old = VL.nodes.get(k);
+  if (old) { const el = makeRow(S.items[k], k); el.dataset.i = k; el.style.transform = old.style.transform; old.replaceWith(el); VL.nodes.set(k, el); VL.remeasure(k); }
+  renderStars();
+  toast(S.starred.has(i) ? 'Message starred' : 'Star removed');
+}
+function msgSnippet(m) {
+  if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
+  const a = m.attachments[0];
+  return a ? (TYPE_LABEL[a.type] || 'File') + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? 'Poll: ' + m.extra.q : '';
+}
+function renderStars() {
+  const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;
+  $('starBadge').hidden = !n; $('starBadge').textContent = n > 99 ? '99+' : n;
+  $('starBtn').setAttribute('aria-label', 'Starred messages' + (n ? ' (' + n + ')' : ''));
+  $('starTitle').textContent = 'Starred messages' + (n ? ' (' + n + ')' : '');
+  $('starList').innerHTML = n ? list.map(i => {
+    const m = S.msgs[i];
+    return '<button class="res" data-i="' + i + '"><span class="rh"><b>' + esc(m.isOutgoing ? 'You' : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + esc(msgSnippet(m)) + '</span></button>';
+  }).join('') : '<p class="star-empty">' + ICON.star + '<span>No starred messages yet. Hover over a message (or tap it on a phone) and press the star to keep it here while this chat is open.</span></p>';
+}
+function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
+function closeStars() { $('starPanel').hidden = true; document.body.classList.remove('stars-open'); }
+function jumpToMsg(i) {
+  if (S.m2i[i] < 0) clearFilters();
+  VL.clear(); VL.scrollTo(S.m2i[i], 'center');
+  const el = VL.nodes.get(S.m2i[i]); if (el) el.classList.add('flash');
+}
+$('starBtn').onclick = () => { if ($('starPanel').hidden) openStars(); else closeStars(); };
+$('starClose').onclick = closeStars;
+$('starList').addEventListener('click', e => { const b = e.target.closest('.res'); if (!b) return; jumpToMsg(+b.dataset.i); if (isNarrow()) closeStars(); });
 
 /* =====================================================================
    Search
@@ -216,7 +385,7 @@ function runSearch(q) {
   S.matches = []; S.matchSet = new Set(); S.cur = -1; S.re = null;
   if (ql) {
     if (!S.lc) S.lc = S.msgs.map(m => (m.message + (m.sender ? '\u0002' + m.sender : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')).toLowerCase());
-    for (let i = 0; i < S.lc.length; i++) if (S.lc[i].includes(ql)) S.matches.push(i);
+    for (let i = 0; i < S.lc.length; i++) if (S.m2i[i] >= 0 && S.lc[i].includes(ql)) S.matches.push(i);
     S.matchSet = new Set(S.matches);
     const qe = esc(q.trim()).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     S.re = new RegExp('(' + qe + ')|&[#a-zA-Z0-9]+;', 'gi');
@@ -368,8 +537,9 @@ $('orderSel').onchange = async e => {
   try { await parseAndShow(true); } catch (err) { toast(err.message); } finally { $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
-  let k = S.msgs.findIndex(m => m.dateKey >= dk);
-  if (k < 0) k = S.msgs.length - 1;
+  let k = S.msgs.findIndex((m, i) => m.dateKey >= dk && S.m2i[i] >= 0);
+  if (k < 0) { for (k = S.msgs.length - 1; k > 0 && S.m2i[k] < 0; k--); }
+  if (S.m2i[k] < 0) return;
   const it = S.m2i[k] - (S.items[S.m2i[k] - 1] && S.items[S.m2i[k] - 1].type === 'date' ? 1 : 0);
   VL.scrollTo(it);
 }
@@ -415,13 +585,13 @@ $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
 const fileInput = $('file');
 const pick = () => fileInput.click();
 $('openBtn').onclick = $('sbOpen').onclick = $('cardOpen').onclick = $('sampleOpen').onclick = pick;
-fileInput.onchange = () => { const f = fileInput.files[0]; fileInput.value = ''; openFile(f); };
+fileInput.onchange = () => { const f = [...fileInput.files]; fileInput.value = ''; openFiles(f); };
 let dragDepth = 0;
 const hasFiles = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
 window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth++; $('drop').hidden = false; });
 window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
 window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $('drop').hidden = true; });
-window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; $('drop').hidden = true; openFile(e.dataTransfer.files[0]); });
+window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; $('drop').hidden = true; openFiles(e.dataTransfer.files); });
 
 /* ---------- Keyboard ---------- */
 document.addEventListener('keydown', e => {
@@ -439,11 +609,15 @@ document.addEventListener('keydown', e => {
     else if (e.key === '+' || e.key === '=') zTo(Z.s * 1.5, undefined, undefined, true);
     else if (e.key === '-') zTo(Z.s / 1.5, undefined, undefined, true);
     else if (e.key === '0') zTo(1, undefined, undefined, true);
+    else if (e.key === 'r' || e.key === 'R') zRotate();
     return;
   }
+  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+  if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     for (const id of ['vcModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
+    if (!$('starPanel').hidden) { closeStars(); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
   }
 });
@@ -461,6 +635,7 @@ $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('p
 $('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
 $('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
 $('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
+$('starBtn').insertAdjacentHTML('afterbegin', ICON.star); $('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;
 $('lbClose').innerHTML = ICON.close; $('lbDl').innerHTML = ICON.download; $('lbPrev').innerHTML = ICON.back; $('lbNext').innerHTML = ICON.next; $('lbIn').innerHTML = ICON.plus; $('lbOut').innerHTML = ICON.minus; $('lbFit').innerHTML = ICON.fit;
 
 /* =====================================================================

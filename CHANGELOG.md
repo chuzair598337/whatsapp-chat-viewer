@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Several chats at once:** pick or drop several exports together, or open a ZIP that holds more than one chat (in folders, or as nested chat ZIPs). A "Chats in these files" list in the sidebar switches between them, and each chat only sees its own media.
+- **Starred messages:** star any message (hover on desktop, tap the bubble on a phone). Starred messages show a star by the time, and a panel in the header lists them; click one to jump to it. Stars are kept only while the chat is open and are never saved.
+- **Filters:** a date range (From and To) and a sender filter in the sidebar. A bar above the chat says how many messages are shown and clears the filters in one click. Search and jump-to-date only land on visible messages.
+- **Reactions:** when an export contains `reacted 👍 to "…"` lines, they become a WhatsApp-style reaction pill under the message they refer to, with a count and who reacted. Normal WhatsApp exports don't include reactions.
+- **Group avatars:** each group member's run of messages starts with an avatar showing their initials, in the same colour as their name.
+- **Photo viewer:** rotate photos 90° with the new button or the `R` key; zoom and panning still work while rotated.
+- **Keyboard:** `/` jumps to search. `Esc` also closes the starred panel.
+- **Faster opening:** ZIP files are unzipped in a background worker, so the page stays responsive. Pages opened straight from disk use the main thread, as before.
+- **Project files:** added `todo.md` (work list by priority, with what existed and what's new), `deferred.md` (what's out of scope and why), `PROJECT_RULES.md`, and agent guides in `.claude/skills/`.
+
 ## 1.2.0 (2026-10-05)
 
 - **Events:** WhatsApp exports an event as an empty `Name:` line, without any event details.

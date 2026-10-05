@@ -50,6 +50,9 @@ const ICON = {
   mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
   link: ic('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
   check: ic('<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>'),
+  star: ic('<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>'),
+  starFill: '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/></svg>',
+  rotate: ic('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4.5V11h-6.5"/>'),
   event: ic('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h3"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
@@ -226,7 +229,7 @@ function estimate(it, W) {
   if (it.type === 'date') return 44;
   const m = it.m;
   if (it.type === 'sys') return 16 + 24 + Math.floor(m.message.length * 6.6 / Math.min(560, W * 0.9)) * 18;
-  let h = (it.first ? 10 : 2) + 14;
+  let h = (it.first ? 10 : 2) + 14 + (m.reactions && m.reactions.length ? 16 : 0);
   if (it.showName) h += 19;
   if (m.kind === 'media') {
     const a = m.attachments[0], w2 = Math.min(330, bw);
@@ -694,10 +697,11 @@ function makeRow(it, idx) {
     el.innerHTML = '<span class="pill' + (enc ? ' enc' : '') + '">' + (enc ? ICON.lock : '') + hl(esc(m.message), it.i) + '</span>';
     return el;
   }
-  el.className = 'row ' + (m.isOutgoing ? 'out' : 'in') + (it.first ? ' first' : '');
+  const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
+  el.className = 'row ' + (m.isOutgoing ? 'out' : 'in') + (it.first ? ' first' : '') + (grp ? ' grp' : '') + (reacts ? ' hasr' : '');
   let body = '';
   if (it.showName) body += '<div class="name nc' + colorIdx(m.sender) + '">' + hl(esc(m.sender), it.i) + '</div>';
-  const metaInner = (m.edited ? '<span>Edited</span>' : '') + '<span>' + m.formattedTime + '</span>';
+  const metaInner = (starred ? '<span class="stard" title="Starred">' + ICON.starFill + '</span>' : '') + (m.edited ? '<span class="edtag">Edited</span>' : '') + '<span>' + m.formattedTime + '</span>';
   const space = '<span class="mspace' + (m.edited ? ' e' : '') + '"></span>';
   let tailText = true, visual = false, overlay = false, stk = false;
   switch (m.kind) {
@@ -737,7 +741,16 @@ function makeRow(it, idx) {
     else body += '<div class="mline"></div>';
   }
   if (stk) el.className += ' stk';
-  el.innerHTML = '<div class="bubble' + (visual ? ' mb' : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span></div>';
+  const starBtn = '<button class="starbtn" data-star="' + it.i + '" aria-pressed="' + starred + '" aria-label="' + (starred ? 'Unstar message' : 'Star message') + '" title="' + (starred ? 'Unstar' : 'Star') + '">' + ICON.star + '</button>';
+  let rx = '';
+  if (reacts) {
+    const g = new Map();
+    for (const r of m.reactions) g.set(r.emoji, (g.get(r.emoji) || []).concat(r.by === S.me ? 'You' : r.by || ''));
+    const tip = [...g].map(([e, who]) => e + ' ' + who.join(', ')).join('; ');
+    rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="Reactions: ' + esc(tip) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
+  }
+  const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
+  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   return el;
@@ -858,7 +871,15 @@ layer.addEventListener('click', e => {
   const pd = t.closest('[data-pdf]');
   if (pd) { const w = pd.closest('.mdocw'); openPdf(pd.dataset.pdf, w && w.querySelector('.mdoc b') ? w.querySelector('.mdoc b').textContent : ''); return; }
   const vc = t.closest('[data-vcard]');
-  if (vc) openContact(vc.dataset.vcard);
+  if (vc) { openContact(vc.dataset.vcard); return; }
+  const sb = t.closest('[data-star]');
+  if (sb) { toggleStar(+sb.dataset.star); return; }
+  // Phones have no hover: tapping a bubble's plain area reveals its star button.
+  if (matchMedia('(hover: none)').matches) {
+    const row = t.closest('.row'), on = row && !t.closest('a,button,input,video,img,audio') && !row.classList.contains('tapped');
+    layer.querySelectorAll('.row.tapped').forEach(r => r.classList.remove('tapped'));
+    if (on && row.querySelector('.starbtn')) row.classList.add('tapped');
+  }
 });
 layer.addEventListener('input', e => {
   const vs = e.target.closest('.vseek');
@@ -918,16 +939,19 @@ $('lbClose').onclick = () => closeLightbox();
 $('lbPrev').onclick = () => lbStep(-1);
 $('lbNext').onclick = () => lbStep(1);
 const stage = $('lbStage'), lbImg = $('lbImg');
-const Z = { s: 1, x: 0, y: 0 };
+const Z = { s: 1, x: 0, y: 0, r: 0 };
+// Rotating by 90° swaps the photo's sides, so it is scaled to still fit the stage.
+const zFit = () => { if (!(Z.r % 2) || !lbImg.offsetWidth) return 1; const aw = stage.clientWidth - (stage.clientWidth > 640 ? 140 : 0), ah = stage.clientHeight - 16; return Math.min(1, aw / lbImg.offsetHeight, ah / lbImg.offsetWidth); };
 function zApply(animate) {
   stage.classList.toggle('anim', !!animate);
-  lbImg.style.transform = 'translate(' + Z.x + 'px,' + Z.y + 'px) scale(' + Z.s + ')';
+  lbImg.style.transform = 'translate(' + Z.x + 'px,' + Z.y + 'px) rotate(' + Z.r * 90 + 'deg) scale(' + Z.s * zFit() + ')';
   $('lbZoom').textContent = Math.round(Z.s * 100) + '%';
   stage.classList.toggle('zoomed', Z.s > 1.001);
   $('lbOut').disabled = Z.s <= 1.001; $('lbFit').disabled = Z.s <= 1.001; $('lbIn').disabled = Z.s >= 5.999;
 }
 function zClamp() {
-  const mx = Math.max(0, (lbImg.offsetWidth * Z.s - stage.clientWidth) / 2), my = Math.max(0, (lbImg.offsetHeight * Z.s - stage.clientHeight) / 2);
+  const f = Z.s * zFit(), w = (Z.r % 2 ? lbImg.offsetHeight : lbImg.offsetWidth) * f, h = (Z.r % 2 ? lbImg.offsetWidth : lbImg.offsetHeight) * f;
+  const mx = Math.max(0, (w - stage.clientWidth) / 2), my = Math.max(0, (h - stage.clientHeight) / 2);
   Z.x = Math.max(-mx, Math.min(mx, Z.x)); Z.y = Math.max(-my, Math.min(my, Z.y));
 }
 function zTo(s, cx, cy, animate) { // cx, cy: client point that stays put
@@ -939,7 +963,9 @@ function zTo(s, cx, cy, animate) { // cx, cy: client point that stays put
   if (s <= 1.001) { Z.s = 1; Z.x = 0; Z.y = 0; }
   zClamp(); zApply(animate);
 }
-function zReset() { Z.s = 1; Z.x = 0; Z.y = 0; zApply(false); }
+function zReset() { Z.s = 1; Z.x = 0; Z.y = 0; Z.r = 0; zApply(false); }
+function zRotate() { Z.r = (Z.r + 1) % 4; Z.x = 0; Z.y = 0; zClamp(); zApply(true); }
+$('lbRot').onclick = zRotate;
 $('lbIn').onclick = () => zTo(Z.s * 1.5, undefined, undefined, true);
 $('lbOut').onclick = () => zTo(Z.s / 1.5, undefined, undefined, true);
 $('lbFit').onclick = () => zTo(1, undefined, undefined, true);

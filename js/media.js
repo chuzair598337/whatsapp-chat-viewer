@@ -78,7 +78,42 @@ const Media = {
 
 /* ZIP reading: JSZip (bundled above) first; the native streaming reader is the fallback for
    archives JSZip can't hold in memory or browsers where it fails. */
+/* Unzipping runs in a worker so the page stays responsive on big exports. The worker is built from an
+   inline Blob URL and loads the bundled JSZip with importScripts. Browsers block that for pages opened
+   from disk (file://), so there, or if the worker fails for any reason, JSZip runs on the main thread. */
+function zipWorkerSrc() {
+  return 'self.onmessage = async e => { const d = e.data; try {' +
+    ' if (d.op === "init") { importScripts(d.lib); self.reply = (id, v) => postMessage({ id, v }); return postMessage({ id: d.id, v: true }); }' +
+    ' if (d.op === "open") { self.zip = await JSZip.loadAsync(d.file); const names = []; self.zip.forEach((p, f) => { if (!f.dir && !p.startsWith("__MACOSX/")) names.push(p); }); return postMessage({ id: d.id, v: names }); }' +
+    ' if (d.op === "get") { const f = self.zip.file(d.path); if (!f) throw new Error("File not found in ZIP: " + d.path); return postMessage({ id: d.id, v: await f.async("blob") }); }' +
+    ' } catch (err) { postMessage({ id: d.id, err: String(err && err.message || err) }); } };';
+}
+async function openArchiveInWorker(file) {
+  const tag = [...document.scripts].find(s => /jszip(\.min)?\.js(\?|$)/.test(s.src));
+  if (!tag || location.protocol === 'file:' || typeof Worker === 'undefined') return null;
+  let url, w;
+  try {
+    url = URL.createObjectURL(new Blob([zipWorkerSrc()], { type: 'text/javascript' }));
+    w = new Worker(url);
+  } catch (e) { if (url) URL.revokeObjectURL(url); return null; }
+  let seq = 0, dead = null;
+  const waiting = new Map();
+  const fail = err => { dead = err; for (const r of waiting.values()) r.no(err); waiting.clear(); };
+  w.onmessage = e => { const r = waiting.get(e.data.id); if (!r) return; waiting.delete(e.data.id); if (e.data.err) r.no(new Error(e.data.err)); else r.ok(e.data.v); };
+  w.onerror = e => { e.preventDefault(); fail(new Error(e.message || 'The unzip worker stopped.')); };
+  const call = (op, extra) => dead ? Promise.reject(dead) : new Promise((ok, no) => { const id = ++seq; waiting.set(id, { ok, no }); w.postMessage(Object.assign({ op, id }, extra)); });
+  const close = () => { w.terminate(); URL.revokeObjectURL(url); fail(new Error('closed')); };
+  try { await call('init', { lib: new URL(tag.getAttribute('src'), location.href).href }); }
+  catch (e) { close(); return null; } // worker can't load JSZip: use it on the main thread instead
+  try { const names = await call('open', { file }); return { names, extract: path => call('get', { path }), close, worker: true }; }
+  catch (e) { close(); throw e; } // JSZip itself can't read the archive
+}
+
 async function openArchive(file) {
+  if (file.size < 1.5e9) {
+    try { const a = await openArchiveInWorker(file); if (a) return a; }
+    catch (e) { console.warn('JSZip could not read this archive; using the built-in reader.', e); return nativeArchive(file); }
+  }
   if (window.JSZip && file.size < 1.5e9) {
     try {
       const zip = await JSZip.loadAsync(file);
@@ -87,6 +122,9 @@ async function openArchive(file) {
       return { names, extract: p => zip.file(p).async('blob') };
     } catch (e) { console.warn('JSZip could not read this archive; using the built-in reader.', e); }
   }
+  return nativeArchive(file);
+}
+async function nativeArchive(file) {
   const z = await readZip(file);
   return { names: [...z.entries.keys()], extract: p => z.extract(p) };
 }

@@ -31,11 +31,15 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 
 ## 2. File ingestion: .txt and .zip
 
-- **Ways to open:** drag and drop anywhere on the page, the open button, or the file picker on the welcome screen.
+- **Ways to open:** drag and drop anywhere on the page, the open button, or the file picker on the welcome screen. Several files can be picked or dropped at once.
 - **Type detection:** the first bytes are checked (`PK\x03\x04` means ZIP), then the extension and MIME type, so a renamed file still opens correctly.
 - **Plain text (.txt):** the file is read in 2 MB chunks through a streaming `TextDecoder`. Media references in the text appear as "not included" cards.
 - **ZIP archives:** opened with JSZip. The viewer finds `_chat.txt` (iPhone) or the main `WhatsApp Chat with ….txt` (Android), and otherwise falls back to the largest `.txt` file.
   - Every other file becomes a `Blob` with the right MIME type, stored in a map keyed by file name.
+- **Unzipping in a worker:** JSZip runs in a background worker built from an inline Blob URL, so the page stays responsive while a large export opens. Browsers block this for a page opened from disk (`file://`), so there JSZip runs on the main thread instead.
+- **Several chats:** when the picked files hold more than one chat, a **Chats in these files** list appears in the sidebar. Click a chat to switch to it.
+  - Sources: several `.txt` or `.zip` files picked together, a ZIP with one chat per folder, or a ZIP that contains other `WhatsApp Chat ….zip` files.
+  - Each chat only sees the media from its own folder, so files with the same name in two chats don't get mixed up.
 - **Large archive fallback:** archives over 1.5 GB, or any archive JSZip can't read, go through a built-in reader that reads the ZIP's central directory and inflates entries with the browser's native `DecompressionStream('deflate-raw')`.
 - **Progress:** a loading card shows a progress bar for reading, unzipping and parsing.
 
@@ -56,7 +60,8 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
   - System lines (group created, member added, security code changed, encryption notice).
   - Calls.
   - Events. WhatsApp exports an event as the sender's name with nothing after it (`[date, time] Name:`), without its title, time, location or replies. The viewer shows a muted "Message not included in the export" card in its place, instead of treating the line as a system notice.
-  - Deleted messages and edited messages.
+  - Deleted messages ("This message was deleted") and edited messages (an *Edited* tag by the time).
+  - Reactions. Normal exports don't include them, but `reacted 👍 to "…"` lines, where present, become a reaction pill under the message they quote, with a count and who reacted. A line that matches no earlier message stays as text.
   - Media attachments and "media omitted" placeholders.
   - Documents keep the title and page count that iPhone writes before the file (`Report.pdf • 2 pages <attached: …>`) and that Android writes before `(file attached)`.
 - **Wall-clock times:** times are shown exactly as they appear in the export, whatever the viewer's time zone.
@@ -66,7 +71,8 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 - **Desktop (over 1024 px):** a two-pane layout. The sidebar shows the chat profile, a summary, the search box with results, media counts and settings. The chat pane fills the rest.
 - **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button, and search becomes a strip under the header.
 - **Phone polish:** no horizontal scrolling at phone widths, and safe-area insets for notched phones.
-- **Accessibility:** keyboard focus is managed in modals and returned afterwards, buttons have labels, and animations are switched off for `prefers-reduced-motion`.
+- **Group chats:** each sender's name has its own colour, and each run of their messages starts with an avatar showing their initials in that colour.
+- **Accessibility:** keyboard focus is managed in modals and returned afterwards, every button and field has an accessible name, toggles such as the star expose `aria-pressed`, and animations are switched off for `prefers-reduced-motion`.
 
 ## 5. WhatsApp formatting
 
@@ -118,6 +124,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 **Full-screen photo viewer**
 - Zoom with the buttons, the mouse wheel, a double-click, pinch, or the `+`, `-` and `0` keys.
 - Drag to pan.
+- Rotate 90° with the rotate button or the `R` key. Zoom and panning still work on a rotated photo, which is scaled to fit the screen.
 - Fit to screen, download, and swipe or use the arrow keys to move between photos.
 - `Esc` closes it.
 
@@ -131,11 +138,14 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
 - **Results list:** each result shows the sender, date and a snippet, and clicking one jumps to that message.
 - **Sticky date header:** shows the current day while you scroll.
+- **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
+- **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. The star button in the header opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
 - **Jump to date:** a date picker in the sidebar, plus the busiest days listed in Statistics, take you straight to that day.
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
 - **Keyboard shortcuts:**
-  - `Ctrl/Cmd+F` opens search.
-  - `Esc` clears the search, then closes the open panel or drawer.
+  - `/` or `Ctrl/Cmd+F` opens search. `/` is ignored while you're typing in a field.
+  - `Esc` clears the search, then closes the open panel, starred list or drawer.
+  - In the photo viewer: `+`, `-`, `0`, `R`, arrow keys and `Esc`.
 
 ## 8. Statistics
 
@@ -167,7 +177,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/vendor/jszip.min.js` | JSZip 3.10.1 (MIT) |
 | `js/vendor/pdfjs/` | pdf.js 3.11.174 legacy build (Apache-2.0), loaded on demand |
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |
-| `js/media.js` | ZIP reading, the media map and blob-URL lifecycle, shared audio controller |
+| `js/media.js` | ZIP reading (worker, JSZip, native), the media map and blob-URL lifecycle, shared audio controller |
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
-| `js/app.js` | File opening, search, statistics, modals, theme, drawer and the sample chat |
+| `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer and the sample chat |
 | `css/styles.css` | All styles and theme tokens |

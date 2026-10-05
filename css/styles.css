@@ -464,3 +464,60 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 /* ---------- Stickers: WhatsApp size ---------- */
 .sticker { width: 190px; height: 190px; }
 @media (max-width: 600px) { .sticker { width: 150px; height: 150px; } }
+
+/* ---------- Chats found in the opened files ---------- */
+.chatlist { display: grid; margin: 0 -16px -14px; max-height: 260px; overflow: auto; }
+.chatrow { display: flex; align-items: center; gap: 12px; border: 0; border-top: 1px solid var(--line); background: transparent; padding: 9px 16px; text-align: left; cursor: pointer; min-width: 0; color: var(--ink); }
+.chatrow:hover { background: var(--panel-2); }
+.chatrow.cur { background: var(--panel-2); box-shadow: inset 3px 0 0 var(--accent); }
+.chatrow .av { width: 34px; height: 34px; font-size: 13px; }
+.chatrow span { min-width: 0; display: grid; }
+.chatrow b { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chatrow small { color: var(--ink-3); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#chatsCount { color: var(--ink-3); font-weight: 400; }
+
+/* ---------- Filters ---------- */
+.linkbtn { border: 0; background: transparent; color: var(--accent-ink); font: inherit; font-weight: 500; cursor: pointer; padding: 2px 4px; }
+.linkbtn:hover { text-decoration: underline; }
+.linkbtn[hidden] { display: none; }
+#filterSec .field select { width: 180px; }
+.fbar { justify-content: space-between; text-align: left; }
+.fbar #fText { min-width: 0; overflow-wrap: anywhere; }
+
+/* ---------- Stars ---------- */
+.starbtn { position: absolute; top: 2px; width: 28px; height: 28px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--panel); color: var(--ink-3); box-shadow: 0 1px 2px var(--shadow); cursor: pointer; opacity: 0; transition: opacity .12s; z-index: 2; }
+.starbtn svg { width: 16px; height: 16px; }
+.row.in .starbtn { right: -34px; }
+.row.out .starbtn { left: -34px; }
+@media (hover: hover) { .row:hover .starbtn { opacity: 1; } }
+.starbtn:focus-visible, .bubble:focus-within .starbtn { opacity: 1; }
+.starbtn[aria-pressed="true"] { color: #f5b301; }
+@media (hover: none) { .starbtn { pointer-events: none; } .row.tapped .starbtn { opacity: 1; pointer-events: auto; } }
+.stard { display: inline-flex; color: var(--ink-3); }
+.stard svg { width: 12px; height: 12px; }
+.meta.ov .stard { color: #fff; }
+.edtag { font-style: italic; }
+#starBtn { position: relative; }
+.sbadge { position: absolute; top: 4px; right: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 600; line-height: 16px; text-align: center; }
+.sbadge[hidden] { display: none; }
+.starpanel { position: fixed; top: 0; right: 0; bottom: 0; width: min(380px, 100%); background: var(--panel); border-left: 1px solid var(--line); box-shadow: -4px 0 18px rgba(0, 0, 0, .18); z-index: 60; display: flex; flex-direction: column; animation: slidein .18s ease; }
+.starpanel[hidden] { display: none; }
+.starpanel header { height: 59px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 16px; background: var(--header); }
+.starpanel h2 { flex: 1; margin: 0; font-size: 16px; font-weight: 500; color: var(--ink); }
+.starlist { overflow: auto; display: grid; align-content: start; }
+.star-empty { display: grid; justify-items: center; gap: 12px; padding: 40px 28px; text-align: center; color: var(--ink-3); font-size: 14px; margin: 0; }
+.star-empty svg { width: 40px; height: 40px; }
+@keyframes slidein { from { transform: translateX(30px); opacity: 0; } }
+
+/* ---------- Reactions ---------- */
+.row.hasr { padding-bottom: 16px; }
+.reacts { position: absolute; bottom: -15px; display: inline-flex; align-items: center; gap: 1px; padding: 1px 6px; height: 24px; border-radius: 12px; background: var(--in); box-shadow: 0 1px 2px var(--shadow), 0 0 0 1.5px var(--chat-bg); font-size: 14px; line-height: 1; z-index: 1; cursor: default; white-space: nowrap; }
+.row.in .reacts { left: 8px; }
+.row.out .reacts { right: 8px; }
+.reacts b { font-size: 11.5px; font-weight: 500; color: var(--ink-3); margin-left: 3px; }
+
+/* ---------- Group avatars ---------- */
+.row.grp { padding-left: 38px; }
+.rav { position: absolute; left: 0; width: 30px; height: 30px; font-size: 11.5px; }
+.row.grp.first .rav { top: 10px; }
+@media (max-width: 640px) { .row.grp { padding-left: 34px; } .rav { width: 28px; height: 28px; } }
