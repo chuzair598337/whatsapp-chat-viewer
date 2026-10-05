@@ -3,11 +3,13 @@
    Welcome screen and guided tour. Written without a tour library so the
    app keeps zero dependencies and stays offline.
 
-   - First visit: a welcome dialog offers the sample chat with a five-step
-     tour, or opening your own export.
+   - Every launch opens on the start screen (index.html #start, wired in
+     app.js). Its "Try the sample chat" loads the demo, and on the first
+     visit starts the five-step tour.
    - The only thing stored is the localStorage flag below, set when the
      tour is finished or skipped. It holds no chat data.
-   - The ? button in the header brings the welcome dialog back at any time.
+   - The ? button in the header opens a small dialog to take the tour again
+     or open your own chat. It closes on Esc, ✕ or a click outside.
    ===================================================================== */
 const TOUR_KEY = 'has_completed_walkthrough';
 
@@ -37,7 +39,7 @@ const Tour = {
         const i = S.msgs.findIndex(m => m.attachments.some(a => a.type === 'image' && a.url));
         if (i < 0 || S.m2i[i] < 0) return;
         Tour.mediaRow = S.m2i[i];
-        VL.scrollTo(Tour.mediaRow, 'center');
+        VL.scrollTo(Tour.mediaRow, innerWidth <= 640 ? undefined : 'center'); // phones: near the top, clear of the card
       },
       target: () => { const el = VL.nodes.get(Tour.mediaRow); return el ? el.querySelector('.bubble') : null; }
     },
@@ -48,7 +50,14 @@ const Tour = {
     }
   ],
 
-  boot() { if (store(TOUR_KEY) !== 'true') this.welcome(); },
+  boot() {
+    $('startDemoSub').textContent = store(TOUR_KEY) === 'true' ? 'A made-up group chat to look around in' : 'A made-up group chat with a short guided tour';
+  },
+  async fromStart() {
+    sampleReady = loadSample();
+    const ok = await sampleReady;
+    if (ok && store(TOUR_KEY) !== 'true') this.start();
+  },
   complete() { store(TOUR_KEY, 'true'); },
 
   /* ---------- Welcome dialog ---------- */
@@ -56,7 +65,7 @@ const Tour = {
     if (!this.active() && $('tourWelcome').hidden) this.prevFocus = document.activeElement;
     $('twNote').hidden = !(S.source && !S.source.sample);
     $('tourWelcome').hidden = false;
-    $('twDemo').focus();
+    $('twDemo').focus({ preventScroll: true });
   },
   closeWelcome(restore) {
     if ($('tourWelcome').hidden) return;
@@ -66,9 +75,8 @@ const Tour = {
   },
   async demo() {
     this.closeWelcome(false);
-    if (S.source && !S.source.sample) sampleReady = loadSample();
-    await sampleReady;
-    this.start();
+    if (!S.source || !S.source.sample || !sampleReady) sampleReady = loadSample();
+    if (await sampleReady) this.start();
   },
   own() { this.closeWelcome(false); pick(); },
   // A file was opened: the welcome dialog and the tour step aside.
@@ -82,6 +90,7 @@ const Tour = {
     if (!this.prevFocus) this.prevFocus = document.activeElement;
     $('tour').hidden = false;
     document.body.classList.add('touring');
+    if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
     this.go(0);
   },
   go(i) {
@@ -95,7 +104,7 @@ const Tour = {
     $('tourNext').textContent = last ? 'Finish' : 'Next';
     $('tourDots').innerHTML = this.steps.map((_, k) => '<i' + (k === this.i ? ' class="on"' : '') + '></i>').join('');
     // Let the virtual list render the scrolled-to row before measuring it.
-    requestAnimationFrame(() => requestAnimationFrame(() => { this.place(); $('tourNext').focus(); }));
+    requestAnimationFrame(() => requestAnimationFrame(() => { this.place(); $('tourNext').focus({ preventScroll: true }); }));
   },
   next() { if (this.i === this.steps.length - 1) this.end(true); else this.go(this.i + 1); },
   back() { if (this.i > 0) this.go(this.i - 1); },
@@ -115,19 +124,21 @@ const Tour = {
     const st = this.steps[this.i];
     let t = st.target();
     t = (Array.isArray(t) ? t : [t]).filter(Boolean);
-    const spot = $('tourSpot'), pop = $('tourPop'), vw = innerWidth, vh = innerHeight, pad = 6, gap = 12, m = 12;
+    // The visual viewport is what the reader actually sees (it excludes on-screen keyboards and app bars on phones).
+    const vv = window.visualViewport, vw = vv ? vv.width : innerWidth, vh = vv ? vv.height : innerHeight, vt = vv ? vv.offsetTop : 0;
+    const spot = $('tourSpot'), pop = $('tourPop'), pad = 6, gap = 12, m = 12;
     let r = null;
     for (const el of t) {
       const b = el.getBoundingClientRect();
       r = r ? { l: Math.min(r.l, b.left), t: Math.min(r.t, b.top), r: Math.max(r.r, b.right), b: Math.max(r.b, b.bottom) } : { l: b.left, t: b.top, r: b.right, b: b.bottom };
     }
-    if (r) { r = { l: Math.max(2, r.l - pad), t: Math.max(2, r.t - pad), r: Math.min(vw - 2, r.r + pad), b: Math.min(vh - 2, r.b + pad) }; }
+    if (r) { r = { l: Math.max(2, r.l - pad), t: Math.max(2, r.t - pad), r: Math.min(innerWidth - 2, r.r + pad), b: Math.min(innerHeight - 2, r.b + pad) }; }
     $('tour').classList.toggle('nospot', !r);
     if (r) Object.assign(spot.style, { left: r.l + 'px', top: r.t + 'px', width: (r.r - r.l) + 'px', height: (r.b - r.t) + 'px' });
     // Dim everything except a rounded hole over the target (even-odd fill).
     const k = 10, hole = r ? 'M' + (r.l + k) + ' ' + r.t + 'H' + (r.r - k) + 'Q' + r.r + ' ' + r.t + ' ' + r.r + ' ' + (r.t + k) + 'V' + (r.b - k) + 'Q' + r.r + ' ' + r.b + ' ' + (r.r - k) + ' ' + r.b +
       'H' + (r.l + k) + 'Q' + r.l + ' ' + r.b + ' ' + r.l + ' ' + (r.b - k) + 'V' + (r.t + k) + 'Q' + r.l + ' ' + r.t + ' ' + (r.l + k) + ' ' + r.t + 'Z' : '';
-    $('tourDimPath').setAttribute('d', 'M0 0H' + vw + 'V' + vh + 'H0Z' + hole);
+    $('tourDimPath').setAttribute('d', 'M0 0H' + innerWidth + 'V' + innerHeight + 'H0Z' + hole);
     // Popover: phones get a full-width card at the top or bottom, away from the spotlight.
     const pw = Math.min(360, vw - 2 * m);
     pop.style.width = pw + 'px';
@@ -135,9 +146,11 @@ const Tour = {
     let x, y;
     if (!r) { x = (vw - pw) / 2; y = (vh - ph) / 2; }
     else if (vw <= 640) {
+      // Phones: the card sits at the bottom of the screen, where it is easiest to reach and never
+      // under a browser or app bar at the top. It only moves up when the highlight is in the lower half.
       x = (vw - pw) / 2;
-      const below = vh - r.b, above = r.t;
-      y = below >= ph + gap + m ? r.b + gap : above >= ph + gap + m ? r.t - gap - ph : ((r.t + r.b) / 2 > vh / 2 ? m : vh - ph - m);
+      const low = (r.t + r.b) / 2 > vt + vh * 0.55 && r.b - r.t < vh * 0.5;
+      y = !low ? vt + vh - ph - m : Math.max(vt + 70, r.t - gap - ph);
     } else {
       const cx = (r.l + r.r) / 2;
       if (vh - r.b >= ph + gap + m) { y = r.b + gap; x = cx - pw / 2; }
@@ -146,7 +159,7 @@ const Tour = {
       else if (r.l >= pw + gap + m) { x = r.l - gap - pw; y = (r.t + r.b - ph) / 2; }
       else { x = cx - pw / 2; y = r.b - ph - 24; } // a big target (the timeline): sit inside it, near the bottom
     }
-    x = Math.max(m, Math.min(vw - pw - m, x)); y = Math.max(m, Math.min(vh - ph - m, y));
+    x = Math.max(m, Math.min(vw - pw - m, x)); y = Math.max(vt + m, Math.min(vt + vh - ph - m, y));
     pop.style.left = Math.round(x) + 'px'; pop.style.top = Math.round(y) + 'px';
   }
 };
@@ -168,6 +181,8 @@ $('tourNext').onclick = () => Tour.next();
 $('tourBack').onclick = () => Tour.back();
 $('tourSkip').onclick = () => Tour.end();
 window.addEventListener('resize', () => Tour.schedule());
+if (window.visualViewport) { visualViewport.addEventListener('resize', () => Tour.schedule()); visualViewport.addEventListener('scroll', () => Tour.schedule()); }
+$('startDemo').onclick = () => Tour.fromStart();
 $('scroller').addEventListener('scroll', () => Tour.schedule(), { passive: true });
 
 // Captured first, so the app's own shortcuts (/, Ctrl+F, Esc) stay quiet while the tour or welcome is up.

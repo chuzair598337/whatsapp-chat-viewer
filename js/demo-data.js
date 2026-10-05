@@ -45,6 +45,8 @@ const SAMPLE = [
   `[15/03/2026, 7:30:55${N}PM] Bilal Ahmed: ${L}<attached: 00000026-Trail-notes.pdf>`,
   `[15/03/2026, 7:31:05${N}PM] Bilal Ahmed: ${L}<attached: 00000027-Gear-checklist.txt>`,
   `[15/03/2026, 7:31:20${N}PM] Bilal Ahmed: Notes and timings for next time. Total *11.4 km*, 3h 52m moving`,
+  `[15/03/2026, 7:32:10${N}PM] Ayesha Khan: Trip report for anyone who missed it 📝 We started at 6:40 from the lower car park, a little later than planned because the main gate was full. The first hour through the pine forest was easy and cool, and we stopped at the spring for water. After the spring the trail gets *much steeper and rockier for about two kilometres*, so take it slow and keep your hands free. Omar spotted a family of monkeys near the second viewpoint (please don't feed them!). We reached the summit at 9:55, had tea and parathas, and the views over the valley were completely clear. Coming down took just under two hours. Next time we should start at 6:00 sharp, bring more snacks, and carry a light jacket because it gets windy at the top. Total cost per person was 1,200 for fuel and breakfast. Thanks everyone for a great morning, same crew next month? 🏔️`,
+  `[15/03/2026, 7:32:40${N}PM] Sara Malik: Packing list for next time:`, `1. Water, at least 2L`, `2. Snacks and dates`, `3. Light jacket`, `4. Sunscreen and a cap`, `5. First aid kit (Bilal has it)`, `6. Power bank`, `7. Trekking poles if you have them`, `8. Cash for parking`, `9. A small bag for rubbish`, `_Anything else?_`,
   `[15/03/2026, 7:33:02${N}PM] Weekend Hiking Crew: ${L}Sara Malik changed the group description`,
   `[16/03/2026, 9:02:44${N}AM] Ayesha Khan: ${L}Voice call, ${L}12 min`,
   `[16/03/2026, 9:15:10${N}AM] Ayesha Khan: Same time next month? 🗓️`,

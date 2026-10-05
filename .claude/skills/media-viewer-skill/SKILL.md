@@ -59,6 +59,7 @@ Never show a broken image or empty space. Never throw.
 
 ## Checks after a change
 
+- **Sample chat:** if the change is visible in the chat, add a line to the sample chat (`js/demo-data.js`) that shows it. See PROJECT_RULES.md, section 5.
 - **Both export types:** a ZIP with photos, video (headless Chromium needs VP9, not H.264), voice notes, stickers, PDFs and `.vcf` files; and the `.txt` of the same chat.
 - **Hostile files:**
   - a vCard with HTML or `javascript:` in its fields must render as text;

@@ -35,6 +35,7 @@ The chat never renders every message. `VL` in `js/viewer.js` keeps only the rows
 
 ## Checks after a change
 
+- **Sample chat:** if the change is visible in the chat, add a line to the sample chat (`js/demo-data.js`) that shows it. See PROJECT_RULES.md, section 5.
 - **60,000-message chat:**
   - scroll from top to bottom and back;
   - jump to dates;

@@ -25,16 +25,22 @@ async function detectKind(file) {
 }
 /* ---------- Opening files: one or more exports, or a ZIP holding several chats ----------
    Every chat found goes into S.library; the sidebar lists them when there is more than one. */
+/* Every load (files, a chat from the list, the sample) takes a ticket. A newer load makes older ones
+   stale: they stop at their next step, throw away what they staged, and never touch the screen. */
+let loadSeq = 0;
+const guard = my => { if (my !== loadSeq) throw new Error(SUPERSEDED); };
+const isStale = e => e && e.message === SUPERSEDED;
 const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || /^WhatsApp Chat.*\.txt$/i.test(baseName(n));
 async function openFiles(list) {
   if (typeof Tour !== 'undefined') Tour.dismiss();
   const files = [...(list || [])].filter(Boolean);
   if (!files.length) return;
   closeDrawer();
+  const my = ++loadSeq;
   if (files.length === 1) { // one file: open it straight away; a ZIP with several chats fills the library as it opens
     const entry = { file: files[0], label: hintFrom(files[0].name) || files[0].name.replace(/\.(txt|zip)$/i, ''), discover: true };
     S.found = null;
-    const ok = await openEntry(entry);
+    const ok = await openEntry(entry, my);
     if (ok) { S.library = S.found || [entry]; S.libIdx = S.foundIdx || 0; S.found = null; renderLibrary(); }
     return;
   }
@@ -43,10 +49,11 @@ async function openFiles(list) {
   try {
     for (const file of files) {
       const kind = await detectKind(file);
+      guard(my);
       if (kind !== 'zip') { lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.txt$/i, '') }); continue; }
       setNote('Looking for chats in ' + file.name); setProgress(-1);
       let arc = null;
-      try { arc = await openArchive(file); } catch (e) { lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name }); continue; }
+      try { arc = await openArchive(file); guard(my); } catch (e) { if (isStale(e)) throw e; lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name }); continue; }
       const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
       if (chats.length > 1 || (inner.length && !chats.length)) {
         for (const c of chats) lib.push({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name });
@@ -54,44 +61,49 @@ async function openFiles(list) {
       } else lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.zip$/i, '') });
       if (arc.close) arc.close();
     }
-  } catch (e) { toast(e && e.message ? e.message : 'Could not read these files.'); $('loading').hidden = true; return; }
+  } catch (e) { if (isStale(e)) return; toast(e && e.message ? e.message : 'Could not read these files.'); $('loading').hidden = true; return; }
   $('loading').hidden = true;
   if (!lib.length) return;
-  const ok = await openEntry(lib[0]);
+  const ok = await openEntry(lib[0], my);
   if (ok) { S.library = lib; S.libIdx = 0; renderLibrary(); }
 }
 async function openFile(file) { return openFiles([file]); }
-async function openEntry(entry) {
+async function openEntry(entry, my) {
+  if (my === undefined) my = ++loadSeq;
   let { file } = entry;
   showLoading('Opening ' + entry.label);
   const staged = new Map();
   let arc = null;
   try {
     let kind = entry.kind || await detectKind(file);
+    guard(my);
     if (entry.inner) { // an export ZIP stored inside another ZIP
       setNote('Unpacking ' + baseName(entry.inner)); setProgress(-1);
       const outer = await openArchive(file);
       const blob = await outer.extract(entry.inner);
       if (outer.close) outer.close();
+      guard(my);
       file = new File([blob], baseName(entry.inner), { type: 'application/zip' }); kind = 'zip';
     }
     let blob = file, hint = entry.label || hintFrom(file.name), chatPath = null;
     if (kind === 'zip') {
       setNote('Reading ZIP archive · ' + fmtSize(file.size)); setProgress(-1);
       arc = await openArchive(file);
+      guard(my);
       const txts = arc.names.filter(n => /\.txt$/i.test(n)).sort((a, b) => a.split('/').length - b.split('/').length);
       if (entry.discover) {
         const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
         if (chats.length > 1 || (inner.length && !chats.length)) {
           const lib = chats.map(c => ({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name }))
             .concat(inner.map(z => ({ file, kind, inner: z, label: hintFrom(z) || baseName(z) })));
-          if (!chats.length) { if (arc.close) arc.close(); arc = null; const ok = await openEntry(lib[0]); if (ok) { S.found = lib; S.foundIdx = 0; } return ok; }
+          if (!chats.length) { if (arc.close) arc.close(); arc = null; const ok = await openEntry(lib[0], my); if (ok) { S.found = lib; S.foundIdx = 0; } return ok; }
           S.found = lib; S.foundIdx = 0; entry.path = chats[0]; entry.label = lib[0].label;
         }
       }
       chatPath = entry.path || txts.find(n => baseName(n) === '_chat.txt') || txts.find(n => /^WhatsApp Chat/i.test(baseName(n))) || txts[0];
       if (!chatPath) throw new Error("This ZIP doesn't contain a chat text file. Look for _chat.txt or 'WhatsApp Chat with ….txt' inside it.");
       blob = await arc.extract(chatPath);
+      guard(my);
       hint = hintFrom(chatPath) || hint;
       // With several chats in one ZIP, only take the media stored next to this chat's text file.
       const dir = chatPath.includes('/') ? chatPath.slice(0, chatPath.lastIndexOf('/') + 1) : '';
@@ -99,7 +111,7 @@ async function openEntry(entry) {
       let next = 0, done = 0, failed = 0;
       setProgress(0); setNote(list.length ? 'Extracting media · 0 of ' + nf(list.length) : 'No media in this ZIP');
       const work = async () => {
-        while (next < list.length) {
+        while (next < list.length && my === loadSeq) {
           const p = list[next++];
           try { Media.stage(staged, p, await arc.extract(p)); } catch (e) { failed++; console.warn('Could not extract', p, e); }
           done++;
@@ -107,10 +119,12 @@ async function openEntry(entry) {
         }
       };
       await Promise.all(Array.from({ length: Math.min(4, list.length) }, work));
+      guard(my);
       if (failed) toast(nf(failed) + ' file' + (failed === 1 ? '' : 's') + ' in the ZIP could not be extracted.');
     }
     setNote('Reading messages'); setProgress(0);
     const res = await runParse(blob, { order: 'auto' }, setProgress);
+    guard(my);
     if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
     // Success: swap in the new media (revoking the previous chat's URLs) and show the chat.
     Media.adopt(staged);
@@ -121,9 +135,9 @@ async function openEntry(entry) {
     return true;
   } catch (e) {
     Media.discard(staged);
-    toast(e && e.message ? e.message : 'Could not read this file.');
+    if (!isStale(e)) toast(e && e.message ? e.message : 'Could not read this file.');
     return false;
-  } finally { if (arc && arc.close) arc.close(); $('loading').hidden = true; }
+  } finally { if (arc && arc.close) arc.close(); if (my === loadSeq) $('loading').hidden = true; }
 }
 function renderLibrary() {
   const lib = S.library || [], sec = $('chatsSec');
@@ -137,8 +151,9 @@ $('chatList').addEventListener('click', async e => {
   const k = +b.dataset.k; if (k === S.libIdx) { if (isNarrow()) closeDrawer(); return; }
   if (await openEntry(S.library[k])) { S.libIdx = k; renderLibrary(); }
 });
-async function parseAndShow(keepMe) {
+async function parseAndShow(keepMe, my) {
   const res = await runParse(S.source.blob, { order: S.order }, setProgress);
+  if (my !== undefined) guard(my);
   if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
   applyResult(res, keepMe);
 }
@@ -185,6 +200,13 @@ function applyResult(res, keepMe) {
   renderChrome();
   clearSearch();
   $('samplebar').hidden = !S.source.sample;
+  hideStart();
+}
+/* ---------- Start screen: shown on every launch, since nothing is kept between visits ---------- */
+function hideStart() {
+  if ($('start').hidden) return;
+  $('start').hidden = true;
+  $('app').inert = false; $('app').removeAttribute('aria-hidden');
 }
 function linkMedia() {
   // Match attachment references (<attached: x>, "x (file attached)", or a bare file name) to extracted files.
@@ -534,7 +556,7 @@ $('meSel').onchange = e => setMe(e.target.value || null);
 $('orderSel').onchange = async e => {
   S.order = e.target.value;
   showLoading('Re-reading dates');
-  try { await parseAndShow(true); } catch (err) { toast(err.message); } finally { $('loading').hidden = true; }
+  try { await parseAndShow(true); } catch (err) { if (!isStale(err)) toast(err.message); } finally { $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
   let k = S.msgs.findIndex((m, i) => m.dateKey >= dk && S.m2i[i] >= 0);
@@ -584,7 +606,8 @@ $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
 /* ---------- File input + drag and drop ---------- */
 const fileInput = $('file');
 const pick = () => fileInput.click();
-$('openBtn').onclick = $('sbOpen').onclick = $('cardOpen').onclick = $('sampleOpen').onclick = pick;
+$('openBtn').onclick = $('sbOpen').onclick = $('cardOpen').onclick = $('sampleOpen').onclick = $('startBrowse').onclick = pick;
+$('startDrop').addEventListener('click', e => { if (e.target === e.currentTarget || !e.target.closest('button')) pick(); });
 fileInput.onchange = () => { const f = [...fileInput.files]; fileInput.value = ''; openFiles(f); };
 let dragDepth = 0;
 const hasFiles = e => e.dataTransfer && [...(e.dataTransfer.types || [])].includes('Files');
@@ -595,6 +618,7 @@ window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefaul
 
 /* ---------- Keyboard ---------- */
 document.addEventListener('keydown', e => {
+  if (!$('start').hidden) return; // nothing to search or navigate yet
   if (!$('pdfv').hidden) {
     if (e.key === 'Escape') closePdf();
     else if (e.key === '+' || e.key === '=') pdfZoom(1);
@@ -623,7 +647,8 @@ document.addEventListener('keydown', e => {
 });
 
 /* ---------- Static icons ---------- */
-$('logo').innerHTML = ICON.chat; $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
+$('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').innerHTML = ICON.open; $('startDemoIc').innerHTML = ICON.chat;
+for (const [id, ic] of [['startT1', 'lock'], ['startT2', 'ban'], ['startT3', 'check']]) $(id).insertAdjacentHTML('afterbegin', ICON[ic]); $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
 $('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('statsBtn').innerHTML = ICON.stats; $('openBtn').innerHTML = ICON.open;
 $('sClose').innerHTML = ICON.back; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down; $('sList').innerHTML = ICON.list;
 $('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
@@ -644,14 +669,19 @@ function refreshMedia() {
 /* Loads the made-up sample chat (js/demo-data.js). Used at start-up and by the guided tour. */
 let sampleVideo = null;
 async function loadSample() {
+  const my = ++loadSeq;
+  showLoading('Preparing the sample chat'); setProgress(-1);
   let staged = new Map();
   try { staged = await makeSampleMedia(); } catch (e) { console.warn('Sample media could not be generated', e); }
+  if (my !== loadSeq) { Media.discard(staged); return false; }
   if (sampleVideo) for (const n of ['00000017-VIDEO-2026-03-15-11-48-22.mp4', '00000016-GIF-2026-03-15-11-47-50.mp4']) Media.stage(staged, n, sampleVideo);
   Media.adopt(staged);
   S.library = []; renderLibrary();
   S.source = { blob: new Blob([SAMPLE], { type: 'text/plain' }), name: 'Sample chat', size: SAMPLE.length, hint: 'Weekend Hiking Crew', sample: true, zip: true };
-  try { await parseAndShow(false); } catch (e) { toast(e.message); }
+  try { await parseAndShow(false, my); } catch (e) { if (!isStale(e)) toast(e.message); return false; }
+  finally { if (my === loadSeq) $('loading').hidden = true; }
   if (!sampleVideo) recordSampleVideo(); // in the background: the chat is already usable
+  return true;
 }
 async function recordSampleVideo() {
   try {
@@ -664,4 +694,4 @@ async function recordSampleVideo() {
     }
   } catch (e) { console.warn('Sample video could not be recorded', e); }
 }
-let sampleReady = loadSample();
+let sampleReady = null; // the sample loads only when asked for, from the start screen or the tour

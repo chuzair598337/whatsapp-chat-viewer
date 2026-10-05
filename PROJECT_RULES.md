@@ -50,7 +50,23 @@ Test both before calling a change done.
   - Respect `prefers-reduced-motion` and both colour schemes.
   - Check layouts at phone width (390 px) for horizontal scrolling.
 
-## 5. Workflow
+## 5. Keep the sample chat up to date
+
+The sample chat (`js/demo-data.js`) is how the maintainer tests every change: open the app, choose **Try the sample chat**, and the new feature should be right there.
+
+- **Every feature or fix that changes how messages look or behave adds a sample line that shows it, in the same change.** Examples:
+  - a new message type;
+  - a new system notice;
+  - a long message for Read more;
+  - a reaction.
+- **Keep it realistic.** It's a made-up chat in WhatsApp's real iPhone export format (`[DD/MM/YYYY, h:mm:ss AM] Name: text`, with the U+200E marks WhatsApp adds).
+  - No real people, numbers or chat content. Never paste lines from a user's export.
+  - New media must be generated on the device in `makeSampleMedia` (canvas, synthesised audio). Nothing is fetched.
+- **Check the guided tour still works** after editing the sample, since step 4 looks for the first photo.
+- **Mention the new sample line** in the change's CHANGELOG entry, so testers know where to look.
+- Skip this only when a feature can't be shown in a made-up chat, and say why in the change's notes.
+
+## 6. Workflow
 
 - **Branches.**
   - Work on `development`, or on a branch that merges into it.

@@ -23,7 +23,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
-- A sample chat and a five-step guided tour for first-time visitors. The **?** button brings the tour back.
+- A start screen for picking a chat, plus a sample chat with a five-step guided tour. The **?** button brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
 The full feature list is in **[docs/features.md](docs/features.md)**, and release notes are in **[CHANGELOG.md](CHANGELOG.md)**.
@@ -68,6 +68,7 @@ whatsapp-chat-viewer/
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
+├── CLAUDE.md                             # short pointer for coding agents
 ├── PROJECT_RULES.md                      # rules for every change (privacy, both export types, performance, a11y)
 ├── todo.md                               # work list by priority
 ├── deferred.md                           # out of scope, and why
@@ -89,7 +90,7 @@ whatsapp-chat-viewer/
 ### 2. Open it in the viewer
 
 1. Go to the [live app](https://chuzair598337.github.io/whatsapp-chat-viewer/).
-2. Drag the `.zip` or `.txt` file onto the page, or click **Open chat**. You don't need to unzip it first.
+2. On the start screen, drag the `.zip` or `.txt` file onto the page or click **Browse files**. You don't need to unzip it first. To look around first, choose **Try the sample chat**.
 3. Pick which participant is you, so your messages show on the right.
 
 To use the viewer with no internet connection, download the repository and open `index.html` straight from disk.

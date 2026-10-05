@@ -2,6 +2,17 @@
 
 ## Unreleased (on `development`)
 
+- **Start screen:** the app now opens on a screen just for choosing a chat. It replaces the welcome pop-up over the sample chat. It offers:
+  - a drop area with **Browse files**;
+  - **Try the sample chat**, which starts the guided tour on the first visit;
+  - export steps for iPhone and Android;
+  - the privacy promises.
+
+  The sample chat is only built when asked for, so the app starts faster.
+- **Replacing a chat mid-load:** a file dropped or picked while another is still loading now cleanly replaces it. The older load is cancelled, including its parse, and only the newest chat appears.
+- **Tour on phones:** the tour card now sits at the bottom of the screen and follows the visible viewport, so it is no longer hidden under the browser or app bar at the top.
+- **Sample chat:** two long messages (a trip report and a nine-item packing list) to try Read more.
+- **Project rule:** every feature that changes how messages look adds a line to the sample chat, so it can be tested from **Try the sample chat** (PROJECT_RULES.md, section 5, and the agent skills). A `CLAUDE.md` points agents to the rules.
 - **Read more:** messages over 450 characters or with more than 6 line breaks are shortened, with "… Read more" and "Show less".
   - The cut never splits a word, a formatting span or a code block.
   - A search match in the hidden part opens the message automatically.

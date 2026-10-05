@@ -124,6 +124,14 @@ These are the suggestions from the audit of official export features. Each one w
   - The helper is `js/text-truncator.js`. It lives in `js/` rather than `js/utils/`, to match the flat script layout.
   - Message text now uses `white-space: pre-wrap`, so runs of spaces are kept as typed. Line breaks were already kept.
 
+## Phase 7: start screen and safer loading (2026-10-05)
+
+- [x] **Start screen on every launch**, only for choosing a chat: drop area, Browse files, Try the sample chat, export steps and privacy notes. *New (Phase 7).* It replaces the welcome pop-up over the sample chat. The `?` dialog in the header stays as it was.
+- [x] **A new file always replaces the open chat**, even mid-load. A load ticket cancels older loads and their parse. *New (Phase 7).*
+- [x] **Tour card readable on phones:** bottom placement that follows the visible viewport. *New (Phase 7).*
+- [x] **Long messages in the sample chat**, for testing Read more. *New (Phase 7).*
+- [x] **Rule: update the sample chat with each feature**, in PROJECT_RULES.md section 5, the three skills and `CLAUDE.md`. *New (Phase 7).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

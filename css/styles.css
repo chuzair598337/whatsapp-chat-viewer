@@ -582,3 +582,34 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .rm-tail .read-more-btn { margin-left: 4px; }
 .rm-less { margin-top: 2px; }
 .rm-less .read-more-btn { padding-left: 0; }
+
+/* ---------- Start screen (every launch: pick a file or try the sample) ---------- */
+.start { position: fixed; inset: 0; z-index: 55; overflow-y: auto; background: var(--app-bg); display: grid; padding: max(24px, env(safe-area-inset-top, 0px)) 16px max(24px, env(safe-area-inset-bottom, 0px)); }
+.start[hidden] { display: none; }
+.start-in { width: min(560px, 100%); margin: auto; display: grid; gap: 18px; }
+.start-brand { display: flex; align-items: center; gap: 14px; }
+.start-brand .logo { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: #fff; flex: none; }
+.start-brand .logo svg { width: 28px; height: 28px; }
+.start-brand h1 { margin: 0; font-size: 24px; font-weight: 600; color: var(--ink); }
+.start-brand p { margin: 2px 0 0; color: var(--ink-2); font-size: 14.5px; }
+.start-drop { background: var(--panel); border: 2px dashed var(--accent); border-radius: 16px; padding: 30px 22px; text-align: center; display: grid; justify-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 10px var(--shadow); }
+.start-drop:hover { background: var(--panel-2); }
+.start-dicon { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink); }
+.start-dicon svg { width: 30px; height: 30px; }
+.start-drop h2 { margin: 6px 0 0; font-size: 18px; font-weight: 600; color: var(--ink); }
+.start-drop p { margin: 0; color: var(--ink-2); font-size: 14px; max-width: 380px; }
+.start-browse { margin-top: 8px; height: 44px; padding: 0 26px; font-size: 15px; }
+.start-or { display: flex; align-items: center; gap: 12px; color: var(--ink-3); font-size: 13px; }
+.start-or::before, .start-or::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.start-demo { display: flex; align-items: center; gap: 14px; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); cursor: pointer; font: inherit; }
+.start-demo:hover { border-color: var(--accent); background: var(--panel-2); }
+.start-demo b { display: block; font-weight: 500; font-size: 15px; }
+.start-demo small { display: block; color: var(--ink-3); font-size: 13px; margin-top: 2px; }
+.start-demo .tw-ic { background: var(--accent); color: #fff; }
+.start-how { background: var(--panel); border-radius: 12px; border: 1px solid var(--line); padding: 0 16px; color: var(--ink-2); font-size: 14px; }
+.start-how summary { cursor: pointer; padding: 12px 0; color: var(--ink); font-weight: 500; }
+.start-how ol { margin: 0 0 14px; padding-left: 20px; display: grid; gap: 6px; }
+.start-trust { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; color: var(--ink-3); font-size: 13px; }
+.start-trust li { display: inline-flex; align-items: center; gap: 6px; }
+.start-trust svg { width: 15px; height: 15px; color: var(--accent-ink); }
+@media (max-width: 480px) { .start-drop { padding: 24px 16px; } .start-brand h1 { font-size: 21px; } }

@@ -11,7 +11,38 @@
 </head>
 <body>
 
-<div id="app" class="app">
+<section id="start" class="start" aria-labelledby="startTitle">
+  <div class="start-in">
+    <div class="start-brand">
+      <span class="logo" id="startLogo"></span>
+      <div><h1 id="startTitle">Chat Viewer</h1><p>Read your exported WhatsApp chats, with photos, voice notes, search and statistics.</p></div>
+    </div>
+    <div class="start-drop" id="startDrop">
+      <span class="start-dicon" id="startDropIc"></span>
+      <h2>Drop your WhatsApp export here</h2>
+      <p>A <b>.zip</b> exported with media, or a <b>.txt</b> exported without media. You can pick several chats at once.</p>
+      <button class="btn primary start-browse" id="startBrowse">Browse files</button>
+    </div>
+    <div class="start-or"><span>or</span></div>
+    <button class="start-demo" id="startDemo"><span class="tw-ic" id="startDemoIc"></span><span><b>Try the sample chat</b><small id="startDemoSub">A made-up group chat with a short guided tour</small></span></button>
+    <details class="start-how">
+      <summary>How do I export a chat from WhatsApp?</summary>
+      <ol>
+        <li><b>iPhone:</b> open the chat, tap the contact or group name, then <b>Export Chat</b>.</li>
+        <li><b>Android:</b> open the chat, tap <b>⋮ › More › Export chat</b>.</li>
+        <li>Choose <b>Attach Media</b> / <b>Include media</b> for photos and voice notes, or <b>Without media</b> for text only.</li>
+        <li>Save the file to your device or send it to your computer, then open it here. No need to unzip it.</li>
+      </ol>
+    </details>
+    <ul class="start-trust">
+      <li id="startT1">Nothing is uploaded: the chat is read in this browser</li>
+      <li id="startT2">Nothing is saved: close the tab and it's gone</li>
+      <li id="startT3">Works offline</li>
+    </ul>
+  </div>
+</section>
+
+<div id="app" class="app" inert aria-hidden="true">
   <aside id="sidebar" class="sidebar" aria-label="Chat details">
     <div class="sb-top">
       <div class="brand"><span class="logo" id="logo"></span><div>Chat Viewer<small>for WhatsApp exports, offline</small></div></div>

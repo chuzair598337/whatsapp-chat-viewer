@@ -66,6 +66,7 @@ A line that matches neither regex continues the previous message.
 
 ## Checklist for any parser change
 
+0. **Sample chat:** add a made-up line in the new format or for the new case to `js/demo-data.js`, so it can be tested from **Try the sample chat**. See PROJECT_RULES.md, section 5.
 1. **Add a sample line** for both iPhone and Android, with 12- and 24-hour times, to a local test file. Never commit real exports.
 2. **Check both export types:**
    - a `.zip`: the attachment resolves to media;

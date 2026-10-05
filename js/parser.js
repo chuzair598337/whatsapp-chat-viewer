@@ -190,19 +190,28 @@ function getWorker() {
   } catch (e) { worker = false; }
   return worker;
 }
+// Only one parse runs at a time: starting another (a new file dropped mid-parse) stops the old worker,
+// so a stale result can never land on the new chat.
+let parseCancel = null;
+const SUPERSEDED = 'superseded';
 function runParse(blob, opts, onProgress) {
+  if (parseCancel) { parseCancel(); parseCancel = null; if (worker) { worker.terminate(); worker = null; } }
   return new Promise((resolve, reject) => {
     let done = false;
-    const local = () => parserModule().parse(blob, opts, onProgress).then(resolve, reject);
+    const finish = f => v => { if (done) return; done = true; parseCancel = null; f(v); };
+    resolve = finish(resolve); reject = finish(reject);
+    parseCancel = () => reject(new Error(SUPERSEDED));
+    const local = () => parserModule().parse(blob, opts, p => { if (!done) onProgress(p); }).then(resolve, reject);
     const w = getWorker();
     if (!w) return local();
     w.onmessage = e => {
       const d = e.data;
+      if (done) return;
       if (d.progress !== undefined) onProgress(d.progress);
-      else if (d.error) { done = true; reject(new Error(d.error)); }
-      else { done = true; resolve(d.result); }
+      else if (d.error) reject(new Error(d.error));
+      else resolve(d.result);
     };
-    w.onerror = ev => { if (ev.preventDefault) ev.preventDefault(); worker = false; if (!done) { done = true; local(); } };
+    w.onerror = ev => { if (ev.preventDefault) ev.preventDefault(); worker = false; if (!done) local(); };
     w.postMessage({ blob, opts });
   });
 }

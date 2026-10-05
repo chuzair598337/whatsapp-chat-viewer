@@ -14,7 +14,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 8. [Statistics](#8-statistics)
 9. [Themes](#9-themes)
 10. [Performance](#10-performance)
-11. [Welcome screen, sample chat and guided tour](#11-welcome-screen-sample-chat-and-guided-tour)
+11. [Start screen, sample chat and guided tour](#11-start-screen-sample-chat-and-guided-tour)
 12. [Code layout](#12-code-layout)
 
 ---
@@ -182,32 +182,41 @@ The statistics window shows:
 - **Lazy media work:** waveforms and posters are decoded on demand, one at a time, and cached until the next file is opened.
 - **Benchmark:** 60,000 messages parse in about 1.4 s in headless Chromium, and scrolling stays smooth.
 
-## 11. Welcome screen, sample chat and guided tour
+## 11. Start screen, sample chat and guided tour
 
-- **Sample chat:** the viewer opens with a made-up group chat (`js/demo-data.js`), so it is never an empty screen. It covers:
+- **Start screen:** every launch opens on a screen that is only about choosing a chat, with no chat viewer behind it. Nothing is kept between visits, so there is never an earlier chat to go back to. It has:
+  - a large drop area with a **Browse files** button. A `.zip` with media or a `.txt` without media, and several files at once, are all accepted. Dropping a file anywhere on the page works too;
+  - **Try the sample chat**, which opens the made-up chat and, on the first visit, starts the guided tour;
+  - "How do I export a chat from WhatsApp?" steps for iPhone and Android;
+  - the privacy promises: nothing uploaded, nothing saved, works offline.
+
+  The start screen stays up if a file can't be read, with a message saying why. Shortcuts such as `/` do nothing there.
+- **Replacing the open chat:** drop or pick a new file at any time and it replaces the chat on screen. This includes while another file is still loading. Each load takes a ticket, and a newer one cancels the older one at its next step: an unfinished parse is stopped, its media is thrown away, and only the newest file reaches the screen.
+- **Sample chat:** a made-up group chat (`js/demo-data.js`) that shows every feature. Its media is drawn or synthesised on the device, and it is only built when asked for. It covers:
   - text across several days, formatting, lists, emoji and an edited message;
+  - two long messages, for Read more;
   - the encryption notice, group events, a disappearing-message timer change and a security-code change;
   - missed and answered calls, a poll, a location, links, reactions and a deleted message;
   - photos, a video, a GIF, a sticker, a voice note, a music file, a PDF and a text file;
   - a "video omitted" placeholder.
 
-  All of its media is drawn or synthesised on the device.
-- **Welcome dialog:** on the first visit, a dialog offers two choices:
-  - **Explore the sample chat** starts the guided tour.
-  - **Open your own chat** opens the file picker.
-
-  Closing the dialog, skipping the tour or finishing it all set the `has_completed_walkthrough` flag in `localStorage`, so the dialog doesn't come back. The flag holds no chat data. Opening a file also dismisses the dialog.
-- **Help button (`?`):** in the header, it brings the welcome dialog back at any time. If one of your own chats is open, the dialog warns that the tour will switch to the sample chat. Your file isn't changed.
-- **The tour:** five steps, each dimming the page and highlighting one part with a spotlight:
+  New features add a line to it; see PROJECT_RULES.md, section 5.
+- **Guided tour:** five steps, each dimming the page and highlighting one part with a spotlight:
   1. Opening a chat.
   2. The timeline.
   3. Search and filters.
   4. A photo in the chat, for the media viewers.
   5. The theme button.
+
+  It starts by itself the first time the sample chat is opened. Finishing or skipping it sets the `has_completed_walkthrough` flag in `localStorage`, which holds no chat data.
+- **Help button (`?`):** in the chat header, it opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.
 - **Controls:**
   - Every step has **Skip tour**, **Back** (from step 2) and **Next**, which becomes **Finish** on the last step.
   - Keyboard: `→` and `←` move between steps, `Esc` skips, and focus stays inside the tour card.
-- **Layout:** the card is placed next to the highlighted part and follows it when the window is resized or the chat scrolls. On a phone it is a full-width card above or below the spotlight, and step 3 points at the search button and explains where the filters are.
+- **Layout:**
+  - On a computer, the card sits next to the highlighted part and follows it when the window is resized or the chat scrolls.
+  - On a phone, the card is a full-width panel at the bottom of the screen. It only moves up when the highlighted part is low on the screen, so it is never hidden under a browser or app bar at the top. It follows the visible viewport.
+  - On a phone, step 3 points at the search button and explains where the filters are.
 - **No dependencies:** the tour is written for this app (`js/tour-controller.js`) instead of using a tour library, so the page still makes no network requests.
 
 ## 12. Code layout
@@ -224,5 +233,5 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
-| `js/tour-controller.js` | Welcome dialog, guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
+| `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
