@@ -53,6 +53,9 @@ const ICON = {
   star: ic('<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>'),
   starFill: '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/></svg>',
   rotate: ic('<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4.5V11h-6.5"/>'),
+  shield: ic('<path d="M12 3.5l7 2.8v5.2c0 4.3-3 7.6-7 9-4-1.4-7-4.7-7-9V6.3z"/><path d="M9 12l2.2 2.2L15.5 10"/>'),
+  timer: ic('<circle cx="12" cy="13" r="7.5"/><path d="M12 9v4l2.5 2M10 2.5h4"/>'),
+  group: ic('<circle cx="9" cy="9" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 6.2a3 3 0 0 1 0 5.6M17 13.6a5.5 5.5 0 0 1 3.5 5.4"/>'),
   event: ic('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h3"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
@@ -246,7 +249,7 @@ function estimate(it, W) {
   if (it.hasLink) h += 70;
   else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
   else if (m.kind === 'call') h += 44;
-  else if (m.kind === 'location') h += 60;
+  else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
   else if (m.kind === 'unsupported') h += 64;
   else if (m.kind === 'deleted') return h + 19;
   if (m.message) {
@@ -687,14 +690,38 @@ function linkCards(text) {
     '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="Copy link" title="Copy link">' + ICON.copy + '</button></div>' +
     (urls.length > 1 ? '<div class="lmore">+ ' + (urls.length - 1) + ' more link' + (urls.length > 2 ? 's' : '') + ' in this message</div>' : '');
 }
+/* System notices are grouped like WhatsApp shows them: the encryption and business notices on yellow,
+   security-code changes and disappearing-message timers with an icon, and group changes as plain pills. */
+const SYS_KINDS = [
+  ['enc', 'enc', 'lock', /end-to-end encrypted|this (chat|business) (is with|uses|works with)|official business account|this business (is|uses|works)/i],
+  ['security', 'sec', 'shield', /security code (with .+ )?changed|security code (has )?changed|verified your security code/i],
+  ['timer', 'sec', 'timer', /disappearing messages|message timer|kept message|default message timer/i],
+  ['number', 'sec', 'phone', /changed (their|his|her|your) phone number|changed to \+?\d|changed their number|new number/i],
+  ['block', 'sec', 'ban', /^you (un)?blocked this (contact|business)|blocked this contact/i],
+  ['group', 'grp', 'group', /created (the )?group|created this group|\badded\b|\bremoved\b|\bleft\b|\bjoined\b|changed (the|this) group|changed the subject|changed this group's|changed the group (icon|description|name|settings)|deleted (this|the) group's icon|now an admin|no longer an admin|invite link|group settings|was added|were added|community|reset this group's invite link|turned (on|off) admin approval|requested to join/i]
+];
+function sysKind(text) {
+  for (const [kind, cls, icon, re] of SYS_KINDS) if (re.test(text)) return { kind, cls, icon };
+  return { kind: 'other', cls: '', icon: '' };
+}
+function locHTML(x) {
+  const has = x.lat != null, coord = has ? x.lat.toFixed(5) + ', ' + x.lng.toFixed(5) : '';
+  // Drawn locally: a grid with a pin, never map tiles, so nothing is fetched.
+  const map = has ? '<span class="lmap" aria-hidden="true"><i class="lpin">' + ICON.pin + '</i></span>' : '';
+  const info = '<span class="linfo"><span class="atti">' + ICON.pin + '</span><span class="ltx"><b>' + (x.live ? 'Live location' : 'Location') + '</b><small>' +
+    (has ? esc(coord) : x.live ? 'Not included in exports' : 'Open in maps') + '</small></span></span>';
+  if (!x.url) return '<div class="loc nolink">' + map + info + '</div>';
+  return '<div class="locw"><a class="loc" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" title="Open in maps">' + map + info + '</a>' +
+    (has ? '<button class="lcopy" data-copy="' + esc(coord) + '" aria-label="Copy coordinates" title="Copy coordinates">' + ICON.copy + '</button>' : '') + '</div>';
+}
 function makeRow(it, idx) {
   const el = document.createElement('div');
   if (it.type === 'date') { el.className = 'row daterow'; el.innerHTML = '<span class="pill">' + esc(dateLabel(it.dateKey)) + '</span>'; return el; }
   const m = it.m;
   if (it.type === 'sys') {
-    const enc = /end-to-end encrypted/i.test(m.message);
+    const k = sysKind(m.message);
     el.className = 'row sysrow';
-    el.innerHTML = '<span class="pill' + (enc ? ' enc' : '') + '">' + (enc ? ICON.lock : '') + hl(esc(m.message), it.i) + '</span>';
+    el.innerHTML = '<span class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(esc(m.message), it.i) + '</span>';
     return el;
   }
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
@@ -709,7 +736,7 @@ function makeRow(it, idx) {
       body += '<div class="txt del">' + ICON.ban + '<span>' + esc(m.isOutgoing ? 'You deleted this message' : 'This message was deleted') + space + '</span></div>'; tailText = false; break;
     case 'call': {
       const x = m.extra;
-      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(x.label.charAt(0).toUpperCase() + x.label.slice(1)) + '</b><small>' + esc(x.detail || (x.missed ? 'Missed' : '')) + '</small></div></div>';
+      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(x.label.charAt(0).toUpperCase() + x.label.slice(1)) + '</b><small>' + esc(x.detail || (x.missed ? 'No answer' : '')) + '</small></div></div>';
       break;
     }
     case 'poll': {
@@ -723,7 +750,7 @@ function makeRow(it, idx) {
       body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>Message not included in the export</b><small>Usually an event. WhatsApp leaves events out of exported chats, so the name, time and replies aren\'t available.</small></span></div>';
       break;
     case 'location':
-      body += '<a class="loc" href="' + esc(m.extra.url) + '" target="_blank" rel="noopener noreferrer"><span class="atti">' + ICON.pin + '</span><span><b>' + (m.extra.live ? 'Live location' : 'Location') + '</b><small>Open in maps</small></span></a>';
+      body += locHTML(m.extra);
       break;
     case 'media': {
       body += m.attachments.map(a => attHTML(a, m)).join('');
@@ -854,7 +881,7 @@ layer.addEventListener('pointerup', () => { waveDrag = null; });
 layer.addEventListener('click', e => {
   const t = e.target;
   const lc = t.closest('.lcopy');
-  if (lc) { copyText(lc.dataset.url); return; }
+  if (lc) { if (lc.dataset.copy) copyText(lc.dataset.copy, 'Coordinates'); else copyText(lc.dataset.url); return; }
   const box = t.closest('.mvid:not(.gifv)');
   if (box) {
     const v = box.querySelector('video');

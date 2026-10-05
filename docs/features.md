@@ -57,8 +57,13 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 - **Message kinds:**
   - Incoming and outgoing messages, based on the "which one is you" picker, which is pre-filled with a best guess.
   - Multi-line continuations.
-  - System lines (group created, member added, security code changed, encryption notice).
-  - Calls.
+  - System lines, shown as centred pills the way WhatsApp groups them:
+    - the encryption and business-account notices on yellow;
+    - security-code changes with a shield icon;
+    - disappearing-message timer changes with a timer icon;
+    - phone-number changes and blocking;
+    - group events (created, added, removed, left, joined, icon/subject/description changes, admins, invite links) with a group icon.
+  - Calls: missed, voice, video and group calls, with the duration, as a call card in the caller's bubble.
   - Events. WhatsApp exports an event as the sender's name with nothing after it (`[date, time] Name:`), without its title, time, location or replies. The viewer shows a muted "Message not included in the export" card in its place, instead of treating the line as a system notice.
   - Deleted messages ("This message was deleted") and edited messages (an *Edited* tag by the time).
   - Reactions. Normal exports don't include them, but `reacted 👍 to "…"` lines, where present, become a reaction pill under the message they quote, with a count and who reacted. A line that matches no earlier message stays as text.
@@ -104,6 +109,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 | **Documents** | Card with a coloured type badge (PDF, Word, Excel, PowerPoint, archive, text), the document's title, the file size and a download button. |
 | **PDFs** | Like WhatsApp: a preview of the first page above the card, plus the page count. Tapping it opens the in-app PDF viewer (details below). If a PDF is damaged or password protected, the card says so, and the file can still be downloaded. |
 | **Links** | Clickable inline. A card under the message shows the site name and address with a coloured letter badge drawn locally, plus a copy button. When a message has several links, the card adds "+ N more links". |
+| **Locations** | An offline map card: a street grid drawn locally with a pin (map tiles are never fetched), the coordinates read from the maps link, and a copy button. Tapping it opens the link in your maps app. A shared live location is exported without coordinates, so it shows as "Live location: Not included in exports". |
 | **Contacts** (`.vcf`) | Card with the contact's photo or initials, name, and number, or "and N other contacts" when several were shared together. **View contact** opens the details (details below). **Save .vcf** downloads the card so it can be added to a phone's contacts. |
 
 **PDF viewer**

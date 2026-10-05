@@ -32,6 +32,15 @@ function parserModule() {
   function media(type, name, caption, omitted, edited, more) {
     return { kind: 'media', text: (caption || '').trim(), att: [Object.assign({ type, name: name || null, omitted, url: null }, more || {})], edited };
   }
+  // Coordinates from a maps link: ?q=lat,lng, query=lat,lng, ll=lat,lng or /@lat,lng.
+  function coords(url) {
+    let u = url;
+    try { u = decodeURIComponent(url); } catch (e) {}
+    const m = /(?:[?&](?:q|query|ll|daddr)=(?:loc:)?|@)(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/.exec(u);
+    if (!m) return {};
+    const lat = +m[1], lng = +m[2];
+    return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : {};
+  }
   function classify(raw) {
     let t = raw.replace(INV, '').replace(SP, ' ');
     let edited = false;
@@ -41,7 +50,7 @@ function parserModule() {
     if (one && /^(This message was deleted\.?|You deleted this message\.?|This message was deleted by (an )?admin.*|Waiting for this message.*)$/i.test(t))
       return { kind: 'deleted', text: t, att: [], edited };
     if (one && (m = /^(Missed |Silenced |Declined )?(group )?(voice|video) call(?:,\s*(.*))?$/i.exec(t)))
-      return { kind: 'call', text: t, att: [], edited, extra: { missed: !!m[1], video: /video/i.test(m[3]), group: !!m[2], label: (m[1] || '') + (m[2] || '') + m[3] + ' call', detail: (m[4] || '').trim() } };
+      return { kind: 'call', text: t, att: [], edited, extra: { missed: !!m[1], video: /video/i.test(m[3]), group: !!m[2], label: (m[1] || '') + (m[2] || '') + m[3] + ' call', detail: (m[4] || '').replace(/(Tap|Click) to call back/i, '').replace(/^[\s,.]+|[\s,.]+$/g, '') } };
     // iOS puts a document's title and page count in front of the file: "Report.pdf • 2 pages <attached: 00000022-Report.pdf>".
     if ((m = /^([^\n<]*?)\s*<attached: ([^>]+)>\s*([\s\S]*)$/.exec(t))) {
       const d = docInfo(m[1]);
@@ -58,7 +67,9 @@ function parserModule() {
       return media(type, name, cap, true, edited, { viewOnce, detail, note: w.includes('video note') ? 'Video note' : '' });
     }
     if ((m = /^(live )?location: (https?:\/\/\S+)\s*([\s\S]*)$/i.exec(t)))
-      return { kind: 'location', text: m[3].trim(), att: [], edited, extra: { url: m[2], live: !!m[1] } };
+      return { kind: 'location', text: m[3].trim(), att: [], edited, extra: { url: m[2], live: !!m[1], ...coords(m[2]) } };
+    // Live locations are exported without coordinates: "live location shared".
+    if (one && /^live location shared\.?$/i.test(t)) return { kind: 'location', text: '', att: [], edited, extra: { url: null, live: true } };
     if ((m = /^POLL:\s*\n([^\n]+)\n?([\s\S]*)$/.exec(t))) {
       const options = [];
       for (const l of m[2].split('\n')) { const o = /^OPTION:\s*(.+?)\s*\((\d+) votes?\)\s*$/.exec(l.trim()); if (o) options.push({ label: o[1], votes: +o[2] }); }

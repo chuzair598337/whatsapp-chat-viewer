@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **System notices** are now grouped like WhatsApp shows them:
+  - security-code changes, with a shield icon;
+  - disappearing-message timer changes, with a timer icon;
+  - phone-number changes and blocking;
+  - group events (created, added, left, removed, icon/subject/description changes, admins, invite links), with a group icon.
+- **Locations:** shared locations show an offline map card, a locally drawn grid with a pin, plus the coordinates and a copy button. No map tiles are ever fetched. "Live location shared" lines are recognised too.
+- **Calls:** the meaningless "Tap to call back" is dropped from missed calls.
+- `todo.md` gained Phase 4, which lists each suggestion from the export-coverage audit as either existing or new.
+
 ## 1.3.0 (2026-10-05)
 
 - **Several chats at once:** pick or drop several exports together, or open a ZIP that holds more than one chat (in folders, or as nested chat ZIPs). A "Chats in these files" list in the sidebar switches between them, and each chat only sees its own media.

@@ -5,6 +5,7 @@ Work items in priority order. Tick an item (`[x]`) only once it's built, tested 
 Labels:
 - *Existed* means the feature was already in a released version when this list was written. It was checked against the code.
 - *New* means it was built for this list and released in 1.3.0.
+- *New (Phase 4)* means it is on `development` and not yet released.
 
 Out-of-scope ideas live in [deferred.md](deferred.md).
 
@@ -63,6 +64,32 @@ Out-of-scope ideas live in [deferred.md](deferred.md).
   - `/` to jump to search and `R` to rotate. *New.*
   - Labels on every new control: reactions, star toggles with `aria-pressed`, filters and the chat list. *New.*
   - Audit: no visible button, input or select without an accessible name.
+
+## Phase 4: gaps found in the export-coverage audit (2026-10-05)
+
+These are the suggestions from the audit of official export features. Each one was checked against the code. Only the real gaps were built.
+
+- [x] **Encryption notice** shown as a yellow centred badge. *Existed.*
+- [x] **Security-code changes** get their own badge with a shield icon. *New (Phase 4).*
+- [x] **Call logs.** *Existed.*
+  - Missed, voice, video and group calls, with the duration, show as call cards in the caller's bubble, the way WhatsApp shows them in a chat.
+  - *New (Phase 4):* the meaningless "Tap to call back" is dropped.
+- [x] **Disappearing-message timer changes** shown as a badge with a timer icon. *New (Phase 4).*
+- [x] **Group management events** shown as centred pills with a group icon. *New (Phase 4).*
+  - Covers: created, added, removed, left, joined, icon/subject/description changes, admin changes and invite links.
+- [x] **Phone-number changes and blocking** get their own badges. *New (Phase 4).*
+- [x] **Placeholders for missing media.** *Existed.*
+  - `<Media omitted>`, `image omitted`, `file.jpg (file attached)` with no file, and `.txt`-only imports.
+- [x] **Document cards** with extension badges, size, download and PDF quick view. *Existed.*
+- [x] **Voice notes and audio** with waveform, speed and duration. *Existed.*
+- [x] **Contact cards (`.vcf`).** *Existed.*
+- [x] **Location.** *Existed:* a link card. *New (Phase 4):*
+  - An offline map card: a locally drawn street grid with a pin. Map tiles are never fetched.
+  - Coordinates read from the maps link, with a copy button.
+  - "Live location shared" lines, which carry no coordinates, are now recognised.
+- [x] **Polls** (question, options, vote counts). *Existed.*
+- [x] **Reactions.** *Existed (1.3.0).*
+- [x] **Date and time detection** across iPhone and Android (`DD/MM/YY`, `MM/DD/YY`, `[YYYY-MM-DD, HH:mm:ss]`, `hh:mm a`). *Existed.*
 
 ## Verification done for this list
 

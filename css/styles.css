@@ -176,10 +176,29 @@ mark.cur { background: var(--hl-cur); }
 .call.missed .ci { color: var(--danger); }
 .call b { font-weight: 500; display: block; }
 .call small { color: var(--ink-3); font-size: 12.5px; }
-.loc { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; padding: 8px 10px; margin: 0 -2px 4px; border-radius: 6px; background: var(--quote); min-width: 210px; }
-.loc .atti { width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--danger); }
+.locw { position: relative; margin: 0 -2px 4px; }
+.loc { display: flex; flex-direction: column; text-decoration: none; color: inherit; margin: 0 -2px 4px; border-radius: 6px; background: var(--quote); width: 260px; max-width: 100%; overflow: hidden; }
+.locw .loc { margin: 0; }
+.linfo { display: flex; align-items: center; gap: 10px; padding: 8px 10px; min-width: 0; }
+.locw:has(.lcopy) .linfo { padding-right: 46px; }
+.loc .atti { width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; background: var(--accent-soft); color: var(--danger); flex: none; }
+.loc .ltx { min-width: 0; }
 .loc b { display: block; font-weight: 500; }
-.loc small { color: var(--link); font-size: 12.5px; }
+.loc small { color: var(--link); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.loc.nolink small { color: var(--ink-3); }
+.locw .lcopy { position: absolute; right: 2px; bottom: 10px; margin: 0; }
+/* Offline "map": a drawn street grid with a pin. No tiles are ever fetched. */
+.lmap { position: relative; display: block; height: 120px; background-color: #e8eee4;
+  background-image: linear-gradient(90deg, rgba(255,255,255,.95) 6px, transparent 6px), linear-gradient(rgba(255,255,255,.95) 5px, transparent 5px),
+    linear-gradient(90deg, rgba(255,255,255,.6) 2px, transparent 2px), linear-gradient(rgba(255,255,255,.6) 2px, transparent 2px),
+    radial-gradient(circle at 78% 30%, #cfe3c4 0 26px, transparent 27px), linear-gradient(160deg, transparent 62%, #bfd9ea 62% 70%, transparent 70%);
+  background-size: 110px 100%, 100% 70px, 28px 28px, 28px 28px, 100% 100%, 100% 100%; background-position: 40px 0, 0 38px, 0 0, 0 0, 0 0, 0 0; }
+.lpin { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -88%); color: #e53935; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+.lpin svg { width: 34px; height: 34px; fill: #e53935; stroke: #fff; stroke-width: 1.4; }
+[data-theme="dark"] .lmap { filter: brightness(.55) saturate(.8); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .lmap { filter: brightness(.55) saturate(.8); } }
+.pill.sec, .pill.grp { line-height: 1.45; }
+.pill.sec svg, .pill.grp svg { width: 13px; height: 13px; vertical-align: -2px; margin-right: 5px; }
 .poll { min-width: 230px; display: grid; gap: 8px; padding: 2px 2px 6px; }
 .poll .pq { display: flex; gap: 8px; font-weight: 600; align-items: flex-start; }
 .poll .pq svg { flex: none; color: var(--ink-3); margin-top: 1px; }
@@ -521,3 +540,4 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .rav { position: absolute; left: 0; width: 30px; height: 30px; font-size: 11.5px; }
 .row.grp.first .rav { top: 10px; }
 @media (max-width: 640px) { .row.grp { padding-left: 34px; } .rav { width: 28px; height: 28px; } }
+.lpin svg circle { fill: #fff; stroke: none; }
