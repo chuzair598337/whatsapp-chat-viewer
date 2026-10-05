@@ -86,6 +86,9 @@ function parserModule() {
           const pre = rest.slice(0, ci);
           if (!ios && (/["“”]/.test(pre) || pre.length > 60)) sys = true;
           else { sender = pre.replace(INV, '').trim(); body = rest.slice(ci + 2); lrm = body.charCodeAt(0) === 0x200E; }
+        } else if (/^[^:]{1,60}:$/.test(rest.replace(INV, '').trim())) {
+          // "Name:" with nothing after it: WhatsApp writes events (and a few other message types) this way.
+          sender = rest.replace(INV, '').trim().slice(0, -1).trim(); body = ''; lrm = false;
         } else sys = true;
         cur = { a: +m[1], b: +m[2], c: +m[3], al: m[1].length, h: +m[4], mi: +m[5], s: m[6] ? +m[6] : 0, ap: m[7] || '', sender, body, sys, lrm, x: null };
         recs.push(cur);
@@ -138,7 +141,7 @@ function parserModule() {
       const dk = dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth() + 1) + '-' + pad(dt.getUTCDate());
       let text = r.x ? r.body + '\n' + r.x.join('\n') : r.body;
       text = text.replace(/\u0000/g, '').replace(/\s+$/, '');
-      const c = classify(text);
+      const c = text.trim() ? classify(text) : { kind: 'unsupported', text: '', att: [], edited: false };
       const isSystem = r.sys || (r.lrm && c.kind === 'text');
       if (isSystem) {
         if (r.sender) sysSenders.set(r.sender, (sysSenders.get(r.sender) || 0) + 1);

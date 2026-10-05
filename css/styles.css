@@ -444,3 +444,23 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .vc-v small { color: var(--ink-3); font-size: 12.5px; }
 .vc-about { width: 100%; margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: var(--quote); font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
 .foot a.btn { text-decoration: none; color: inherit; }
+
+/* ---------- Events (exported as an empty message) ---------- */
+.unsup { display: flex; align-items: center; gap: 10px; padding: 8px 10px; margin: 0 -2px 4px; border-radius: 6px; border: 1px dashed var(--line); box-shadow: inset 0 0 0 1px var(--quote); max-width: 300px; }
+.unsup .atti { width: 40px; height: 40px; border-radius: 6px; display: grid; place-items: center; flex: none; color: var(--ink-3); background: var(--quote); }
+.unsup .attt { display: grid; gap: 2px; min-width: 0; }
+.unsup b { font-weight: 500; font-size: 14px; }
+.unsup small { color: var(--ink-3); font-size: 12.5px; line-height: 1.35; }
+
+/* ---------- Video: WhatsApp-style thumbnail before the first play ---------- */
+.mvid { max-width: 100%; }
+.vbadge { position: absolute; left: 8px; bottom: 7px; display: inline-flex; align-items: center; gap: 4px; color: #fff; font-size: 12px; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); pointer-events: none; font-variant-numeric: tabular-nums; }
+.vbadge svg { width: 17px; height: 17px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .6)); }
+.mvid:not(.started) .vctl { display: none; }
+.mvid.started .vbadge { display: none; }
+.mvid:not(.started)::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 44px; background: linear-gradient(transparent, rgba(0, 0, 0, .45)); pointer-events: none; }
+.bubble:has(.mvid.started) .meta.ov { opacity: 0; transition: opacity .2s; }
+
+/* ---------- Stickers: WhatsApp size ---------- */
+.sticker { width: 190px; height: 190px; }
+@media (max-width: 600px) { .sticker { width: 150px; height: 150px; } }

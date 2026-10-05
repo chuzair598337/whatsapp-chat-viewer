@@ -50,6 +50,7 @@ const ICON = {
   mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
   link: ic('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
   check: ic('<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>'),
+  event: ic('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h3"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
   volume: ic('<path d="M4 9.5h3.5L12 6v12l-4.5-3.5H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>'),
@@ -232,8 +233,8 @@ function estimate(it, W) {
     if (a && a.url) {
       const d = Media.dims.get((Media.get(a.name) || a).name);
       if (a.type === 'image' || a.type === 'gif') h += w2 / (d ? clampR(d.w / d.h) : 4 / 3) - (m.message ? 0 : 14);
-      else if (a.type === 'video') h += w2 / (d ? clampR(d.w / d.h) : 16 / 9);
-      else if (a.type === 'sticker') h += 140;
+      else if (a.type === 'video') { const r = d ? clampV(d.w / d.h) : 16 / 9; h += Math.min(w2, 400 * r) / r; }
+      else if (a.type === 'sticker') h += W <= 600 ? 150 : 190;
       else if (a.type === 'audio') h += isVoice(a.name) ? 58 : 72;
       else if (a.type === 'contact') h += 108;
       else h += extOf(a.name) === 'pdf' && !PdfView.failed.has(a.name) ? 66 + 146 : 66;
@@ -243,6 +244,7 @@ function estimate(it, W) {
   else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += 60;
+  else if (m.kind === 'unsupported') h += 64;
   else if (m.kind === 'deleted') return h + 19;
   if (m.message) {
     if (it.jumbo) return h + 46;
@@ -357,13 +359,17 @@ function audioHTML(e, m) {
     '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="Playback speed"></button></div>' + fail + '</div>' +
     '<span class="afile-ic">' + ICON.music + '</span></div>';
 }
+// Videos keep their real shape (portrait phone videos down to 9:16), capped at 400px tall like WhatsApp.
+const clampV = r => Math.min(1.9, Math.max(0.5625, r));
+const vBox = r => 'aspect-ratio:' + r + ';width:' + Math.min(330, Math.round(400 * r)) + 'px';
 function videoHTML(e, gif) {
-  const d = Media.dims.get(e.name), r = d ? clampR(d.w / d.h) : 16 / 9;
+  const d = Media.dims.get(e.name), r = d ? (gif ? clampR(d.w / d.h) : clampV(d.w / d.h)) : 16 / 9;
   if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '" autoplay muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
   const poster = Media.posters.get(e.name);
   if (poster === undefined) Posters.request(e.name);
-  return '<div class="mvid" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
+  return '<div class="mvid" data-r="' + r + '" style="' + vBox(r) + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
     '<button class="vbig" aria-label="Play video">' + ICON.play + '</button>' +
+    '<span class="vbadge">' + ICON.video + '<span class="vdur">' + fmtSize(e.size) + '</span></span>' +
     '<div class="vctl"><button class="vpp" aria-label="Play video">' + ICON.play + '</button><input class="vseek" type="range" min="0" max="1000" value="0" aria-label="Seek video"><span class="vtime">–:––</span>' +
     '<button class="vmute" aria-label="Mute">' + ICON.volume + '</button><button class="vfs" aria-label="Full screen">' + ICON.full + '</button></div></div>';
 }
@@ -709,6 +715,9 @@ function makeRow(it, idx) {
         '<small>Poll · ' + total + ' vote' + (total === 1 ? '' : 's') + '</small></div>';
       break;
     }
+    case 'unsupported':
+      body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>Message not included in the export</b><small>Usually an event. WhatsApp leaves events out of exported chats, so the name, time and replies aren\'t available.</small></span></div>';
+      break;
     case 'location':
       body += '<a class="loc" href="' + esc(m.extra.url) + '" target="_blank" rel="noopener noreferrer"><span class="atti">' + ICON.pin + '</span><span><b>' + (m.extra.live ? 'Live location' : 'Location') + '</b><small>Open in maps</small></span></a>';
       break;
@@ -718,7 +727,7 @@ function makeRow(it, idx) {
       if (a0 && a0.url) {
         if (a0.type === 'sticker' && !m.message) { stk = true; tailText = false; }
         else if (a0.type === 'image' || a0.type === 'gif') { visual = true; if (!m.message) { overlay = true; tailText = false; } }
-        else if (a0.type === 'video') visual = true;
+        else if (a0.type === 'video') { visual = true; if (!m.message) { overlay = true; tailText = false; } }
       }
       break;
     }
@@ -757,9 +766,11 @@ function noteDims(el, w, h) {
   Media.dims.set(name, { w, h });
   const box = el.closest('.mimg, .mvid');
   if (!box) return;
-  const r = clampR(w / h);
+  const vid = box.classList.contains('mvid') && !box.classList.contains('gifv');
+  const r = vid ? clampV(w / h) : clampR(w / h);
   if (Math.abs(parseFloat(box.dataset.r) - r) > 0.01) {
-    box.style.aspectRatio = String(r); box.dataset.r = r;
+    if (vid) box.style.cssText = vBox(r); else box.style.aspectRatio = String(r);
+    box.dataset.r = r;
     const row = el.closest('.row');
     if (row) VL.remeasure(+row.dataset.i);
   }
@@ -772,6 +783,9 @@ function vUI(v) {
   if (!box || box.classList.contains('gifv')) return;
   const d = v.duration;
   box.classList.toggle('playing', !v.paused);
+  if (!v.paused || v.currentTime > 0) box.classList.add('started');
+  const vd = box.querySelector('.vdur');
+  if (vd && isFinite(d) && d > 0) vd.textContent = fmtDur(d);
   const pp = box.querySelector('.vpp');
   pp.innerHTML = v.paused ? ICON.play : ICON.pause; pp.setAttribute('aria-label', v.paused ? 'Play video' : 'Pause video');
   box.querySelector('.vtime').textContent = (v.currentTime > 0 || !v.paused ? fmtDur(v.currentTime) + ' / ' : '') + fmtDur(d);
