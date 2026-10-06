@@ -207,6 +207,7 @@ function applyResult(res, keepMe) {
   if (!res.folded) { res.messages = foldReactions(res.messages); res.folded = true; }
   if (!keepMe) { S.starred = new Set(); S.filter = { from: '', to: '', sender: '' }; }
   S.res = res; S.msgs = res.messages; S.lc = null; S.stats = null;
+  setScriptDefault(S.msgs);
   linkMedia();
   const names = res.participants.map(p => p.name);
   const hint = S.source.hint;
@@ -319,7 +320,7 @@ function renderChrome() {
   const range = shortFmt.format(dkToT(first.dateKey)) + ' – ' + shortFmt.format(dkToT(last.dateKey));
   const mediaN = msgs.reduce((a, m) => a + m.attachments.length, 0);
   avatar($('headAv'), S.title); avatar($('cardAv'), S.title);
-  $('headTitle').textContent = S.title; $('cardTitle').textContent = S.title;
+  $('headTitle').innerHTML = scriptHTML(S.title); $('cardTitle').innerHTML = scriptHTML(S.title);
   const pN = res.participants.length;
   $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
   $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: res.participants[0].name, b: res.participants[1].name }) : t('chat.chat');
@@ -465,7 +466,7 @@ function snippet(m) {
   const tx = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '';
   const hit = foldFind(tx, S.fq)[0], s = Math.max(0, (hit ? hit[0] : 0) - 30);
   const raw = (s > 0 ? '…' : '') + tx.slice(s, s + 140).replace(/\s+/g, ' ');
-  return markHTML(esc(raw), S.fq);
+  return markHTML(scriptHTML(raw), S.fq);
 }
 function renderResults() {
   const box = $('results');
@@ -487,14 +488,12 @@ for (const q of [q1, q2]) {
 $('prev1').onclick = $('prev2').onclick = () => step(-1);
 $('next1').onclick = $('next2').onclick = () => step(1);
 const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
-function openSearch() {
-  if (isNarrow()) { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
-  else { q1.focus(); q1.select(); }
-}
+// The header's search opens a bar under the header on every screen size, like WhatsApp; the side
+// panel keeps its own search box and the list of results.
+function openSearch() { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
 function closeSearch() { $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
 $('searchBtn').onclick = openSearch;
 $('sClose').onclick = closeSearch;
-$('sList').onclick = () => { openDrawer(); setTimeout(() => $('searchSec').scrollIntoView({ block: 'start' }), 230); };
 
 /* =====================================================================
    Stats
@@ -687,7 +686,21 @@ moreBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' && moreMenu
 /* ---------- Drawer ---------- */
 function openDrawer() { if (!isNarrow()) return; document.body.classList.add('drawer-open'); $('scrim').hidden = false; }
 function closeDrawer() { document.body.classList.remove('drawer-open'); $('scrim').hidden = true; }
-$('menuBtn').onclick = openDrawer; $('whoBtn').onclick = () => isNarrow() ? openDrawer() : openStats();
+// Wide screens: the side panel can be hidden for a wider chat (not remembered: it is back next time).
+function toggleSide() {
+  const hide = document.body.classList.toggle('side-hidden');
+  syncMenuBtn();
+  if (hide && $('sidebar') && $('sidebar').contains(document.activeElement)) $('menuBtn').focus();
+}
+function syncMenuBtn() {
+  const wide = !isNarrow(), open = wide ? !document.body.classList.contains('side-hidden') : document.body.classList.contains('drawer-open');
+  $('menuBtn').setAttribute('aria-expanded', open);
+  $('menuBtn').setAttribute('aria-label', t(open && wide ? 'chat.hide_chat_details' : 'chat.show_chat_details'));
+  $('menuBtn').title = $('menuBtn').getAttribute('aria-label');
+}
+$('menuBtn').onclick = () => isNarrow() ? openDrawer() : toggleSide();
+window.matchMedia('(max-width: 1024px)').addEventListener('change', syncMenuBtn);
+document.addEventListener('langchange', syncMenuBtn); $('whoBtn').onclick = () => isNarrow() ? openDrawer() : openStats();
 $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
 
 /* ---------- File input + drag and drop ---------- */
@@ -728,7 +741,10 @@ document.addEventListener('keydown', e => {
   if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
-    for (const id of ['vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'setModal']) if (!$(id).hidden) { closeModal(id); return; }
+    // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
+    const ids = ['vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'setModal'];
+    const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
+    if (top) { closeModal(top.id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }
     if (!$('sstrip').hidden) { closeSearch(); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
@@ -740,7 +756,7 @@ $('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').inn
 for (const [id, ic] of [['startT1', 'lock'], ['startT2', 'ban'], ['startT3', 'check']]) $(id).insertAdjacentHTML('afterbegin', ICON[ic]); $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
 $('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('moreBtn').innerHTML = ICON.more;
 for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'open'], ['miHelp', 'help']]) $(id).innerHTML = ICON[ic];
-$('sClose').innerHTML = ICON.back; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down; $('sList').innerHTML = ICON.list;
+$('sClose').innerHTML = ICON.close; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down
 $('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').innerHTML = ICON.lock.replace('width="22" height="22"', 'width="16" height="16"');
 $('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.statistics">' + t('sidebar.statistics') + '</span>';

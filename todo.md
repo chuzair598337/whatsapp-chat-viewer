@@ -205,6 +205,17 @@ Findings from the audit of a large real group export (many members, mixed langua
 - [x] iPhone animated stickers (`.was`) only showed a card. They play with a bundled Lottie player, with the card as a fallback. *New (Phase 15).*
 - [x] The floating date covered the first message after scrolling stopped. It fades out, as in WhatsApp. *New (Phase 15).*
 
+## Phase 16: fonts, Arabic, message menu (2026-10-06)
+
+- [x] Urdu text in the chat uses the Urdu font in every interface language. *New (Phase 16).*
+- [x] Arabic interface language (العربية) in Settings and on the start screen, with every string translated. *New (Phase 16).*
+- [x] Arabic chat text uses Noto Naskh Arabic (bundled, OFL); Urdu and Arabic told apart by their letters. *New (Phase 16).*
+- [x] Mixed English, Urdu and Arabic in one message or line. *New (Phase 16).*
+- [x] Hide and show the side panel on large screens. *New (Phase 16).*
+- [x] Message menu (long-press, right-click, ⌄ button, Shift+F10): Star/Unstar, Copy, Copy link, View photo, Open document, View contact, Copy contact details, Download, Share. *New (Phase 16).*
+- [x] Sorting in Media, links and docs: date, name, size, both directions. *New (Phase 16).*
+- [x] Search bar under the header on large screens; on phones, no results-list button and a clear ✕ close. *New (Phase 16).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

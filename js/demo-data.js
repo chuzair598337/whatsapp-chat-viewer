@@ -72,6 +72,11 @@ const SAMPLE = [
   `[03/04/2026, 8:01:10${N}AM] Hamza Iqbal: السَّلامُ عَلَيْكُم سب کو! كيا حال ہے؟`,
   // An English line, then Urdu ones: each line reads in its own direction.
   `[03/04/2026, 8:02:00${N}AM] Zainab Raza: Trail rules, page 2`, `اپنا کچرا ساتھ واپس لے جائیں۔`, `راستے سے باہر نہ جائیں۔`,
+  // English, an Arabic verse and its Urdu translation in one message: each line gets its own font
+  // (Arabic in Naskh, Urdu in Nastaliq) and direction, in every interface language.
+  `[03/04/2026, 8:02:30${N}AM] Ayesha Khan: Quote for the climb:`, `إِنَّ مَعَ الْعُسْرِ يُسْرًا`, `بے شک ہر مشکل کے ساتھ آسانی ہے۔`,
+  // Plain Arabic (no vowel marks), shown in the Arabic font.
+  `[03/04/2026, 8:02:45${N}AM] Omar Farooq: صباح الخير يا شباب، هل الجميع جاهز للرحلة؟`,
   `[03/04/2026, 8:03:00${N}AM] Usman Tariq: In ✋`,
   `[03/04/2026, 8:04:00${N}AM] Mariam Siddiqui: Count me in`,
   `[03/04/2026, 8:05:00${N}AM] Faisal Qureshi: Me too, first hike!`,

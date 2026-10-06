@@ -1,5 +1,25 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Urdu in the chat uses the Urdu font in every language.** Any Urdu line in a message, a sender name, the chat title or a system notice is drawn in Jameel Noori Nastaleeq when it is installed, else the bundled Noto Nastaliq Urdu, also when the interface is in English or Arabic.
+- **Arabic interface language.** Settings → Language (and the start screen) now offers **العربية** next to English and اردو, right to left like Urdu, with every label translated. The chat itself is still never translated.
+- **Arabic in the chat uses an Arabic font.** Arabic text (Qur'anic verses, duas, Arabic messages) is drawn in **Noto Naskh Arabic**, bundled under the SIL Open Font License. The app tells Urdu from Arabic by their letters (ٹ ڈ ڑ ں ے ہ ی ک گ for Urdu, ة ي ك ى for Arabic, and vowel marks for Qur'anic text); text that could be either follows the chat's main language.
+- **Mixed messages:** English, Urdu and Arabic in one message, or in one line, each get their own font, and each line keeps its own direction.
+- **Hide or show the side panel on large screens.** The ☰ button in the chat header now hides the side panel on desktop too, giving the chat the full width, and shows it again. On phones and tablets it opens the drawer as before.
+- **Message menu, like WhatsApp's long-press menu.** Long-press a message on a phone, right-click it on a computer, or use the ⌄ button that appears on hover (or Shift+F10 on a focused message). It offers:
+  - **Star / Unstar** on every message;
+  - **Copy** the whole message exactly as exported (a poll copies its question and options; a contact card has **Copy contact details**);
+  - **Copy link** when the message has one;
+  - **View photo**, **Open document** (PDF) and **View contact**, by type;
+  - **Download** for each attached photo, video, voice note, sticker, document or contact card;
+  - **Share** through the device's share sheet, where the browser has one. It stands in for WhatsApp's Forward; Reply, Forward and Delete need a live chat, so they aren't offered.
+- **Sorting in Media, links and docs.** A sort button in the gallery header: newest or oldest first, name A–Z or Z–A, and largest or smallest first (size isn't offered for links). Month headings show only for date sorts.
+- **Search bar on large screens** now opens under the chat header, as on phones, instead of in the side panel.
+- **Search bar on phones:** the results-list button is gone, and a clear ✕ close button sits at the end of the bar. It closes and clears the search.
+- **Esc** closes the dialog on top (for example the sort sheet over the gallery), not the one under it.
+- **Sample chat:** an Arabic verse with its Urdu translation in one message, and an Arabic group message, to try the fonts, search and the message menu.
+
 ## 1.6.0 (2026-10-06)
 
 - **Fixes from the group-chat audit:**

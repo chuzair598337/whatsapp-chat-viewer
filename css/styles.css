@@ -120,7 +120,12 @@ mark.cur { background: var(--hl-cur); }
 .chat-head .who > div { min-width: 0; }
 .chat-head .t { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat-head .s { font-size: 13px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.menu-btn { display: none; }
+/* The ☰ button opens the drawer on narrow screens and hides or shows the side panel on wide ones. */
+@media (min-width: 1025px) {
+  .side-hidden .app { grid-template-columns: minmax(0, 1fr); }
+  .side-hidden .sidebar { display: none; }
+  .chat-head .menu-btn { margin-inline-start: -6px; }
+}
 .samplebar { flex: none; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 8px 16px; background: var(--enc); color: var(--enc-ink); font-size: 13.5px; text-align: center; z-index: 4; }
 .samplebar button { border: 0; background: transparent; color: var(--accent-ink); font-weight: 600; cursor: pointer; padding: 4px 6px; }
 .sstrip { flex: none; display: flex; align-items: center; gap: 4px; padding: 6px 8px; background: var(--header); border-top: 1px solid var(--line); z-index: 5; }
@@ -519,6 +524,21 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 /* ---------- Stars ---------- */
 .starbtn { position: absolute; top: 2px; width: 28px; height: 28px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--panel); color: var(--ink-3); box-shadow: 0 1px 2px var(--shadow); cursor: pointer; opacity: 0; transition: opacity .12s; z-index: 2; }
 .starbtn svg { width: 16px; height: 16px; }
+/* Message menu (js/components/message-menu.js): the ⌄ button shows on hover, like WhatsApp Web. */
+.mmore { position: absolute; top: 2px; inset-inline-end: 2px; z-index: 2; width: 26px; height: 22px; padding: 0; border: 0; border-radius: 0 6px 0 10px; display: grid; place-items: center; background: inherit; color: var(--ink-3); cursor: pointer; opacity: 0; transition: opacity .12s; box-shadow: -6px 0 8px -2px var(--mm-fade, transparent); }
+.mmore svg { width: 18px; height: 18px; }
+@media (hover: hover) { .row:hover .mmore { opacity: 1; } }
+.mmore:focus-visible, .bubble:focus-within .mmore, .row.mm-on .mmore { opacity: 1; }
+.bubble.mb .mmore, .row.stk .mmore { background: rgba(0, 0, 0, .35); color: #fff; border-radius: 50%; top: 6px; inset-inline-end: 6px; width: 24px; height: 24px; box-shadow: none; }
+@media (hover: none) { .mmore { display: none; } .row.tapped .mmore { display: grid; opacity: 1; } }
+.row.mm-on .bubble { filter: brightness(.94); }
+/* Long-press opens the menu on phones, so the browser's own callout and text selection stay out of the way. */
+.bubble { -webkit-touch-callout: none; }
+@media (hover: none) { .bubble { -webkit-user-select: none; user-select: none; } }
+.ctxmenu { position: fixed; top: 0; left: 0; inset-inline-end: auto; z-index: 90; min-width: 220px; max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; transform-origin: top left; }
+.ctxmenu .mm-head { display: grid; gap: 1px; padding: 4px 18px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
+.ctxmenu .mm-head b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ctxmenu .mm-head small { color: var(--ink-3); font-size: 12px; }
 .row.in .starbtn { inset-inline-end: -34px; }
 .row.out .starbtn { inset-inline-start: -34px; }
 @media (hover: hover) { .row:hover .starbtn { opacity: 1; } }
@@ -668,6 +688,9 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gtile img, .gtile video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 .gtile.stk { background: var(--panel-2); }
 .gtile.stk img { object-fit: contain; padding: 10%; }
+.sheet.gal header #galSort { margin-inline-start: auto; }
+#galSort.on { color: var(--accent-ink); }
+.gsec:not(:has(h3)) { padding-top: 8px; }
 /* Animated stickers (.was) drawn by lottie-web as SVG */
 .lottie svg { display: block; width: 100% !important; height: 100% !important; }
 .gtile .lottie { position: absolute; inset: 10%; pointer-events: none; }
@@ -727,6 +750,23 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+2010-2011, U+204F, U+25CC; }
 @font-face { font-family: "Noto Nastaliq Urdu"; font-weight: 600 700; font-display: swap; src: url("../fonts/noto-nastaliq-urdu-700.woff2") format("woff2");
   unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200F, U+2010-2011, U+204F, U+25CC; }
+/* Arabic: Noto Naskh Arabic (SIL Open Font Licence, fonts/OFL-noto-naskh-arabic.txt), limited to
+   Arabic-script text like the Urdu font. It is the Arabic interface's font and the font of Arabic text
+   in the chat (.s-ar); Urdu text in the chat uses the Nastaliq font (.s-ur) in every interface language. */
+@font-face { font-family: "Noto Naskh Arabic"; font-weight: 400; font-display: swap; src: url("../fonts/noto-naskh-arabic-400.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E, U+2010-2011, U+204F, U+2E41; }
+@font-face { font-family: "Noto Naskh Arabic"; font-weight: 600 700; font-display: swap; src: url("../fonts/noto-naskh-arabic-700.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-08FF, U+FB50-FDFF, U+FE70-FEFF, U+200C-200E, U+2010-2011, U+204F, U+2E41; }
+:root { --font-ur: "Jameel Noori Nastaleeq", "Jameel Noori Nastaliq", "Noto Nastaliq Urdu", var(--font); --font-ar: "Noto Naskh Arabic", var(--font); }
+.s-ur { font-family: var(--font-ur); font-size: 1.1em; line-height: 1.9; }
+.s-ar { font-family: var(--font-ar); font-size: 1.08em; line-height: 1.75; }
+.txt.jumbo :is(.s-ur, .s-ar) { font-size: 1em; line-height: inherit; }
+:root[lang="ar"] { --font-ui: var(--font-ar); }
+:root[lang="ar"] body { font-family: var(--font-ui); line-height: 1.6; }
+:root[lang="ar"] .mlabel { text-transform: none; letter-spacing: 0; }
+:root[lang="ar"] .bubble, :root[lang="ar"] .sysrow .pill, :root[lang="ar"] .res, :root[lang="ar"] .starlist { font-family: var(--font); line-height: 1.4; }
+:root[lang="ar"] .brand > div { min-width: 0; }
+:root[lang="ar"] .stat h3 span { margin-inline-start: 8px; }
 :root[lang="ur"] { --font-ui: "Jameel Noori Nastaleeq", "Jameel Noori Nastaliq", "Noto Nastaliq Urdu", var(--font); }
 :root[lang="ur"] body { font-family: var(--font-ui); line-height: 1.9; }
 /* Nastaliq is tall: give single-line labels room so the letters aren't clipped. */
@@ -762,6 +802,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 /* Language picker on the start screen */
 .start-lang { justify-self: end; display: inline-flex; border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--panel); }
 .start-lang button { border: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: 13.5px; padding: 5px 14px; cursor: pointer; }
+.start-lang button[lang="ar"], .mi-lang[lang="ar"], .menu .ml[lang="ar"] { font-family: var(--font-ar); }
 .start-lang button[lang="ur"] { font-family: "Jameel Noori Nastaleeq", "Jameel Noori Nastaliq", "Noto Nastaliq Urdu", var(--font); padding-block: 2px 4px; }
 .start-lang button[aria-pressed="true"] { background: var(--accent); color: #fff; }
 .mi-lang { font-weight: 600; font-size: 15px; display: grid; place-items: center; color: var(--ink-3); }

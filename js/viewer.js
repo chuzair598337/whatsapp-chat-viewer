@@ -175,20 +175,59 @@ function formatText(raw) {
       closeList();
       let q = [m[1]];
       while (i + 1 < lines.length && (m = /^&gt; ?(.*)$/.exec(lines[i + 1]))) { q.push(m[1]); i++; }
-      html += '<blockquote>' + q.map(inline).join('<br>') + '</blockquote>';
+      html += '<blockquote>' + q.map(x => scriptSpans(inline(x), scriptLang(x))).join('<br>') + '</blockquote>';
     } else if ((m = /^[-*•] (.*)$/.exec(l))) {
       if (list !== 'ul') { closeList(); html += '<ul>'; list = 'ul'; }
-      html += '<li>' + inline(m[1]) + '</li>';
+      html += '<li>' + scriptSpans(inline(m[1]), scriptLang(m[1])) + '</li>';
     } else if ((m = /^(\d{1,3})\. (.*)$/.exec(l))) {
       if (list !== 'ol') { closeList(); html += '<ol start="' + m[1] + '">'; list = 'ol'; }
-      html += '<li value="' + m[1] + '">' + inline(m[2]) + '</li>';
+      html += '<li value="' + m[1] + '">' + scriptSpans(inline(m[2]), scriptLang(m[2])) + '</li>';
     } else {
       closeList();
-      html += inline(l) + (i < lines.length - 1 ? '<br>' : '');
+      html += scriptSpans(inline(l), scriptLang(l)) + (i < lines.length - 1 ? '<br>' : '');
     }
   }
   closeList();
   return html.replace(/\u0000(\d+)\u0001/g, (_, n) => keep[+n]).replace(/\u0000(\d+)\u0001/g, (_, n) => keep[+n]);
+}
+/* Fonts for Arabic-script text, in every interface language: Urdu in Nastaliq, Arabic in Naskh
+   (css: .s-ur / .s-ar). Each run of Arabic-script letters is wrapped in a span with its language,
+   so one message can mix English, Arabic and Urdu. A run is Urdu when it has letters Arabic doesn't
+   use (ٹ ڈ ڑ ں ے ھ ہ ک گ ی پ چ ژ), Arabic when it has Arabic-only letters (ة ي ك ى) or is fully
+   vowelled (as Quranic verses are); a run with only shared letters takes its line's language, or the
+   chat's (scriptDefault, set from the whole chat when it opens). */
+const AS = '\u0600-\u06FF\u0750-\u077F\u0870-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF';
+const RE_AS = new RegExp('[' + AS + ']');
+const RE_AS_RUN = new RegExp('[' + AS + '](?:[' + AS + '\\s\u200C\u200D0-9.,!:()«»"\'\\-]*[' + AS + '])?', 'g');
+const RE_UR_ONLY = /[\u0679\u0688\u0691\u06BA\u06BB\u06BE\u06C0-\u06C3\u06D2\u06D3\u06CC\u06A9\u06AF\u067E\u0686\u0698\u06F0-\u06F9]/;
+const RE_AR_ONLY = /[\u0629\u064A\u0643\u0649]/;
+let scriptDefault = 'ur';
+function scriptLang(s) {
+  if (!RE_AS.test(s)) return null;
+  const marks = (s.match(/[\u064B-\u0652\u0670\u06D6-\u06ED]/g) || []).length;
+  if (marks >= 3 && marks * 4 > (s.match(new RegExp('[' + AS + ']', 'g')) || []).length) return 'ar';
+  if (RE_UR_ONLY.test(s)) return 'ur';
+  if (RE_AR_ONLY.test(s)) return 'ar';
+  return '';
+}
+// Wraps the Arabic-script runs in the text of escaped HTML (tags are left alone).
+function scriptSpans(html, lineLang) {
+  if (!RE_AS.test(html)) return html;
+  return html.split(/(<[^>]+>)/).map((part, k) => k % 2 ? part : part.replace(RE_AS_RUN, run => {
+    const l = scriptLang(run) || lineLang || scriptDefault;
+    return '<span class="s-' + l + '" lang="' + l + '">' + run + '</span>';
+  })).join('');
+}
+// Plain text (a name, a system notice) as HTML with its Arabic-script runs marked.
+const scriptHTML = s => scriptSpans(esc(s), scriptLang(s));
+// The chat's own Arabic-script language, for runs with only letters Arabic and Urdu share.
+function setScriptDefault(msgs) {
+  let ur = 0, ar = 0;
+  for (let i = 0, n = Math.min(msgs.length, 20000); i < n; i++) {
+    const s = msgs[i].message; if (!s || !RE_AS.test(s)) continue;
+    const l = scriptLang(s); if (l === 'ur') ur++; else if (l === 'ar') ar++;
+  }
+  scriptDefault = ar > ur || (!ur && !ar && I18N.lang === 'ar') ? 'ar' : 'ur';
 }
 // Direction of a message's text, from its first letter: Urdu or Arabic reads right to left. The time
 // sits where the text ends, so it doesn't cover the last line (css: .bubble.tltr / .trtl).
@@ -966,13 +1005,13 @@ function makeRow(it, idx) {
   if (it.type === 'sys') {
     const k = sysKind(m.message);
     el.className = 'row sysrow';
-    el.innerHTML = '<span dir="auto" class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(esc(m.message), it.i) + '</span>';
+    el.innerHTML = '<span dir="auto" class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(scriptHTML(m.message), it.i) + '</span>';
     return el;
   }
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
   el.className = 'row ' + (m.isOutgoing ? 'out' : 'in') + (it.first ? ' first' : '') + (grp ? ' grp' : '') + (reacts ? ' hasr' : '');
   let body = '';
-  if (it.showName) body += '<div dir="auto" class="name nc' + colorIdx(m.sender) + '">' + hl(esc(m.sender), it.i) + '</div>';
+  if (it.showName) body += '<div dir="auto" class="name nc' + colorIdx(m.sender) + '">' + hl(scriptHTML(m.sender), it.i) + '</div>';
   const metaInner = (starred ? '<span class="stard" title="' + t('msg.starred') + '">' + ICON.starFill + '</span>' : '') + (m.edited ? '<span class="edtag">' + t('msg.edited') + '</span>' : '') + '<span dir="ltr">' + m.formattedTime + '</span>';
   const space = '<span class="mspace' + (m.edited ? ' e' : '') + '"></span>';
   let tailText = true, visual = false, overlay = false, stk = false;
@@ -1027,7 +1066,8 @@ function makeRow(it, idx) {
     rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="' + esc(t('msg.reactions', { list: tip })) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
   }
   const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
-  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
+  const mmore = '<button class="mmore" data-mmenu="' + it.i + '" aria-haspopup="menu" aria-label="' + t('mm.more') + '" title="' + t('mm.more') + '">' + ICON.down + '</button>';
+  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + mmore + starBtn + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   if (stk) Was.mount(el);

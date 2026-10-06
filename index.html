@@ -17,7 +17,7 @@
 <section id="start" class="start" aria-labelledby="startTitle">
   <div class="start-in">
     <div class="start-lang" role="group" aria-label="Language" data-i18n-attr="aria-label:common.language">
-      <button data-lang-opt="en-US" aria-pressed="false" lang="en" dir="ltr">English</button><button data-lang-opt="ur" aria-pressed="false" lang="ur" dir="rtl">اردو</button>
+      <button data-lang-opt="en-US" aria-pressed="false" lang="en" dir="ltr">English</button><button data-lang-opt="ur" aria-pressed="false" lang="ur" dir="rtl">اردو</button><button data-lang-opt="ar" aria-pressed="false" lang="ar" dir="rtl">العربية</button>
     </div>
     <div class="start-brand">
       <span class="logo" id="startLogo"></span>
@@ -123,14 +123,13 @@
       </div>
     </header>
     <div id="sstrip" class="sstrip" hidden>
-      <button class="ibtn sm" id="sClose" aria-label="Close search" data-i18n-attr="aria-label:search.close_search"></button>
       <div class="searchbox">
         <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat" data-i18n-attr="aria-label:common.search_this_chat;placeholder:common.search_this_chat">
         <span id="count2" class="count"></span>
       </div>
       <button class="ibtn sm" id="prev2" aria-label="Previous match (older)" data-i18n-attr="aria-label:common.previous_match_older"></button>
       <button class="ibtn sm" id="next2" aria-label="Next match (newer)" data-i18n-attr="aria-label:common.next_match_newer"></button>
-      <button class="ibtn sm" id="sList" aria-label="Show all results" data-i18n-attr="aria-label:search.show_all_results"></button>
+      <button class="ibtn sm" id="sClose" aria-label="Close search" title="Close search" data-i18n-attr="aria-label:search.close_search;title:search.close_search"></button>
     </div>
     <div id="samplebar" class="samplebar" hidden>
       <span data-i18n="banner.this_is_a_made_up">This is a made-up sample chat. Its photos, video, GIF, sticker, audio and files are generated on this device.</span>
@@ -163,12 +162,6 @@
     <div class="body set-body" id="setBody"></div>
   </div>
 </div>
-<div id="pickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pickTitle">
-  <div class="sheet narrow pick">
-    <header><h2 id="pickTitle"></h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
-    <div class="body" id="pickList" role="radiogroup" aria-labelledby="pickTitle"></div>
-  </div>
-</div>
 <div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
   <div class="sheet">
     <header><h2 id="statsTitle" data-i18n="common.chat_statistics">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics" data-i18n-attr="aria-label:stats.close_statistics"></button></header>
@@ -182,6 +175,7 @@
     <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
   </div>
 </div>
+<div class="menu ctxmenu" id="msgMenu" role="menu" aria-label="Message options" hidden data-i18n-attr="aria-label:mm.menu"></div>
 <div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-attr="aria-label:viewer.photo_viewer">
   <div class="lb-top"><div class="lb-who"><b id="lbWho" dir="auto"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)" data-i18n-attr="aria-label:viewer.rotate_photo;title:viewer.rotate_90_r"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)" data-i18n-attr="aria-label:viewer.fit_to_screen;title:viewer.fit_to_screen_0"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo" data-i18n-attr="aria-label:viewer.download_photo;title:viewer.download_photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer" data-i18n-attr="aria-label:viewer.close_photo_viewer"></button></div>
   <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo" data-i18n-attr="aria-label:viewer.previous_photo"></button><img id="lbImg" alt=""><video id="lbVid" playsinline hidden></video><button class="lb-nav" id="lbNext" aria-label="Next photo" data-i18n-attr="aria-label:viewer.next_photo"></button></div>
@@ -189,9 +183,15 @@
 </div>
 <div id="galModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="galTitle">
   <div class="sheet gal">
-    <header><h2 id="galTitle" data-i18n="common.media_links_and_docs">Media, links and docs</h2><button class="ibtn" data-close aria-label="Close media, links and docs" data-i18n-attr="aria-label:gallery.close_media_links_and_docs"></button></header>
+    <header><h2 id="galTitle" data-i18n="common.media_links_and_docs">Media, links and docs</h2><button class="ibtn" id="galSort" aria-haspopup="dialog" aria-label="Sort" title="Sort" data-i18n-attr="aria-label:gallery.sort;title:gallery.sort"></button><button class="ibtn" data-close aria-label="Close media, links and docs" data-i18n-attr="aria-label:gallery.close_media_links_and_docs"></button></header>
     <div class="gchips" id="galChips" role="tablist" aria-label="Show" data-i18n-attr="aria-label:gallery.show"></div>
     <div class="gbody" id="galBody"></div>
+  </div>
+</div>
+<div id="pickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+  <div class="sheet narrow pick">
+    <header><h2 id="pickTitle"></h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
+    <div class="body" id="pickList" role="radiogroup" aria-labelledby="pickTitle"></div>
   </div>
 </div>
 <div id="vcModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="vcTitle">
@@ -240,6 +240,7 @@
 <script src="js/i18n/i18n.js"></script>
 <script src="js/i18n/en.js"></script>
 <script src="js/i18n/ur.js"></script>
+<script src="js/i18n/ar.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/media.js"></script>
 <script src="js/text-truncator.js"></script>
@@ -247,6 +248,7 @@
 <script src="js/demo-data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/components/media-gallery.js"></script>
+<script src="js/components/message-menu.js"></script>
 <script src="js/components/settings.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>

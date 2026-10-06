@@ -16,6 +16,7 @@ node_modules/
 *.zip
 *.txt
 !docs/**/*.txt
+!fonts/*.txt
 WhatsApp Chat*/
 test-chats/
 

@@ -86,7 +86,8 @@ I18N.add('en-US', {
     "participants_sub": "{n} participants",
     "messages_sub": "{n} messages",
     "group_sub": "Group · {n} participants",
-    "between": "Chat between {a} and {b}"
+    "between": "Chat between {a} and {b}",
+    "hide_chat_details": "Hide chat details"
   },
   "menu": {
     "chat_menu": "Chat menu",
@@ -100,7 +101,6 @@ I18N.add('en-US', {
   },
   "search": {
     "close_search": "Close search",
-    "show_all_results": "Show all results",
     "system": "System",
     "n_of_m": "{i} of {n}",
     "no_matches": "No matches",
@@ -178,7 +178,15 @@ I18N.add('en-US', {
   },
   "gallery": {
     "close_media_links_and_docs": "Close media, links and docs",
-    "show": "Show"
+    "show": "Show",
+    "sort": "Sort",
+    "sort_by": "Sort by",
+    "newest": "Newest first",
+    "oldest": "Oldest first",
+    "name_az": "Name (A to Z)",
+    "name_za": "Name (Z to A)",
+    "largest": "Largest first",
+    "smallest": "Smallest first"
   },
   "contact": {
     "contact": "Contact",
@@ -545,5 +553,18 @@ I18N.add('en-US', {
     "about": "About",
     "version": "Version {v}",
     "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only."
+  },
+  "mm": {
+    "menu": "Message options",
+    "more": "More options",
+    "copy": "Copy",
+    "message": "Message",
+    "poll": "Poll",
+    "contact": "Contact",
+    "copy_contact": "Copy contact details",
+    "view_photo": "View photo",
+    "open_document": "Open document",
+    "share": "Share",
+    "share_failed": "Sharing isn't available here."
   }
 });

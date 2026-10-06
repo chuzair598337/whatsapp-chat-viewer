@@ -17,8 +17,20 @@ const GAL_GRID = new Set(['photos', 'videos', 'stickers']);
 const GAL_PAGE = 120; // items added to the page at a time, so very media-heavy chats stay smooth
 const galBody = $('galBody'), galSm = ic => ICON[ic].replace('width="22" height="22"', 'width="16" height="16"');
 
+// Sort orders: by date (with month headings), by name, or by size (files only; links go last).
+const GAL_SORTS = [['new', 'gallery.newest'], ['old', 'gallery.oldest'], ['az', 'gallery.name_az'], ['za', 'gallery.name_za'], ['big', 'gallery.largest'], ['small', 'gallery.smallest']];
+const galName = it => it.cat === 'links' ? it.x.href.replace(/^https?:\/\/(www\.)?/i, '') : it.cat === 'contacts' && Media.cards.get(it.e.name) && Media.cards.get(it.e.name)[0] ? Media.cards.get(it.e.name)[0].name : (it.a.title || it.e.name);
+const galCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+function galSorted(list, sort) {
+  if (sort === 'new') return list; // the index is newest first
+  if (sort === 'old') return list.slice().reverse();
+  const out = list.slice();
+  if (sort === 'az' || sort === 'za') { const d = sort === 'az' ? 1 : -1; out.sort((a, b) => d * galCollator.compare(galName(a), galName(b)) || b.i - a.i); }
+  else { const d = sort === 'big' ? -1 : 1, size = it => it.e ? it.e.size : null; out.sort((a, b) => (size(a) === null) - (size(b) === null) || d * (size(a) - size(b)) || b.i - a.i); }
+  return out;
+}
 const Gallery = {
-  key: null, items: [], counts: {}, cat: 'all', list: [], n: 0, sec: null, io: null, durs: new Map(),
+  key: null, items: [], counts: {}, cat: 'all', sort: 'new', list: [], n: 0, sec: null, io: null, durs: new Map(),
 
   /* ---------- Index: one entry per attachment or link, newest first ---------- */
   index() {
@@ -68,7 +80,8 @@ const Gallery = {
       t(label) + ' <span class="cc">' + nf(this.counts[c]) + '</span></button>').join('');
     const on = $('galChips').querySelector('.on');
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    this.list = cat === 'all' ? this.items : this.items.filter(x => x.cat === cat);
+    this.list = galSorted(cat === 'all' ? this.items : this.items.filter(x => x.cat === cat), this.sort);
+    $('galSort').classList.toggle('on', this.sort !== 'new');
     this.n = 0; this.sec = null;
     galBody.scrollTop = 0;
     galBody.innerHTML = '';
@@ -85,13 +98,13 @@ const Gallery = {
   more() {
     const end = Math.min(this.list.length, this.n + GAL_PAGE);
     for (let k = this.n; k < end; k++) {
-      const it = this.list[k], m = S.msgs[it.i], mk = m.dateKey.slice(0, 7);
+      const it = this.list[k], m = S.msgs[it.i], byDate = this.sort === 'new' || this.sort === 'old', mk = byDate ? m.dateKey.slice(0, 7) : '';
       if (!this.sec || this.sec.mk !== mk) {
         const el = document.createElement('section');
         el.className = 'gsec';
-        el.innerHTML = '<h3>' + esc(monthLabel(mk)) + '</h3><div class="ggrid"></div><div class="glist"></div>';
+        el.innerHTML = (byDate ? '<h3>' + esc(monthLabel(mk)) + '</h3>' : '') + '<div class="ggrid"></div><div class="glist"></div>';
         galBody.appendChild(el);
-        this.sec = { mk, grid: el.children[1], list: el.children[2] };
+        this.sec = { mk, grid: el.querySelector('.ggrid'), list: el.querySelector('.glist') };
       }
       const grid = GAL_GRID.has(it.cat);
       (grid ? this.sec.grid : this.sec.list).insertAdjacentHTML('beforeend', grid ? tileHTML(it, k) : rowHTML(it, k));
@@ -232,5 +245,11 @@ galBody.addEventListener('loadedmetadata', e => {
 
 $('galBtn').onclick = () => Gallery.open('all');
 $('miGal').innerHTML = ICON.image;
+ICON.sort = ic('<path d="M7 4v16M3.5 16.5L7 20l3.5-3.5M17 20V4M13.5 7.5L17 4l3.5 3.5"/>');
+$('galSort').innerHTML = ICON.sort;
+$('galSort').onclick = () => {
+  const links = Gallery.cat === 'links';
+  pickSheet(t('gallery.sort_by'), GAL_SORTS.filter(([v]) => !(links && (v === 'big' || v === 'small'))).map(([v, k]) => [v, esc(t(k))]), Gallery.sort, v => { Gallery.sort = v; Gallery.show(Gallery.cat); });
+};
 $('mediaGrid').addEventListener('click', e => { const t = e.target.closest('[data-gcat]'); if (t) Gallery.open(t.dataset.gcat); });
 $('mediaAll').onclick = () => Gallery.open('all');

@@ -18,6 +18,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 12. [Code layout](#12-code-layout)
 13. [Interface languages](#13-interface-languages)
 14. [Settings](#14-settings)
+15. [Message menu](#15-message-menu)
 
 ---
 
@@ -81,8 +82,9 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 ## 4. Responsive layout
 
-- **Desktop (over 1024 px):** a two-pane layout. The sidebar shows the chat profile, a summary, the search box with results, media counts and settings. The chat pane fills the rest.
-- **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button, and search becomes a strip under the header.
+- **Desktop (over 1024 px):** a two-pane layout. The sidebar shows the chat profile, a summary, media counts and jump to date. The chat pane fills the rest. The ☰ button in the chat header hides the sidebar so the chat takes the full width, and shows it again (not remembered between visits).
+- **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button.
+- **Search** opens as a bar under the chat header on every screen size, with ↑ ↓ and a ✕ close button at the end.
 - **Phone polish:** no horizontal scrolling at phone widths, and safe-area insets for notched phones.
 - **Group chats:** each sender's name has its own colour, and each run of their messages starts with an avatar showing their initials in that colour.
 - **Accessibility:** keyboard focus is managed in modals and returned afterwards, every button and field has an accessible name, toggles such as the star expose `aria-pressed`, and animations are switched off for `prefers-reduced-motion`.
@@ -164,6 +166,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
   - audio: the same voice-note and music players as in the chat, with waveform, seek and speed;
   - links: site badge, site name, address, the message text around the link, copy and open buttons;
   - contacts: the contact card with **View contact** and **Save .vcf**.
+- **Sort:** the sort button in the gallery header opens a pick sheet: newest first (the default), oldest first, name A–Z, name Z–A, largest first and smallest first. Size isn't offered for links. Month headings show only for the date sorts. Names sort with the interface language's collation, numbers in order (IMG-2 before IMG-10).
 - Every row has a **Show in chat** button that closes the gallery and jumps to the message.
 - Only files that are in the export are listed. A category with nothing in it says so ("No videos in this chat"); for a `.txt`-only import it suggests opening the ZIP export instead.
 - Items are added 120 at a time as you scroll, so chats with thousands of files stay smooth.
@@ -172,7 +175,6 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 - **Search:** results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
-- **Results list:** each result shows the sender, date and a snippet, and clicking one jumps to that message.
 - **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
 - **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
@@ -180,7 +182,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
 - **Keyboard shortcuts:**
   - `/` or `Ctrl/Cmd+F` opens search. `/` is ignored while you're typing in a field.
-  - `Esc` clears the search, then closes the open panel, starred list or drawer.
+  - `Esc` clears the search, then closes the dialog on top (a pick sheet before the gallery under it), the starred list or the drawer.
   - In the photo viewer: `+`, `-`, `0`, `R`, arrow keys and `Esc`.
 
 ## 8. Statistics
@@ -268,14 +270,16 @@ The scripts are plain browser scripts with no build step. They share globals and
 
 ## 13. Interface languages
 
-- **English (US)** is the default. **Urdu (اردو)** is the second language. Pick one under **Language** in Settings or with the English / اردو switch at the top of the start screen. The choice is saved on this device as `app_language` and applies at once, even with a chat open or the tour running.
+- **English (US)** is the default. **Urdu (اردو)** and **Arabic (العربية)** are the others. Pick one under **Language** in Settings or with the English / اردو / العربية switch at the top of the start screen. The choice is saved on this device as `app_language` and applies at once, even with a chat open or the tour running.
 - **What is translated:** everything the app says. That covers the start screen, sidebar, header and ⋮ menu, search, filters, starred messages, the gallery and its chips, statistics (including weekday names), the photo, PDF and contact viewers, the guided tour, month headings and dates outside the chat, the poll footer, the "Edited" tag, toasts and error messages.
 - **What is never translated:** the chat itself. Messages, sender and contact names, file names, captions, WhatsApp's own system notices, call logs, deleted-message placeholders, omitted-media lines and the date rows between days are shown exactly as they are in the export, so they look the same in both languages.
-- **Right to left.** In Urdu the page is `dir="rtl"`. The layout uses logical CSS properties, so the side panel, menus and dialogs mirror on their own. A few rules handle the rest: the slide-in drawer, arrow icons, and the arrow keys and swipes in the photo viewer, the gallery chips and the tour, which follow the reading direction.
+- **Right to left.** In Urdu and Arabic the page is `dir="rtl"`. The layout uses logical CSS properties, so the side panel, menus and dialogs mirror on their own. A few rules handle the rest: the slide-in drawer, arrow icons, and the arrow keys and swipes in the photo viewer, the gallery chips and the tour, which follow the reading direction.
 - **The chat doesn't mirror.** The message list (`#layer`) is `dir="ltr"`, so sent messages are always on the right and received ones, with their avatars, on the left, as in WhatsApp. The app's own labels inside bubbles (poll footer, location and file cards, "Read more") take their direction from their text, so Urdu labels still read right to left.
 - **Mixed text.** Each message, name and system notice gets `dir="auto"`, so an English message reads left to right in the Urdu interface and an Urdu message reads right to left in the English one. Inside a message each line takes its own direction (`unicode-bidi: plaintext`), so an English first line followed by Urdu ones reads right. The time sits where the last line ends. Dates in the date fields and file extensions such as `.zip` stay left to right.
-- **Font.** Urdu text uses Jameel Noori Nastaleeq when it is installed on the device. Its licence doesn't allow shipping it, so the app bundles **Noto Nastaliq Urdu** (SIL Open Font Licence, `fonts/`) as the fallback. It is limited to Arabic-script characters, so Latin text and numbers keep the normal font, and chat bubbles keep the normal font so messages look the same in both languages. Nothing is downloaded.
-- **For developers.** Text lives in `js/i18n/en.js` and `js/i18n/ur.js`. These are scripts rather than JSON files, because a page opened from disk (`file://`) can't fetch JSON. Call `t('section.key', { name: value })`; `{name}` is filled in (wrapped in invisible isolate marks so a Latin name or a number keeps its place in an Urdu sentence), a `key_one` entry is used when `n` is 1, and a missing Urdu entry falls back to English. Static HTML uses `data-i18n`, `data-i18n-html` and `data-i18n-attr`. Switching fires a `langchange` event, and `app.js` redraws the open chat, panels and dialogs.
+- **Interface fonts.** The Urdu interface uses Jameel Noori Nastaleeq when it is installed on the device. Its licence doesn't allow shipping it, so the app bundles **Noto Nastaliq Urdu** as the fallback. The Arabic interface uses the bundled **Noto Naskh Arabic**. Both are under the SIL Open Font Licence (`fonts/`) and limited to Arabic-script characters, so Latin text and numbers keep the normal font. Nothing is downloaded.
+- **Chat fonts, in every interface language.** Each run of Arabic-script text in a message, sender name, chat title, system notice or search snippet is wrapped in a span marked Urdu (`.s-ur`, the Nastaliq stack) or Arabic (`.s-ar`, Noto Naskh Arabic), so Urdu always looks like Urdu and a Qur'anic verse looks like Arabic, even in the English interface. Latin text, emoji and numbers around it keep the normal font.
+  - **Urdu or Arabic?** Decided per line: letters only Urdu uses (ٹ ڈ ڑ ں ے ہ ی ک گ پ چ ژ, Urdu digits) mean Urdu; letters only Arabic uses (ة ي ك ى) mean Arabic; a fully vowelled line (Qur'anic text) is Arabic. A line that could be either follows the chat's main language, counted over its messages (Urdu unless Arabic wins).
+- **For developers.** Text lives in `js/i18n/en.js`, `js/i18n/ur.js` and `js/i18n/ar.js`. These are scripts rather than JSON files, because a page opened from disk (`file://`) can't fetch JSON. Call `t('section.key', { name: value })`; `{name}` is filled in (wrapped in invisible isolate marks so a Latin name or a number keeps its place in an Urdu sentence), a `key_one` entry is used when `n` is 1, and a missing Urdu or Arabic entry falls back to English. Static HTML uses `data-i18n`, `data-i18n-html` and `data-i18n-attr`. Switching fires a `langchange` event, and `app.js` redraws the open chat, panels and dialogs.
 
 ## 14. Settings
 
@@ -283,7 +287,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **You are:** the card at the top shows who you are in this chat, with your avatar. Tap it to pick another person (or nobody); your messages move to the right in green.
 - **Chats:**
   - **Theme:** Light, Dark or Match system, in a pick sheet.
-  - **Language:** English or اردو. The whole app redraws in the new language at once, the Settings screen included.
+  - **Language:** English, اردو or العربية. The whole app redraws in the new language at once, the Settings screen included.
   - **Background pattern:** a switch for the doodles behind the messages.
   - **Date format:** Automatic, Day / Month or Month / Day, with the order being used and a **guessed** badge when the chat could be read either way. A forced order that gives impossible dates is refused with a message. Exports written as YYYY-MM-DD have nothing to choose, so the row is disabled.
 - **This chat:** **Chat statistics**.
@@ -292,3 +296,18 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
 - **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The side panel keeps **Jump to date**. The start screen keeps its English / اردو switch, because no chat is open there yet.
+
+## 15. Message menu
+
+`js/components/message-menu.js`, like WhatsApp's long-press menu.
+
+- **Opening it:** long-press a message on a phone or tablet (the tap that ends it doesn't open the photo), right-click it on a computer, press the ⌄ button that appears on a message on hover (on phones, after tapping the message), or press Shift+F10 or the menu key on a focused message. Right-clicking a text selection keeps the browser's own menu, for copying part of a message.
+- **The header** names the sender and the time.
+- **Actions, by message:**
+  - **Star / Unstar:** every message.
+  - **Copy:** the whole message exactly as exported, line breaks and formatting marks included. A poll copies its question and options; a location copies its text or link.
+  - **Copy link:** the first link in the message.
+  - **View photo**, **Open document** (PDFs) and **View contact**, for those attachments, plus **Copy contact details** (name, organisation, numbers, emails, web addresses) for a contact card.
+  - **Download:** one entry per attached file (photo, video, voice note, sticker, document, contact card), named by file when there are several.
+  - **Share:** the device's share sheet with the files, or the text, where the browser supports it. It stands in for Forward. Reply, Forward, Delete and React need a live chat, so they aren't offered.
+- **Keyboard:** ↑ ↓, Home and End move; Enter runs; Esc closes and returns focus to the message. Scrolling, resizing, switching language or a press outside closes it.

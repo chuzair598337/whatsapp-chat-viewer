@@ -19,7 +19,8 @@
    ===================================================================== */
 const LANGS = [
   { code: 'en-US', name: 'English', dir: 'ltr', locale: 'en-US' },
-  { code: 'ur', name: 'اردو', dir: 'rtl', locale: 'ur-PK' }
+  { code: 'ur', name: 'اردو', dir: 'rtl', locale: 'ur-PK' },
+  { code: 'ar', name: 'العربية', dir: 'rtl', locale: 'ar' }
 ];
 const I18N = {
   dicts: {}, lang: 'en-US',

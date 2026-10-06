@@ -32,7 +32,7 @@ const Tour = {
     {
       sec: 'finding', key: 'search',
       prep: () => closeDrawer(),
-      target: () => isNarrow() ? vis('searchBtn') : vis('searchSec')
+      target: () => vis('searchBtn')
     },
     sideStep({
       sec: 'finding', key: 'date_and_sender',
