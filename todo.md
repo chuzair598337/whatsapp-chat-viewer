@@ -215,6 +215,9 @@ Findings from the audit of a large real group export (many members, mixed langua
 - [x] Message menu (long-press, right-click, ⌄ button, Shift+F10): Star/Unstar, Copy, Copy link, View photo, Open document, View contact, Copy contact details, Download, Share. *New (Phase 16).*
 - [x] Sorting in Media, links and docs: date, name, size, both directions. *New (Phase 16).*
 - [x] Search bar under the header on large screens; on phones, no results-list button and a clear ✕ close. *New (Phase 16).*
+- [x] No gap under the last message when date filters are on. *New (Phase 16).*
+- [x] Chat statistics: charts above Messages by person. *New (Phase 16).*
+- [x] Messages by person sortable by every column, both directions; lists everyone. *New (Phase 16).*
 
 ## Verification done for this list
 

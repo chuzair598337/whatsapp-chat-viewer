@@ -384,6 +384,10 @@ mark.cur { background: var(--hl-cur); }
 .ptable td { padding: 6px 8px; text-align: end; border-top: 1px solid var(--line); white-space: nowrap; }
 .ptable td:first-child { text-align: start; padding-inline-start: 0; width: 45%; white-space: normal; }
 .ptable .pn { display: block; overflow-wrap: anywhere; }
+.psort { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; padding: 4px 2px; border-radius: 4px; color: inherit; font: inherit; }
+.psort:hover, .psort.on { color: var(--ink); }
+.psort:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.psort .parr { font-size: 9px; min-width: 9px; }
 .hbar { height: 6px; border-radius: 0 3px 3px 0; background: var(--accent); margin-top: 5px; min-width: 2px; }
 .days { display: grid; gap: 2px; }
 .day { display: grid; grid-template-columns: minmax(0, 1fr) 2fr auto; gap: 10px; align-items: center; border: 0; background: transparent; padding: 6px 4px; border-radius: 6px; cursor: pointer; text-align: start; font-size: 13.5px; }

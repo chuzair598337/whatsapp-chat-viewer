@@ -189,9 +189,9 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 The statistics window shows:
 - **Totals:** messages, words, media, active days out of the chat's span, messages per active day and words per message.
-- **Messages by person:** a table with each person's messages, share, words and media, plus a bar for each.
 - **Busiest days:** the top seven days. Tap one to jump to it.
 - **Activity:** charts by weekday and by hour of day, using the times shown in the export.
+- **Messages by person**, last so a long list doesn't push the charts down: a table of everyone with their messages, share, words and media, plus a bar for each. Every column header sorts the table (most first for numbers, A–Z for names); pressing it again reverses the order. The sorted column shows ▲ or ▼ and is announced to screen readers (`aria-sort`).
 
 ## 9. Themes
 

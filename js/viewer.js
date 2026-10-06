@@ -299,6 +299,8 @@ class Fenwick {
   }
 }
 const scroller = $('scroller'), layer = $('layer'), spacer = $('spacer');
+// Room under the last message, so it never sits flush with the bottom edge (WhatsApp leaves a gap above its composer).
+const END_PAD = 16;
 const VL = {
   items: [], h: null, fw: null, nodes: new Map(), raf: 0, target: null, width: 0,
   set(items, target) {
@@ -333,7 +335,7 @@ const VL = {
     const st = scroller.scrollTop, a = this.fw.find(st), aOff = st - this.fw.sum(a);
     this.fw.add(i, hh - this.h[i]); this.h[i] = hh;
     for (const [k, n] of this.nodes) n.style.transform = 'translateY(' + this.fw.sum(k) + 'px)';
-    spacer.style.height = this.fw.sum(this.items.length) + 'px';
+    spacer.style.height = this.fw.sum(this.items.length) + END_PAD + 'px';
     if (i < a) scroller.scrollTop = this.fw.sum(a) + aOff;
     this.schedule();
   },
@@ -345,11 +347,11 @@ const VL = {
     if (!n) { spacer.style.height = '0px'; this.clear(); afterRender(); return; }
     for (let pass = 0; pass < 6; pass++) {
       const vh = scroller.clientHeight;
-      spacer.style.height = fw.sum(n) + 'px';
+      spacer.style.height = fw.sum(n) + END_PAD + 'px';
       const tg = this.target;
       if (tg) {
         let top;
-        if (tg.bottom) top = fw.sum(n) - vh;
+        if (tg.bottom) top = fw.sum(n) + END_PAD - vh;
         else if (tg.center) top = fw.sum(tg.i) - (vh - h[tg.i]) / 2;
         else if (tg.frac !== undefined) top = fw.sum(tg.i) + tg.frac * h[tg.i];
         else top = fw.sum(tg.i) + (tg.off || 0);
@@ -364,7 +366,7 @@ const VL = {
       let changed = false;
       for (const i of fresh) { const hh = this.nodes.get(i).offsetHeight; if (Math.abs(hh - h[i]) > 0.5) { fw.add(i, hh - h[i]); h[i] = hh; changed = true; } }
       for (const [i, el] of this.nodes) el.style.transform = 'translateY(' + fw.sum(i) + 'px)';
-      spacer.style.height = fw.sum(n) + 'px';
+      spacer.style.height = fw.sum(n) + END_PAD + 'px';
       if (!tg && changed) { const want = fw.sum(anchor) + aOff; if (Math.abs(want - scroller.scrollTop) > 1) scroller.scrollTop = want; }
       if (!changed) break;
     }

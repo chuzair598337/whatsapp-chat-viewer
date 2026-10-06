@@ -522,7 +522,6 @@ function renderStats() {
   const st = S.stats || (S.stats = computeStats());
   const first = S.msgs[0].dateKey, last = S.msgs[S.msgs.length - 1].dateKey;
   const span = Math.round((dkToT(last) - dkToT(first)) / 864e5) + 1;
-  const maxP = st.per[0] ? st.per[0].n : 1;
   const maxD = st.topDays[0] ? st.topDays[0][1] : 1;
   const maxW = Math.max(1, ...st.wd), maxH = Math.max(1, ...st.hr), wd = WD();
   const tile = (k, v, s) => '<div class="tile"><dt>' + k + '</dt><dd>' + v + (s ? ' <small>' + s + '</small>' : '') + '</dd></div>';
@@ -531,9 +530,6 @@ function renderStats() {
       tile(t('facts.messages'), nf(st.n)) + tile(t('stats.words'), nf(st.words)) + tile(t('facts.media'), nf(st.media)) +
       tile(t('stats.active_days'), nf(st.days.size), t('stats.of', { n: nf(span) })) + tile(t('stats.per_active_day'), nf(+(st.n / Math.max(1, st.days.size)).toFixed(1))) + tile(t('stats.words_per_message'), nf(+(st.words / Math.max(1, st.n)).toFixed(1))) +
     '</dl>' +
-    '<div class="stat"><h3>' + t('stats.by_person') + '<span>' + t('stats.people', { n: nf(st.per.length) }) + '</span></h3><div class="tbl-wrap"><table class="ptable"><thead><tr><th>' + t('stats.person') + '</th><th>' + t('facts.messages') + '</th><th>' + t('stats.share') + '</th><th>' + t('stats.words') + '</th><th>' + t('facts.media') + '</th></tr></thead><tbody>' +
-      st.per.slice(0, 50).map(p => '<tr><td><span class="pn">' + esc(p.name) + (p.name === S.me ? ' <span style="color:var(--ink-3)">' + t('stats.you_paren') + '</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') +
-    '</tbody></table></div></div>' +
     '<div class="sgrid">' +
       '<div class="stat"><h3>' + t('stats.busiest_days') + '<span>' + t('stats.tap_to_jump') + '</span></h3><div class="days">' +
         st.topDays.map(([dk, c]) => '<button class="day" data-dk="' + dk + '"><span>' + esc(dayFmt.format(dkToT(dk))) + '</span><span class="dbar"><i style="width:' + (c / maxD * 100).toFixed(1) + '%"></i></span><span class="dn">' + nf(c) + '</span></button>').join('') +
@@ -544,8 +540,32 @@ function renderStats() {
     '</div>' +
     '<div class="stat"><h3>' + t('stats.by_hour') + '<span>' + t('stats.local_time') + '</span></h3><div class="vbars">' +
       st.hr.map((c, i) => '<div class="vbar" data-tip="' + String(i).padStart(2, '0') + ':00 – ' + String(i).padStart(2, '0') + ':59: ' + nf(c) + '"><i style="height:' + (c / maxH * 100).toFixed(1) + '%"></i></div>').join('') +
-    '</div><div class="vlabels">' + st.hr.map((c, i) => '<span>' + (i % 3 === 0 ? i : '') + '</span>').join('') + '</div></div>';
+    '</div><div class="vlabels">' + st.hr.map((c, i) => '<span>' + (i % 3 === 0 ? i : '') + '</span>').join('') + '</div></div>' +
+    '<div class="stat"><h3>' + t('stats.by_person') + '<span>' + t('stats.people', { n: nf(st.per.length) }) + '</span></h3><div class="tbl-wrap"><table class="ptable" id="pTable"></table></div></div>';
+  renderPeople();
 }
+// Messages by person: every column header sorts the table; a second press reverses it.
+const P_COLS = [['name', 'stats.person'], ['n', 'facts.messages'], ['share', 'stats.share'], ['words', 'stats.words'], ['media', 'facts.media']];
+let pSort = { key: 'n', dir: -1 };
+function renderPeople() {
+  const st = S.stats, tb = $('pTable'); if (!st || !tb) return;
+  const maxP = st.per[0] ? st.per[0].n : 1, coll = new Intl.Collator(I18N.locale(), { sensitivity: 'base', numeric: true });
+  const k = pSort.key === 'share' ? 'n' : pSort.key; // share is messages / total, so it sorts like messages
+  const byName = (a, b) => coll.compare(a.name, b.name);
+  const rows = st.per.slice().sort((a, b) => k === 'name' ? byName(a, b) * pSort.dir : (a[k] - b[k]) * pSort.dir || byName(a, b));
+  tb.innerHTML = '<thead><tr>' + P_COLS.map(([key, label]) => {
+    const on = pSort.key === key, sort = on ? (pSort.dir > 0 ? 'ascending' : 'descending') : 'none';
+    return '<th aria-sort="' + sort + '"><button class="psort' + (on ? ' on' : '') + '" data-psort="' + key + '">' + t(label) + '<span class="parr" aria-hidden="true">' + (on ? (pSort.dir > 0 ? '▲' : '▼') : '') + '</span></button></th>';
+  }).join('') + '</tr></thead><tbody>' +
+    rows.map(p => '<tr><td><span class="pn">' + scriptHTML(p.name) + (p.name === S.me ? ' <span style="color:var(--ink-3)">' + t('stats.you_paren') + '</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') + '</tbody>';
+}
+$('statsBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-psort]'); if (!b) return;
+  const key = b.dataset.psort;
+  pSort = pSort.key === key ? { key, dir: -pSort.dir } : { key, dir: key === 'name' ? 1 : -1 };
+  renderPeople();
+  const nb = $('pTable').querySelector('[data-psort="' + key + '"]'); if (nb) nb.focus();
+});
 function openStats() { if (!S.msgs.length) return; renderStats(); openModal('statsModal'); }
 $('statsBody').addEventListener('click', e => { const b = e.target.closest('.day'); if (b) { closeModal('statsModal'); jumpToDate(b.dataset.dk); } });
 $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(); openStats(); };
