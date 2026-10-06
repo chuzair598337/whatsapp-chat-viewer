@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.5.0 (2026-10-06)
 
 - **Settings screen, like WhatsApp's.** **Settings** in the ⋮ menu opens one place for every preference: who you are (with your avatar), theme, language, background pattern and date format, plus chat statistics, the tour and an About note. Choices open a WhatsApp-style pick sheet, closed with the ✕ next to its title (or a tap outside).
   - The ⋮ menu now holds only chat actions; its Theme and Language lists moved to Settings.
