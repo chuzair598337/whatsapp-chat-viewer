@@ -80,11 +80,28 @@ const SAMPLE = [
   `[03/04/2026, 8:08:00${N}AM] Nida Hussain: Maybe, will confirm Friday`,
   `[03/04/2026, 8:09:00${N}AM] Imran Javed: In`,
   `[03/04/2026, 8:10:00${N}AM] Sana Mirza: Bringing my cousin too, if that's okay`,
-  // An iPhone animated sticker (.was) and a HEIC photo this browser can't decode both show as file cards.
+  // An iPhone animated sticker (.was, plays with the bundled Lottie player) and a HEIC photo this browser can't decode (a file card).
   `[03/04/2026, 8:12:00${N}AM] Omar Farooq: ${L}<attached: 00000035-STICKER-2026-04-03-08-12-00.was>`,
   `[03/04/2026, 8:13:00${N}AM] Hamza Iqbal: ${L}<attached: 00000036-PHOTO-2026-04-03-08-13-00.heic>`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
+// A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.
+function sampleLottie() {
+  const st = v => ({ a: 0, k: v }), ease = n => ({ x: Array(n).fill(0.5), y: Array(n).fill(0.5) });
+  const keys = (vals, n) => ({ a: 1, k: vals.map(([t, s], k) => k < vals.length - 1 ? { t, s, i: ease(n), o: ease(n) } : { t, s }) });
+  const tr = { ty: 'tr', p: st([0, 0]), a: st([0, 0]), s: st([100, 100]), r: st(0), o: st(100), sk: st(0), sa: st(0) };
+  const layer = (ind, nm, ks, shapes) => ({ ddd: 0, ind, ty: 4, nm, sr: 1, ao: 0, ip: 0, op: 60, st: 0, bm: 0, ks: Object.assign({ o: st(100), r: st(0), p: st([256, 256, 0]), a: st([0, 0, 0]), s: st([100, 100, 100]) }, ks), shapes });
+  return {
+    v: '5.7.4', fr: 30, ip: 0, op: 60, w: 512, h: 512, nm: 'Summit star', ddd: 0, assets: [],
+    layers: [
+      layer(1, 'star', { r: keys([[0, [0]], [60, [360]]], 1), p: keys([[0, [256, 236, 0]], [30, [256, 196, 0]], [60, [256, 236, 0]]], 3), s: keys([[0, [92, 92, 100]], [30, [108, 108, 100]], [60, [92, 92, 100]]], 3) },
+        [{ ty: 'gr', nm: 'star', it: [{ ty: 'sr', sy: 1, d: 1, pt: st(5), p: st([0, 0]), r: st(0), ir: st(72), is: st(0), or: st(168), os: st(0) },
+          { ty: 'st', c: st([1, 1, 1, 1]), o: st(100), w: st(18), lc: 2, lj: 2 }, { ty: 'fl', c: st([1, 0.83, 0.31, 1]), o: st(100), r: 1 }, tr] }]),
+      layer(2, 'shadow', { p: st([256, 452, 0]), s: keys([[0, [100, 100, 100]], [30, [70, 70, 100]], [60, [100, 100, 100]]], 3) },
+        [{ ty: 'gr', nm: 'shadow', it: [{ ty: 'el', d: 1, p: st([0, 0]), s: st([220, 40]) }, { ty: 'fl', c: st([0, 0, 0, 1]), o: st(22), r: 1 }, tr] }])
+    ]
+  };
+}
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(b => r(b), type, q));
 function makeWav(sec) {
   const sr = 16000, n = Math.floor(sr * sec), buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
@@ -164,8 +181,9 @@ async function makeSampleMedia() {
   g.fillStyle = '#1565c0'; g.fillRect(80, 120, 150, 150); g.fillStyle = '#fff'; g.font = 'bold 120px sans-serif'; g.fillText('P', 115, 238);
   g.fillStyle = 'rgba(255,255,255,.92)'; g.font = 'bold 40px sans-serif'; g.fillText('Ridge loop parking', 270, 210);
   staged.set('park', ['00000034-PHOTO-2026-04-02-19-46-02.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
-  // Stand-ins a browser can't draw: a Lottie sticker archive and a HEIC photo (neither holds a real picture).
-  staged.set('was', ['00000035-STICKER-2026-04-03-08-12-00.was', new Blob(['PK\u0003\u0004 animated sticker stand-in'], { type: 'application/zip' })]);
+  // iPhone animated sticker: a small Lottie animation in a ZIP, like WhatsApp's .was files.
+  staged.set('was', ['00000035-STICKER-2026-04-03-08-12-00.was', await new JSZip().file('animation/animation.json', JSON.stringify(sampleLottie())).generateAsync({ type: 'blob' })]);
+  // A HEIC stand-in that no browser can decode, to show the "Can't show this file here" card.
   staged.set('heic', ['00000036-PHOTO-2026-04-03-08-13-00.heic', new Blob(['not a real HEIC picture'], { type: 'image/heic' })]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();

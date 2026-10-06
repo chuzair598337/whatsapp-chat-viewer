@@ -7,6 +7,8 @@
   - **"Which one is you?" lists everyone.** It used to stop at 40 people. Groups with more than 12 people get a name search box at the top.
   - **Groups no longer pick "You" for you.** The export can't say who saved it, and the old guess (the most active member) made that person "You" when the picker was closed with ✕. Now nobody is "You" until you pick yourself, and the most active member is only marked as *suggested*.
   - **Search finds Urdu and Arabic spelling variants.** Arabic ي ى ك ه ة match Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "کیا" finds "كيا" and "السلام" finds "السَّلام". Highlights still cover the words as written.
+  - **iPhone animated stickers (`.was`) play.** They are Lottie animations in a ZIP, now drawn by a bundled Lottie player (no network), in the chat and the media gallery. One that can't be read falls back to a file card. In the dev preview, which only saves common file types, the sticker downloads as a `.zip`.
+  - **The floating date fades out** shortly after you stop scrolling, as in WhatsApp, instead of covering the first message on screen.
   - **Files the browser can't show get a file card** with a download button instead of a broken picture: iPhone animated stickers (`.was`), and HEIC photos or HEVC videos in browsers that can't decode them. They're also left out of the photo viewer, and show as download tiles in the media gallery.
   - **Mixed English and Urdu messages:** each line takes its own direction, so an English first line no longer forces the Urdu lines after it to read left to right. The time sits by the last line.
   - **iPhone group names:** admin events ("~ Ali changed this group's icon") no longer make the admin the chat's name, and the encryption notice names the chat. A small group from a renamed file used to be taken for a one-to-one chat with the admin.
@@ -16,7 +18,7 @@
   - ten more members join in April (14 people, so the picker shows its search box), with an admin event;
   - a line with Arabic spellings and vowel marks, to try the search;
   - a message with an English line followed by Urdu ones;
-  - an animated sticker and a HEIC photo, which show as file cards.
+  - a real animated sticker (a spinning star) and a HEIC photo, which shows as a file card.
 
 ## 1.5.0 (2026-10-06)
 

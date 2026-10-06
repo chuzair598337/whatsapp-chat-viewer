@@ -26,8 +26,9 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 - **Nothing leaves the device.** The page makes no network requests after it loads: no analytics, no fonts, no CDNs, no link previews and no fetched favicons. Every test run checks that the request log is empty.
 - **Enforced by the browser.** A Content-Security-Policy in `index.html` only lets the page load its own files and `blob:`/`data:` URLs, and blocks frames, plugins and form posts. Even a future mistake can't reach the network.
 - **No server code.** GitHub Pages only serves the static files. Opening a chat reads it with the browser's `File` API in memory.
-- **Bundled dependencies.** JSZip 3.10.1 and pdf.js 3.11.174 ship in `js/vendor/`, so the viewer also works when opened straight from disk with no internet connection.
-  - pdf.js is only loaded when a chat contains a PDF.
+- **Bundled dependencies.** JSZip 3.10.1, pdf.js 3.11.174 and the lottie-web 5.13.0 light build ship in `js/vendor/`, so the viewer also works when opened straight from disk with no internet connection.
+  - pdf.js is only loaded when a chat contains a PDF, and lottie-web only when it contains an iPhone animated sticker.
+  - lottie-web's light build draws SVG and has no expression support, so nothing in a sticker runs as code. Image and font paths inside an animation are dropped before it plays, so it never fetches anything.
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
@@ -115,7 +116,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 | Type | How it is shown |
 |---|---|
 | **Photos** | Loaded lazily (`loading="lazy"`), with the space reserved from the image's aspect ratio. Clicking opens a full-screen viewer (details below). |
-| **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. iPhone animated stickers (`.was`, a Lottie archive no browser draws) show as an "Animated sticker" file card with a download button. |
+| **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. iPhone animated stickers (`.was`, a ZIP holding a Lottie animation) play and loop with the bundled Lottie player, in the chat and in the gallery; if one can't be read it falls back to an "Animated sticker" file card with a download button. |
 | **Files the browser can't show** | A photo, sticker or video the browser can't decode (HEIC outside Safari, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
 | **GIFs** | Marked with a GIF badge and loop automatically. iPhone exports store GIFs as `-GIF-….mp4`, so these play as muted looping video. |
 | **Video** | Shown like WhatsApp: a thumbnail from the first frame, a big play button, a video icon with the length in the bottom-left corner, and the time in the bottom-right. The thumbnail keeps the video's real shape, so a portrait phone video (down to 9:16) is shown up to 400 px tall instead of being boxed into landscape. After the first play it switches to custom controls: play/pause, elapsed and total time, a seek bar, mute and full screen. A poster image is taken from the first frame. Only one video or voice note plays at a time. |
@@ -172,7 +173,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Search:** results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
 - **Results list:** each result shows the sender, date and a snippet, and clicking one jumps to that message.
-- **Sticky date header:** shows the current day while you scroll.
+- **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
 - **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
 - **Jump to date:** a date picker in the sidebar, plus the busiest days listed in Statistics, take you straight to that day.
@@ -250,6 +251,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 |---|---|
 | `js/vendor/jszip.min.js` | JSZip 3.10.1 (MIT) |
 | `js/vendor/pdfjs/` | pdf.js 3.11.174 legacy build (Apache-2.0), loaded on demand |
+| `js/vendor/lottie/` | lottie-web 5.13.0 light build (MIT), loaded on demand for `.was` stickers |
 | `js/i18n/i18n.js` | Interface languages: `t()`, `data-i18n` attributes, switching, the `app_language` setting |
 | `js/i18n/en.js`, `js/i18n/ur.js` | The English and Urdu dictionaries |
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |

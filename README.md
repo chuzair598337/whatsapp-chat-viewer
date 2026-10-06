@@ -44,7 +44,7 @@ flowchart LR
 ```
 
 - **Static site:** plain HTML, CSS and JavaScript with no build step and no server code.
-- **Two dependencies, both vendored in `js/vendor/`:** JSZip, and pdf.js for PDF previews, which is only loaded when a chat has a PDF.
+- **Three dependencies, all vendored in `js/vendor/`:** JSZip; pdf.js for PDF previews, only loaded when a chat has a PDF; and the lottie-web light build for iPhone animated stickers, only loaded when a chat has one.
 - **Parsing and unzipping:** run in Web Workers created from inline Blob URLs, so large chats don't freeze the page.
 - **Media:** stays in memory as `blob:` URLs, which are revoked when another chat is opened.
 - **Rendering:** only the rows on screen exist in the DOM. A Fenwick tree tracks row heights for fast scrolling.
@@ -61,6 +61,7 @@ whatsapp-chat-viewer/
 ├── js/
 │   ├── vendor/jszip.min.js               # JSZip 3.10.1 (MIT)
 │   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
+│   ├── vendor/lottie/                    # lottie-web 5.13.0 light build (MIT), loaded on demand
 │   ├── i18n/                             # i18n.js (t() helper), en.js and ur.js dictionaries
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
@@ -146,4 +147,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), and the Noto Nastaliq Urdu font under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), and the Noto Nastaliq Urdu font under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`).

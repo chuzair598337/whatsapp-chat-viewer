@@ -96,10 +96,10 @@ const Media = {
   discard(map) { for (const e of map.values()) URL.revokeObjectURL(e.url); },
   adopt(map) { this.reset(); this.map = map; },
   get(name) { return name ? this.map.get(this.key(name)) || null : null; },
-  // iPhone animated stickers (.was) are Lottie files in a ZIP, which a browser can't draw.
-  cantShow(name) { return !!name && (extOf(name) === 'was' || this.bad.has(this.key(name))); },
+  // A photo, sticker or video that failed to decode (or an animated sticker that failed to play).
+  cantShow(name) { return !!name && this.bad.has(this.key(name)); },
   reset() {
-    AudioCtl.stop(); closeLightbox(true); this.discard(this.map); this.map = new Map(); this.dims.clear(); this.waves.clear(); this.bad.clear();
+    AudioCtl.stop(); closeLightbox(true); Was.reset(); this.discard(this.map); this.map = new Map(); this.dims.clear(); this.waves.clear(); this.bad.clear();
     for (const u of this.posters.values()) if (u) URL.revokeObjectURL(u);
     for (const u of this.thumbs.values()) if (u) URL.revokeObjectURL(u);
     this.posters.clear(); this.thumbs.clear(); this.cards.clear();

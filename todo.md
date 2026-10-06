@@ -202,6 +202,8 @@ Findings from the audit of a large real group export (many members, mixed langua
 - [x] An English first line made the Urdu lines after it read left to right. Each line takes its own direction. *New (Phase 15).*
 - [x] iPhone admin events made the admin the chat's name. Covered by two `tests/parser.test.js` cases. *New (Phase 15).*
 - [x] Sizes over 1 GB showed in MB. *New (Phase 15).*
+- [x] iPhone animated stickers (`.was`) only showed a card. They play with a bundled Lottie player, with the card as a fallback. *New (Phase 15).*
+- [x] The floating date covered the first message after scrolling stopped. It fades out, as in WhatsApp. *New (Phase 15).*
 
 ## Verification done for this list
 

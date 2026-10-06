@@ -374,7 +374,7 @@ I18N.add('en-US', {
     "more_one": "+ 1 more link in this message"
   },
   "dl": {
-    "blocked": ".{ext} files can't be saved from this page. Open the standalone index.html to download it.",
+    "blocked": "This preview can't save .{ext} files. It downloads normally in the full viewer (the website, or index.html on your device).",
     "failed": "The file couldn't be saved here."
   },
   "zip": {

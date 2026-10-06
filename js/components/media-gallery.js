@@ -97,6 +97,7 @@ const Gallery = {
       (grid ? this.sec.grid : this.sec.list).insertAdjacentHTML('beforeend', grid ? tileHTML(it, k) : rowHTML(it, k));
     }
     this.n = end;
+    Was.mount(galBody);
     for (const ap of galBody.querySelectorAll('.aplayer:not([data-painted])')) {
       ap.dataset.painted = '1';
       AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio);
@@ -115,6 +116,7 @@ const Gallery = {
   view(k) {
     const it = this.list[k];
     if (!it) return;
+    if (isWas(it.e.name)) { this.jump(it.i); return; } // an animated sticker plays in the chat, not in the photo viewer
     const list = this.list.filter(x => x.e && GAL_GRID.has(x.cat)).map(x => ({ i: x.i, name: x.e.name, type: x.a.type }));
     openLightbox(it.e.name, list);
   },
@@ -142,7 +144,8 @@ function tileHTML(it, k) {
     if (poster === undefined) Posters.request(e.name);
     inner = '<video src="' + e.url + '" muted playsinline preload="metadata" data-vid="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
       '<span class="gdur">' + ICON.play + '<span>' + (Gallery.durs.has(e.name) ? fmtDur(Gallery.durs.get(e.name)) : '') + '</span></span>';
-  } else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
+  } else if (isWas(e.name)) inner = '<span class="lottie" data-was="' + esc(e.name) + '"></span>';
+  else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
   return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc(t('media_gallery.open_item', { label })) + '">' + inner + '</button>';
 }
 const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="' + t('media_gallery.show_in_chat') + '" title="' + t('media_gallery.show_in_chat') + '">' + galSm('chat') + '</button>';
@@ -188,6 +191,10 @@ galBody.addEventListener('error', e => {
   const it = Gallery.list[+tile.dataset.gk];
   if (it) tile.outerHTML = tileHTML(it, +tile.dataset.gk);
 }, true);
+galBody.addEventListener('media-bad', e => {
+  const tile = e.target.closest('[data-gk]'), it = tile && Gallery.list[+tile.dataset.gk];
+  if (it) tile.outerHTML = tileHTML(it, +tile.dataset.gk);
+});
 galBody.addEventListener('click', e => {
   const tg = e.target;
   const j = tg.closest('[data-jump]'); if (j) { Gallery.jump(+j.dataset.jump); return; }

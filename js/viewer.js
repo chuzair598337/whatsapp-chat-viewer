@@ -774,6 +774,7 @@ function cantShowHTML(e, type) {
 function attHTML(a, m) {
   const e = a.url ? Media.get(a.name) : null;
   if (e && Media.cantShow(e.name) && /^(image|gif|sticker|video)$/.test(a.type)) return cantShowHTML(e, a.type);
+  if (e && isWas(e.name)) return '<div class="sticker lottie" data-was="' + esc(e.name) + '" role="img" aria-label="' + esc(t('type.animated_sticker')) + '"></div>';
   if (e) {
     const vid = VIDEO_EXT.test(extOf(e.name));
     if (a.type === 'gif' && vid) return videoHTML(e, true);
@@ -872,6 +873,72 @@ layer.addEventListener('error', e => {
   const row = el.closest('[data-i]');
   if (row) rerenderRow(+row.dataset.i);
 }, true);
+// An animated sticker that couldn't be played (see Was) is redrawn the same way.
+layer.addEventListener('media-bad', e => { const row = e.target.closest('[data-i]'); if (row) rerenderRow(+row.dataset.i); });
+
+/* ---------- iPhone animated stickers (.was) ----------
+   A .was file is a ZIP holding a Lottie animation (JSON). It is played with the bundled lottie-web
+   light build (js/vendor/lottie: SVG only, no expressions, so nothing in the file runs as code), loaded
+   only when a chat has one. Image and font paths in the animation are dropped, so it never fetches
+   anything. If it can't be read, the sticker falls back to the file card. */
+const isWas = n => extOf(n) === 'was';
+const Was = {
+  lib: null, data: new Map(), live: new Set(),
+  load() {
+    if (!this.lib) this.lib = new Promise((res, rej) => {
+      if (window.lottie) return res(window.lottie);
+      const s = document.createElement('script');
+      s.src = 'js/vendor/lottie/lottie_light.min.js';
+      s.onload = () => window.lottie ? res(window.lottie) : rej(new Error('Sticker player missing'));
+      s.onerror = () => { this.lib = null; rej(new Error('Sticker player could not load')); };
+      document.head.appendChild(s);
+    });
+    return this.lib;
+  },
+  // The animation's JSON text, from the ZIP (or a bare or gzipped JSON file), cached per file.
+  json(name) {
+    const k = Media.key(name);
+    if (!this.data.has(k)) this.data.set(k, (async () => {
+      const e = Media.get(name); if (!e) throw new Error('missing');
+      const head = new Uint8Array(await e.blob.slice(0, 2).arrayBuffer());
+      let txt;
+      if (head[0] === 0x50 && head[1] === 0x4B) {
+        const zip = await JSZip.loadAsync(e.blob), files = Object.values(zip.files).filter(f => !f.dir && /\.json$/i.test(f.name) && !/metadata/i.test(f.name));
+        files.sort((a, b) => (/(^|\/)animation\.json$/i.test(b.name) ? 1 : 0) - (/(^|\/)animation\.json$/i.test(a.name) ? 1 : 0));
+        if (!files.length) throw new Error('no animation');
+        txt = await files[0].async('string');
+      } else if (head[0] === 0x1F && head[1] === 0x8B && window.DecompressionStream) {
+        txt = await new Response(e.blob.stream().pipeThrough(new DecompressionStream('gzip'))).text();
+      } else txt = await e.blob.text();
+      const d = JSON.parse(txt);
+      if (!d || !Array.isArray(d.layers) || !(d.w > 0) || !(d.h > 0)) throw new Error('not a Lottie animation');
+      // Nothing may be fetched: keep only embedded images, and no font files.
+      if (Array.isArray(d.assets)) for (const a of d.assets) if (a && typeof a.p === 'string' && !a.layers && !/^data:image\//.test(a.p)) { a.u = ''; a.p = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='; a.e = 1; }
+      if (d.fonts && Array.isArray(d.fonts.list)) d.fonts.list = d.fonts.list.map(f => ({ fName: f.fName, fFamily: f.fFamily, fStyle: f.fStyle, ascent: f.ascent }));
+      return JSON.stringify(d);
+    })());
+    return this.data.get(k);
+  },
+  // Starts every sticker placeholder in root; stops the ones the virtual list has removed.
+  mount(root) {
+    for (const box of root.querySelectorAll('.lottie[data-was]')) {
+      if (box.dataset.on) continue;
+      box.dataset.on = '1';
+      const n = box.dataset.was;
+      Promise.all([this.load(), this.json(n)]).then(([L, txt]) => {
+        if (!box.isConnected) return;
+        box.anim = L.loadAnimation({ container: box, renderer: 'svg', loop: true, autoplay: !reducedMotion(), animationData: JSON.parse(txt), rendererSettings: { preserveAspectRatio: 'xMidYMid meet' } });
+        this.live.add(box); this.sweep();
+      }).catch(() => {
+        if (Media.cantShow(n) || !Media.get(n)) return;
+        Media.bad.add(Media.key(n));
+        if (box.isConnected) box.dispatchEvent(new CustomEvent('media-bad', { bubbles: true }));
+      });
+    }
+  },
+  sweep() { for (const b of this.live) if (!b.isConnected) { try { b.anim.destroy(); } catch (e) {} this.live.delete(b); } },
+  reset() { for (const b of this.live) { try { b.anim.destroy(); } catch (e) {} } this.live.clear(); this.data.clear(); }
+};
 // Re-renders one visible row in place and lets the virtual list re-measure it.
 function rerenderRow(k) {
   const old = VL.nodes.get(k);
@@ -963,6 +1030,7 @@ function makeRow(it, idx) {
   el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
+  if (stk) Was.mount(el);
   return el;
 }
 
@@ -980,7 +1048,14 @@ function afterRender() {
   fab.hidden = total - (st + vh) < 400;
   fabTop.hidden = st < vh * 3;
 }
-scroller.addEventListener('scroll', () => VL.schedule(), { passive: true });
+// The floating date shows while you scroll and fades out shortly after, as in WhatsApp, so it doesn't
+// sit on top of the first message once you stop.
+let stickyTimer = 0;
+scroller.addEventListener('scroll', () => {
+  VL.schedule();
+  stickyEl.classList.add('on');
+  clearTimeout(stickyTimer); stickyTimer = setTimeout(() => stickyEl.classList.remove('on'), 1500);
+}, { passive: true });
 new ResizeObserver(() => { if (Math.abs(layer.clientWidth - VL.width) > 1) VL.relayout(); else VL.schedule(); }).observe(scroller);
 fab.addEventListener('click', () => VL.bottom());
 function noteDims(el, w, h) {
@@ -1114,7 +1189,8 @@ document.addEventListener('click', async ev => {
   const e = Media.get(a.getAttribute('download'));
   if (!e) return;
   ev.preventDefault();
-  try { await DL.save({ filename: e.name, data: e.blob }); }
+  // This page's save only takes common file types. An animated sticker is a ZIP, so it is saved as one.
+  try { await DL.save({ filename: isWas(e.name) ? e.name + '.zip' : e.name, data: e.blob }); }
   catch (err) {
     const code = err && err.code;
     if (code === 'rejected_extension' || code === 'extension_not_enabled') toast(t('dl.blocked', { ext: extOf(e.name) }));
@@ -1128,7 +1204,7 @@ document.addEventListener('click', async ev => {
 const LB = { k: -1, start: -1, list: [] };
 function openLightbox(name, list) {
   const chat = !list;
-  list = (list || (S.images || []).filter(x => S.m2i[x.i] >= 0)).filter(x => !Media.cantShow(x.name)); // the chat's photos, without ones a filter hides or the browser can't show
+  list = (list || (S.images || []).filter(x => S.m2i[x.i] >= 0)).filter(x => !Media.cantShow(x.name) && !isWas(x.name)); // the chat's photos, without ones a filter hides or the browser can't show
   const k = list.findIndex(x => x.name === name);
   if (k < 0) return;
   LB.list = list; LB.chat = chat;
