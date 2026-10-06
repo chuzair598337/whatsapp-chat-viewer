@@ -190,6 +190,12 @@ All confirmed findings in `/mnt/project-files/audit/i18n-audit.md`, fixed on `de
 - [x] Settings rule in `PROJECT_RULES.md` and `CLAUDE.md`. *New (Phase 14).*
 - [x] **Phone layout pass** across every screen at 360/390 px, landscape, tablet and desktop, both languages, light and dark: full-screen Settings, edge-to-edge pick sheets, dialog order, Urdu phone numbers and viewer titles, `dvh` sheets, smaller sample note. *New (Phase 14).*
 
+## Phase 15: group-chat audit fixes (2026-10-06)
+
+Findings from the audit of a large real group export (many members, mixed languages, 1,214 media files), fixed on `development` as they come in:
+
+- [x] iPhone attachments after a caption over several lines (49 files were lost). Covered by `tests/parser.test.js` and a sample-chat photo. *New (Phase 15).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

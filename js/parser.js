@@ -57,10 +57,12 @@ function parserModule() {
       return { kind: 'deleted', text: t, att: [], edited };
     if (one && (m = /^(Missed |Silenced |Declined )?(group )?(voice|video) call(?:,\s*(.*))?$/i.exec(t)))
       return { kind: 'call', text: t, att: [], edited, extra: { missed: !!m[1], video: /video/i.test(m[3]), group: !!m[2], label: (m[1] || '') + (m[2] || '') + m[3] + ' call', detail: (m[4] || '').replace(/(Tap|Click) to call back/i, '').replace(/^[\s,.]+|[\s,.]+$/g, '') } };
-    // iOS puts a document's title and page count in front of the file: "Report.pdf • 2 pages <attached: 00000022-Report.pdf>".
-    if ((m = /^([^\n<]*?)\s*<attached: ([^>]+)>\s*([\s\S]*)$/.exec(t))) {
-      const d = docInfo(m[1]);
-      return media(typeFromName(m[2]), m[2].trim(), d ? m[3] : (m[1] + '\n' + m[3]), false, edited, d);
+    // iOS: the file tag can follow a caption of any length, on the same line or after several lines
+    // ("Line one\nLine two <attached: 00000127-PHOTO-….jpg>"). For documents, a one-line prefix holds the
+    // title and page count instead: "Report.pdf • 2 pages <attached: 00000022-Report.pdf>".
+    if ((m = /^([\s\S]*?)\s*<attached: ([^>\n]+)>\s*([\s\S]*)$/.exec(t))) {
+      const d = m[1].indexOf('\n') < 0 ? docInfo(m[1]) : null;
+      return media(typeFromName(m[2]), m[2].trim(), d ? m[3] : [m[1].trim(), m[3].trim()].filter(Boolean).join('\n'), false, edited, d);
     }
     if ((m = /^([^\n]*?\s•\s\d+\s+pages?\s)?(\S[^\n]*?\.[A-Za-z0-9]{1,6}) \(file attached\)\s*([\s\S]*)$/.exec(t))) return media(typeFromName(m[2]), m[2].trim(), m[3], false, edited, m[1] ? docInfo(m[1]) : null);
     if ((m = /^([\s\S]*?)\s*(<Media omitted>|image omitted|video omitted|audio omitted|sticker omitted|GIF omitted|document omitted|Contact card omitted|video note omitted|view once [\w ]+? omitted)$/i.exec(t))) {

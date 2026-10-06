@@ -62,6 +62,8 @@ const SAMPLE = [
   `[16/03/2026, 9:16:30${N}AM] Omar Farooq: 👍`,
   `[02/04/2026, 7:45:10${N}PM] Sara Malik: ${L}<attached: 00000033-PHOTO-2026-04-02-19-45-10.jpg>`,
   `[02/04/2026, 7:45:30${N}PM] Sara Malik: Scouting photo for April's trail. Route details: https://www.alltrails.com/trail/ridge-loop`,
+  `[02/04/2026, 7:46:02${N}PM] Sara Malik: Parking for the ridge loop is behind the tea stall`,
+  `Bring coins for the meter ${L}<attached: 00000034-PHOTO-2026-04-02-19-46-02.jpg>`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(b => r(b), type, q));
@@ -136,6 +138,13 @@ async function makeSampleMedia() {
   g.fillStyle = '#3a2440'; g.beginPath(); g.moveTo(0, 760); g.lineTo(260, 640); g.lineTo(460, 720); g.lineTo(720, 650); g.lineTo(720, 960); g.lineTo(0, 960); g.fill();
   g.fillStyle = 'rgba(255,255,255,.9)'; g.font = 'bold 40px sans-serif'; g.fillText('Ridge loop, April', 40, 90);
   staged.set('apr', ['00000033-PHOTO-2026-04-02-19-45-10.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
+  // Parking photo: its caption runs over two lines before the file tag, as iPhone exports write it
+  c = document.createElement('canvas'); c.width = 960; c.height = 720; g = c.getContext('2d');
+  g.fillStyle = '#9fb7c9'; g.fillRect(0, 0, 960, 720); g.fillStyle = '#6d7b86'; g.fillRect(0, 430, 960, 290);
+  g.strokeStyle = '#f1f1f1'; g.lineWidth = 8; for (let x = 60; x < 960; x += 150) { g.beginPath(); g.moveTo(x, 470); g.lineTo(x + 50, 700); g.stroke(); }
+  g.fillStyle = '#1565c0'; g.fillRect(80, 120, 150, 150); g.fillStyle = '#fff'; g.font = 'bold 120px sans-serif'; g.fillText('P', 115, 238);
+  g.fillStyle = 'rgba(255,255,255,.92)'; g.font = 'bold 40px sans-serif'; g.fillText('Ridge loop parking', 270, 210);
+  staged.set('park', ['00000034-PHOTO-2026-04-02-19-46-02.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();
   for (const [, [name, blob]] of staged) if (blob) Media.stage(out, name, blob);

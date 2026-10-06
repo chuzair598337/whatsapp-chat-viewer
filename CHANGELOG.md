@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Fixes from the group-chat audit:**
+  - **iPhone photos with a caption over several lines** now show the photo. The caption used to keep the raw `<attached: …>` tag and the file was lost (49 of 1,214 files in the audited export).
+- **Sample chat:** a photo whose caption runs over two lines.
+
 ## 1.5.0 (2026-10-06)
 
 - **Settings screen, like WhatsApp's.** **Settings** in the ⋮ menu opens one place for every preference: who you are (with your avatar), theme, language, background pattern and date format, plus chat statistics, the tour and an About note. Choices open a WhatsApp-style pick sheet, closed with the ✕ next to its title (or a tap outside).

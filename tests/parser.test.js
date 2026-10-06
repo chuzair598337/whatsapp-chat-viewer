@@ -31,6 +31,23 @@ const tests = {
     assert.strictEqual(r.order, 'dmy'); assert.strictEqual(r.rejected, true);
     assert.strictEqual(r.messages[0].timestamp, '2021-01-13T10:00:00');
   },
+  'iPhone: a caption over several lines before the file keeps the photo': async () => {
+    const r = await parse('[19/08/2022, 9:15:02 PM] Ali: First line\nSecond line \u200e<attached: 00000127-PHOTO-2022-08-19-21-15-02.jpg>');
+    const m = r.messages[0];
+    assert.strictEqual(m.kind, 'media'); assert.strictEqual(m.attachments.length, 1);
+    assert.strictEqual(m.attachments[0].name, '00000127-PHOTO-2022-08-19-21-15-02.jpg');
+    assert.strictEqual(m.message, 'First line\nSecond line');
+  },
+  'iPhone: a caption with "<" before the file, and text after it': async () => {
+    const r = await parse('[19/08/2022, 9:15:02 PM] Ali: 2 < 3 <attached: 00000128-PHOTO-2022-08-19-21-15-03.jpg>\nafter');
+    assert.strictEqual(r.messages[0].attachments[0].name, '00000128-PHOTO-2022-08-19-21-15-03.jpg');
+    assert.strictEqual(r.messages[0].message, '2 < 3\nafter');
+  },
+  'iPhone: a document title and page count still read as the title': async () => {
+    const r = await parse('[19/08/2022, 9:15:02 PM] Ali: Report.pdf • 2 pages <attached: 00000022-Report.pdf>');
+    const a = r.messages[0].attachments[0];
+    assert.strictEqual(a.title, 'Report.pdf'); assert.strictEqual(a.detail, '2 pages'); assert.strictEqual(r.messages[0].message, '');
+  },
   'A forced date order that fits is used': async () => {
     const r = await parse('03/01/2021, 10:00 - A: x', { order: 'mdy' });
     assert.strictEqual(r.order, 'mdy'); assert.strictEqual(r.rejected, false);
