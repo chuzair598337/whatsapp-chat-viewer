@@ -7,8 +7,7 @@
 
    It reuses the chat's own pieces: the photo viewer (stepping through the
    filtered items), the voice-note players, the PDF viewer and contact cards.
-   Files missing from the export are listed too, so the counts match the
-   chat, and open the message instead. Loaded after app.js.
+   Only files that are in the export are listed. Loaded after app.js.
    ===================================================================== */
 const GAL_CATS = [['all', 'All'], ['photos', 'Photos'], ['videos', 'Videos'], ['audio', 'Audio'], ['docs', 'Documents'], ['stickers', 'Stickers'], ['links', 'Links'], ['contacts', 'Contacts']];
 const GAL_OF = { image: 'photos', gif: 'photos', video: 'videos', audio: 'audio', document: 'docs', sticker: 'stickers', contact: 'contacts' };
@@ -30,9 +29,8 @@ const Gallery = {
       const m = S.msgs[i];
       if (m.isSystem) continue;
       for (const a of m.attachments) {
-        const cat = GAL_OF[a.type];
-        if (!cat) continue;
-        items.push({ i, cat, a, e: a.url ? Media.get(a.name) : null });
+        const cat = GAL_OF[a.type], e = a.url ? Media.get(a.name) : null;
+        if (cat && e) items.push({ i, cat, a, e });
       }
       if (m.message && m.kind !== 'location') {
         const seen = new Set();
@@ -72,11 +70,11 @@ const Gallery = {
     galBody.innerHTML = '';
     if (!this.list.length) {
       const what = cat === 'all' ? 'media, links or documents' : GAL_CATS.find(c => c[0] === cat)[1].toLowerCase();
+      const txtOnly = cat !== 'links' && !S.media.files && (S.media.missing || S.media.omitted);
       galBody.innerHTML = '<div class="gempty">' + ICON[GAL_ICON[cat]] + '<b>No ' + what + ' in this chat</b><small>' +
-        (cat === 'links' ? 'Links people send show up here.' : 'Shared files show up here when the export includes them.') + '</small></div>';
+        (cat === 'links' ? 'Links people send show up here.' : txtOnly ? 'This chat was opened as text only. Open the ZIP export to see its files here.' : 'Shared files show up here when the export includes them.') + '</small></div>';
       return;
     }
-    if (S.media.missing && !S.media.found && cat !== 'links') galBody.insertAdjacentHTML('beforeend', '<p class="gnote">Opened as text only, so files are listed but can\'t be shown. Open the ZIP export to see them.</p>');
     this.more();
   },
   // Adds the next page of items. A month that continues from the previous page keeps its section.
@@ -113,7 +111,6 @@ const Gallery = {
   view(k) {
     const it = this.list[k];
     if (!it) return;
-    if (!it.e) { this.jump(it.i); return; }
     const list = this.list.filter(x => x.e && GAL_GRID.has(x.cat)).map(x => ({ i: x.i, name: x.e.name, type: x.a.type }));
     openLightbox(it.e.name, list);
   },
@@ -129,7 +126,6 @@ function galWhen(m) { return (m.isOutgoing ? 'You' : m.sender) + ' · ' + dateLa
 
 function tileHTML(it, k) {
   const m = S.msgs[it.i], e = it.e, label = TYPE_LABEL[it.a.type] + ', ' + galWhen(m);
-  if (!e) return '<button class="gtile miss" data-gk="' + k + '" aria-label="' + esc(label + ', not in the export. Show in chat') + '">' + ICON[GAL_ICON[it.cat]] + '<small>Not in export</small></button>';
   const vid = VIDEO_EXT.test(extOf(e.name));
   let inner;
   if (it.a.type === 'gif' && vid) inner = '<video src="' + e.url + '" muted loop autoplay playsinline preload="metadata"></video><span class="gbadge">GIF</span>';
@@ -153,10 +149,6 @@ function rowHTML(it, k) {
       '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="Open link" title="Open link">' + galSm('next') + '</a>' + jumpBtn(it.i) + '</span></div>';
   }
   const e = it.e;
-  if (!e) {
-    return '<div class="grow gmiss"><span class="gic">' + ICON[GAL_ICON[it.cat]] + '</span><span class="gtxt"><b>' + esc(it.a.title || it.a.name || TYPE_LABEL[it.a.type]) + '</b>' +
-      '<small>' + (it.a.omitted ? 'Left out when the chat was exported' : S.media.found ? 'Not included in the ZIP' : 'Not included: opened as text only') + '</small>' + when + '</span><span class="gacts">' + jumpBtn(it.i) + '</span></div>';
-  }
   if (it.cat === 'audio') return '<div class="grow gaud">' + audioHTML(e, m) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
   if (it.cat === 'contacts') return '<div class="grow gvc">' + contactHTML(e) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
   // Documents: type badge, title, size and date. PDFs open in the viewer, other files open in a new tab.

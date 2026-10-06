@@ -157,8 +157,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
   - links: site badge, site name, address, the message text around the link, copy and open buttons;
   - contacts: the contact card with **View contact** and **Save .vcf**.
 - Every row has a **Show in chat** button that closes the gallery and jumps to the message.
-- Files missing from the export are still listed, with "Not in export" or the reason, so the counts match the chat. Tapping one shows its message. A `.txt`-only import gets a note saying files can't be shown.
-- A category with nothing in it says so ("No videos in this chat").
+- Only files that are in the export are listed. A category with nothing in it says so ("No videos in this chat"); for a `.txt`-only import it suggests opening the ZIP export instead.
 - Items are added 120 at a time as you scroll, so chats with thousands of files stay smooth.
 
 ## 7. Search and navigation

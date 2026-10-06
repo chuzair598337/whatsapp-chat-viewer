@@ -7,7 +7,7 @@
   - Items are newest first under month headings. Photos, videos and stickers show as a square grid, and the rest as rows.
   - The photo viewer steps through the current filter and now plays videos and GIFs too.
   - Rows reuse the chat's players, PDF viewer and contact cards, and have a **Show in chat** button.
-  - Missing files are listed with the reason, and very large chats load as you scroll.
+  - Only files that are in the export are shown, and very large chats load as you scroll.
   - Open it from the new tiles in the sidebar's media section or from the ⋮ menu. The tour has a step for it.
 - **Sample chat:** an April photo and link, so the gallery shows two months.
 

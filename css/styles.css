@@ -661,8 +661,6 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gtile.stk img { object-fit: contain; padding: 10%; }
 .gtile:hover img, .gtile:hover video { filter: brightness(.9); }
 .gtile:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
-.gtile.miss { display: grid; place-content: center; justify-items: center; gap: 6px; color: var(--ink-3); border: 1px dashed var(--line); background: transparent; }
-.gtile.miss small { font-size: 11.5px; }
 .gdur { position: absolute; left: 0; right: 0; bottom: 0; display: flex; align-items: center; gap: 3px; padding: 14px 6px 5px; color: #fff; font-size: 12px; font-weight: 500; background: linear-gradient(transparent, rgba(0, 0, 0, .55)); }
 .gdur svg { width: 14px; height: 14px; }
 .gbadge { position: absolute; left: 6px; bottom: 6px; padding: 1px 5px; border-radius: 4px; background: rgba(0, 0, 0, .55); color: #fff; font-size: 11px; font-weight: 700; }
@@ -681,15 +679,12 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gacts .ibtn { color: var(--ink-2); }
 .gmain { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; border: 0; background: transparent; padding: 0; color: inherit; font: inherit; text-align: left; cursor: pointer; text-decoration: none; }
 .gmain:hover b { color: var(--accent-ink); }
-.gic { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; color: var(--ink-3); border: 1px dashed var(--line); flex: none; }
-.gmiss .gtxt b { color: var(--ink-2); }
 .gaud, .gvc { flex-direction: column; align-items: stretch; gap: 6px; }
 .gaud .aplayer, .gvc .vcard { width: 100%; max-width: 420px; background: var(--panel-2); border-radius: 10px; }
 .gfoot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .gempty { display: grid; justify-items: center; gap: 8px; padding: 70px 24px; text-align: center; color: var(--ink-3); }
 .gempty svg { width: 44px; height: 44px; opacity: .7; }
 .gempty b { color: var(--ink-2); font-weight: 500; font-size: 15px; }
-.gnote { margin: 12px 16px 0; padding: 10px 12px; border-radius: 8px; background: var(--enc); color: var(--enc-ink); font-size: 13px; }
 .gmore { padding: 18px; text-align: center; color: var(--ink-3); font-size: 13px; }
 @media (max-width: 600px) {
   #galModal { padding: 0; }
