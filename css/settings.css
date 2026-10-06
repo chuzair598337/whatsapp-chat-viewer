@@ -32,7 +32,8 @@
 
 /* Pick sheet: WhatsApp-style list of radio choices. */
 .sheet.pick { width: min(360px, 100%); }
-.sheet.pick .body { gap: 2px; padding: 8px 12px; }
+.sheet.pick header { padding-inline: 20px 8px; }
+.sheet.pick .body { gap: 2px; padding: 8px 12px 14px; }
 .pickopt { display: flex; align-items: center; gap: 16px; padding: 12px 10px; border-radius: 8px; cursor: pointer; }
 @media (hover: hover) { .pickopt:hover { background: var(--panel-2); } }
 .pickopt input { accent-color: var(--accent); width: 20px; height: 20px; margin: 0; flex: none; }
@@ -46,6 +47,6 @@
   .sheet.settings .set-body { padding: 12px 12px calc(20px + env(safe-area-inset-bottom, 0px)); gap: 14px; }
   .sheet.settings header { min-height: 56px; }
   .sheet.pick { width: 100%; }
-  .sheet.pick .body { padding: 6px 8px; }
+  .sheet.pick .body { padding: 6px 8px 12px; }
   .pickopt { padding: 14px 12px; font-size: 16px; }
 }

@@ -2,7 +2,7 @@
 
 ## Unreleased (on `development`)
 
-- **Settings screen, like WhatsApp's.** **Settings** in the ⋮ menu opens one place for every preference: who you are (with your avatar), theme, language, background pattern and date format, plus chat statistics, the tour and an About note. Choices open a WhatsApp-style pick sheet.
+- **Settings screen, like WhatsApp's.** **Settings** in the ⋮ menu opens one place for every preference: who you are (with your avatar), theme, language, background pattern and date format, plus chat statistics, the tour and an About note. Choices open a WhatsApp-style pick sheet, closed with the ✕ next to its title (or a tap outside).
   - The ⋮ menu now holds only chat actions; its Theme and Language lists moved to Settings.
   - The side panel's View section is gone: who you are, date format and background pattern moved to Settings, and **Jump to date** stays in the side panel.
   - The theme, language and background pattern are remembered on this device as before. Who you are and the date format stay per chat and aren't stored, because a name is chat data.

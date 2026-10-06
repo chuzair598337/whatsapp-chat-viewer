@@ -285,5 +285,6 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **This chat:** **Chat statistics**.
 - **Help:** **Help and guided tour**, the version and the privacy note.
 - **What is remembered:** the theme, language and background pattern, on this device. Who you are and the date format apply to the open chat only, because a name is chat data and is never stored.
+- **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
 - **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The side panel keeps **Jump to date**. The start screen keeps its English / اردو switch, because no chat is open there yet.

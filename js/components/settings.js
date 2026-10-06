@@ -80,7 +80,8 @@ const Settings = {
   }
 };
 
-/* Pick sheet: a title and a list of radio buttons. Picking one closes it and calls done(value).
+/* Pick sheet: a title with a ✕ close button and a list of radio buttons. Picking one closes it and calls done(value);
+   ✕, Esc or a tap outside closes it without a change.
    Labels are the app's own text (trusted), never chat content. */
 let pickDone = null;
 function pickSheet(title, opts, cur, done) {
@@ -103,7 +104,6 @@ $('pickList').addEventListener('keydown', e => {
   const r = e.target.closest('.pickopt'); if (!r) return;
   e.preventDefault(); const v = r.querySelector('input').value, done = pickDone; pickDone = null; closeModal('pickModal'); if (done) done(v);
 });
-$('pickCancel').onclick = () => { pickDone = null; closeModal('pickModal'); };
 
 $('setBody').addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b && !b.disabled) Settings.act(b.dataset.set); });
 $('setBody').addEventListener('change', e => { if (e.target.id === 'doodle') setDoodle(e.target.checked); });

@@ -539,7 +539,6 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only.",
-    "cancel": "Cancel"
+    "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only."
   }
 });
