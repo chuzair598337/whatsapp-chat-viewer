@@ -1,6 +1,6 @@
 # Deferred and out of scope
 
-These features have been considered and deliberately left out. Each would conflict with the viewer's main promise: an export is opened in the browser, read in memory, and never leaves the device. Please don't add them without first changing this file and [PROJECT_RULES.md](PROJECT_RULES.md).
+These features have been considered and deliberately left out. Each would conflict with the viewer's main promise: an export is opened in the browser, read in memory, and never leaves the device. Please don't add them without first changing this file and [PROJECT_RULES.md](../PROJECT_RULES.md).
 
 ## Export and data management
 

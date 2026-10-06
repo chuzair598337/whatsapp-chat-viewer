@@ -45,7 +45,7 @@ flowchart LR
 ```
 
 - **Static site:** plain HTML, CSS and JavaScript with no build step and no server code.
-- **Three dependencies, all vendored in `js/vendor/`:** JSZip; pdf.js for PDF previews, only loaded when a chat has a PDF; and the lottie-web light build for iPhone animated stickers, only loaded when a chat has one.
+- **Five dependencies, all vendored in `js/vendor/`:** JSZip; pdf.js for PDF previews, only loaded when a chat has a PDF; the lottie-web light build for iPhone animated stickers, only loaded when a chat has one; libheif for HEIC photos outside Safari, only loaded when one needs decoding; and Notyf for notifications.
 - **Parsing and unzipping:** run in Web Workers created from inline Blob URLs, so large chats don't freeze the page.
 - **Media:** stays in memory as `blob:` URLs, which are revoked when another chat is opened.
 - **Rendering:** only the rows on screen exist in the DOM. A Fenwick tree tracks row heights for fast scrolling.
@@ -54,30 +54,34 @@ flowchart LR
 whatsapp-chat-viewer/
 ├── .github/workflows/deploy-pages.yml   # deploys main to GitHub Pages
 ├── docs/
-│   ├── features.md                       # full feature documentation
+│   ├── features.md                       # what the app does today (kept in step with the code)
+│   ├── todo.md                           # requested work not built yet
+│   ├── deferred.md                       # out of scope, and why
 │   └── images/                           # README screenshots
 ├── index.html                            # page markup
+├── fonts/                                # Noto Nastaliq Urdu and Noto Naskh Arabic (OFL)
+├── tests/parser.test.js                  # parser tests
 ├── css/styles.css                        # styles and light/dark theme tokens
 ├── css/settings.css                      # Settings screen
 ├── js/
 │   ├── vendor/jszip.min.js               # JSZip 3.10.1 (MIT)
 │   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
 │   ├── vendor/lottie/                    # lottie-web 5.13.0 light build (MIT), loaded on demand
-│   ├── i18n/                             # i18n.js (t() helper), en.js and ur.js dictionaries
+│   ├── vendor/libheif/                   # libheif-js 1.23.5 HEIC decoder (LGPL-3.0), loaded on demand
+│   ├── vendor/notyf/                     # Notyf 3.10.0 notifications (MIT)
+│   ├── i18n/                             # i18n.js (t() helper), en.js, ur.js and ar.js dictionaries
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── text-truncator.js                 # Read more / Show less for long messages
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # media-gallery.js, message-menu.js, settings.js
+│   ├── components/                       # toast.js (notifications), media-gallery.js, message-menu.js, settings.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
 ├── CLAUDE.md                             # short pointer for coding agents
 ├── PROJECT_RULES.md                      # rules for every change (privacy, both export types, performance, a11y)
-├── todo.md                               # work list by priority
-├── deferred.md                           # out of scope, and why
 ├── .gitignore
 └── README.md
 ```
@@ -126,13 +130,13 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/settings` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/settings` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
 ## Branching and contributions
 
-Read [PROJECT_RULES.md](PROJECT_RULES.md) first. Planned work is in [todo.md](todo.md), and ideas that were ruled out are in [deferred.md](deferred.md).
+Read [PROJECT_RULES.md](PROJECT_RULES.md) first. What the app does is in [docs/features.md](docs/features.md), requested work that isn't built yet is in [docs/todo.md](docs/todo.md), and ideas that were ruled out are in [docs/deferred.md](docs/deferred.md).
 
 | Branch | Purpose |
 |---|---|
@@ -148,4 +152,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), libheif (the HEIC decoder, from libheif-js) under the GNU LGPL 3.0 (`js/vendor/libheif/LICENSE`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), Notyf under the MIT license (`js/vendor/notyf/LICENSE.md`), libheif (the HEIC decoder, from libheif-js) under the GNU LGPL 3.0 (`js/vendor/libheif/LICENSE`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).

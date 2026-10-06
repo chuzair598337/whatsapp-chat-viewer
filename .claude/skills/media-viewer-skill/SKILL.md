@@ -1,6 +1,6 @@
 ---
 name: media-viewer-skill
-description: Use when changing how media renders. Covers photos, stickers, GIFs, video, voice notes, documents, PDFs, contacts, the photo lightbox, and placeholders for missing media.
+description: Use when changing how media renders. Covers photos (including HEIC), stickers (including .was), GIFs, video, voice notes, documents, PDFs, contacts, the photo lightbox, the media gallery, the message menu's media actions, and placeholders for missing or undecodable media.
 ---
 
 # Media and viewers
@@ -9,12 +9,17 @@ description: Use when changing how media renders. Covers photos, stickers, GIFs,
 
 | Piece | File |
 |---|---|
-| Opening a ZIP: worker JSZip, main-thread JSZip, then the native `DecompressionStream` reader | `js/media.js` (`openArchive`) |
+| Opening a ZIP: the native streaming `DecompressionStream` reader first, then JSZip in a worker, then JSZip on the main thread | `js/media.js` (`openArchive`) |
 | Media store: name to `{blob, url, mime, type}` | `js/media.js` (`Media`) |
 | Shared `<audio>` for voice notes | `js/media.js` (`AudioCtl`) |
 | Attachment cards and players | `js/viewer.js` (`attHTML`, `docHTML`, `contactHTML`) |
 | Lazy queues: waveforms (`Waves`), video posters, PDF thumbnails (`PdfView`), contact cards (`Cards`) | `js/viewer.js` |
 | Photo lightbox: zoom, pan, pinch, 90° rotation | `js/viewer.js` (`Z`, `zTo`, `zRotate`, `zFit`) |
+| HEIC photos outside Safari: decoded with libheif into a JPEG copy in `e.view` (download keeps the original `e.url`) | `js/viewer.js` (`isHeic`, `Heic`), `js/vendor/libheif/` |
+| iPhone `.was` stickers (Lottie in a ZIP) | `js/viewer.js` (`Was`), `js/vendor/lottie/` |
+| Files the browser can't decode: `Media.bad` / `Media.cantShow`, the "Can't show this file here" card | `js/media.js`, `js/viewer.js` (`cantShowHTML`) |
+| Media, links and docs gallery, its sorting | `js/components/media-gallery.js` |
+| Message menu: View photo, Open document, Download, Share | `js/components/message-menu.js` |
 
 ## Lookup and lifetime
 
@@ -28,7 +33,7 @@ Every attachment must render something useful when the file is missing:
 
 | Situation | What to show |
 |---|---|
-| ZIP export, file not in the archive | The dashed "Asset not included in ZIP" card |
+| ZIP export, file not in the archive | The dashed "Not in this ZIP" card |
 | `.txt`-only import | "Not included: opened as text only" |
 | `<Media omitted>`, `image omitted` and similar | The same card, with the type icon |
 | A file that fails to decode (damaged PDF, unsupported codec) | Say so on the card, and keep the download button |
@@ -55,7 +60,9 @@ Never show a broken image or empty space. Never throw.
   - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Esc` (close).
   - Pinch and double-click zoom.
   - When rotated, `zFit()` scales the photo so it still fits, and `zClamp` swaps width and height so panning stays within bounds.
-- **Downloads:** use `<a download>`. Inside the claude.ai preview artifact, use the downloads capability (its allowlist excludes `.opus` and `.vcf`).
+- **Showing an image:** use `e.view || e.url` for `src`, so a decoded HEIC copy is used; use `e.url` for downloads and sharing.
+- **Downloads:** use `<a download>`. Inside the claude.ai preview artifact, use the downloads capability (its allowlist excludes some types, such as `.opus`, `.vcf` and `.heic`; a `.was` saves as `.zip` and a HEIC as its `.jpg` copy).
+- **Telling the user something:** use `toast.success/info/warning/error` from `js/components/toast.js`, never another banner.
 
 ## Checks after a change
 

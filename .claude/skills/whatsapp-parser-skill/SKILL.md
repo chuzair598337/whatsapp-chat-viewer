@@ -38,7 +38,7 @@ A line that matches neither regex continues the previous message.
   - A 4-digit first field means year/month/day.
   - Otherwise any field over 12 decides the order.
   - If every date is ambiguous, pick the order that keeps the messages most chronological.
-  - The user can override the order in settings (`opts.order`).
+  - The user can override the order in the Settings screen (Date format, passed as `opts.order`).
 - **Years:** two-digit years are 20xx.
 
 ## Message kinds (`classify`)

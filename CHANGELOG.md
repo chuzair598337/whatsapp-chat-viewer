@@ -27,6 +27,8 @@
 - **The message menu opens under its message**, lined up with the bubble and only as wide as its options. Near the bottom of the window the chat scrolls up to make room; at the very end of the chat the menu opens above the message. It used to stretch across the whole window on computers.
 - **Chat statistics:** the charts (busiest days, by weekday, by hour of day) now come right after the totals, and **Messages by person** moves below them.
 - **Messages by person sorts by any column.** Tap Person, Messages, Share, Words or Media to sort; tap again to reverse. It now lists everyone, not just the top 50.
+- **Documentation reorganised.** `todo.md` and `deferred.md` moved into `docs/` next to `features.md`. `docs/todo.md` now lists only requested work that isn't built yet (nothing, right now); finished work is described in `docs/features.md`, which was checked against the code and now covers everything in the app (the side panel's search and results, the ⋮ menu, notifications, HEIC, the current sample chat and tour) and nothing that was removed. The rules, `CLAUDE.md`, the agent skills and the README were brought up to date, with new rules for notifications and for keeping the docs in step.
+- The tour's ⋮ menu step no longer mentions the hover star or the theme and language, which now live in Settings; the "Which one is you?" dialog says you can change it later in Settings.
 - **Sample chat:** an Arabic verse with its Urdu translation in one message, and an Arabic group message, to try the fonts, search and the message menu.
 
 ## 1.6.0 (2026-10-06)

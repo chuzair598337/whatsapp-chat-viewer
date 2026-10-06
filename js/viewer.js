@@ -1245,8 +1245,6 @@ layer.addEventListener('click', e => {
   if (vc) { openContact(vc.dataset.vcard); return; }
   const rm = tg.closest('[data-more]');
   if (rm) { toggleExpand(+rm.dataset.more); return; }
-  const sb = tg.closest('[data-star]');
-  if (sb) { toggleStar(+sb.dataset.star); return; }
   // Phones have no hover: tapping a bubble's plain area reveals its ⌄ menu button.
   if (matchMedia('(hover: none)').matches) {
     const row = tg.closest('.row'), on = row && !tg.closest('a,button,input,video,img,audio') && !row.classList.contains('tapped');
