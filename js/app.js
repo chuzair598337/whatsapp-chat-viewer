@@ -145,7 +145,7 @@ async function openEntry(entry, my) {
     // Success: swap in the new media (revoking the previous chat's URLs) and show the chat.
     Media.adopt(staged);
     S.source = { blob, name: entry.path ? file.name + ' › ' + entry.label : file.name, size: file.size, hint, sample: false, zip: kind === 'zip' };
-    S.order = 'auto'; $('orderSel').value = 'auto';
+    S.order = 'auto';
     if (mediaList.length) { Media.pending = new Set(mediaList.map(p => Media.key(p))); Media.loading = { done: 0, total: mediaList.length }; }
     applyResult(res, false);
     if (S.res.participants.length > 1) openMeModal();
@@ -322,20 +322,14 @@ function renderChrome() {
   $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
   $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: res.participants[0].name, b: res.participants[1].name }) : t('chat.chat');
   const srcName = S.source.sample ? t('facts.sample_chat') : S.source.name;
-  const orderName = { dmy: 'DD/MM/YYYY', mdy: 'MM/DD/YYYY', ymd: 'YYYY-MM-DD' }[res.order];
   $('facts').innerHTML =
     '<div><dt>' + t('facts.messages') + '</dt><dd>' + nf(real) + '</dd></div>' +
     '<div><dt>' + t('facts.media') + '</dt><dd>' + nf(mediaN) + '</dd></div>' +
     '<div><dt>' + t('facts.first') + '</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
     '<div><dt>' + t('facts.last') + '</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
     '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
-  // me select
-  const sel = $('meSel');
-  sel.innerHTML = '<option value="">' + t('sidebar.nobody') + '</option>' + res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '"' + (p.name === S.me ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('');
-  sel.value = S.me || '';
-  // date order
-  $('orderSel').disabled = res.order === 'ymd';
-  $('orderNote').innerHTML = esc(t('sidebar.reading_dates_as', { format: orderName })) + (res.ambiguous && S.order === 'auto' ? '<span class="chip">' + t('sidebar.guessed') + '</span>' : '');
+  // Who you are and the date format are shown in Settings (js/components/settings.js).
+  if (typeof Settings !== 'undefined' && Settings.isOpen()) Settings.render();
   // jump date
   const jd = $('jumpDate'); jd.min = first.dateKey; jd.max = last.dateKey; jd.value = '';
   // participants
@@ -573,16 +567,16 @@ function openMeModal() {
   openModal('meModal');
 }
 $('meDone').onclick = () => { const r = document.querySelector('input[name="me"]:checked'); closeModal('meModal'); setMe(r ? r.value : null); };
-$('meSel').onchange = e => setMe(e.target.value || null);
 
-/* ---------- Date order, jump to date, doodles ---------- */
-$('orderSel').onchange = async e => {
-  S.order = e.target.value;
+/* ---------- Date order, jump to date, doodles (the controls are in Settings) ---------- */
+async function setOrder(v) {
+  if (v === S.order) return;
+  S.order = v;
   showLoading(t('load.rereading_dates'));
   const my = ++loadSeq; // a file opened meanwhile takes over, and its progress screen stays up
   try {
     await parseAndShow(true, my);
-    if (S.res.rejected) { S.order = 'auto'; e.target.value = 'auto'; toast(t('load.order_rejected')); }
+    if (S.res.rejected) { S.order = 'auto'; toast(t('load.order_rejected')); if (Settings.isOpen()) Settings.render(); }
   } catch (err) { if (!isStale(err)) toast(err.message); } finally { if (my === loadSeq) $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
@@ -593,10 +587,10 @@ function jumpToDate(dk) {
   VL.scrollTo(it);
 }
 $('jumpDate').onchange = e => { if (e.target.value) { jumpToDate(e.target.value); if (isNarrow()) closeDrawer(); } };
-const doodleBox = $('doodle');
-function applyDoodle() { $('app').classList.toggle('no-doodle', !doodleBox.checked); }
-doodleBox.checked = store('cv-doodle') !== '0'; applyDoodle();
-doodleBox.onchange = () => { store('cv-doodle', doodleBox.checked ? '1' : '0'); applyDoodle(); };
+let doodleOn = store('cv-doodle') !== '0';
+function applyDoodle() { $('app').classList.toggle('no-doodle', !doodleOn); }
+function setDoodle(on) { doodleOn = on; store('cv-doodle', on ? '1' : '0'); applyDoodle(); }
+applyDoodle();
 (function makeDoodle() {
   const svg = "<svg xmlns='http://www.w3.org/2000/svg' width='280' height='280' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'>" +
     "<path d='M24 40c0-11 10-19 22-19s22 8 22 19-10 19-22 19c-3 0-6 0-8-1l-10 6 2-10c-4-4-6-8-6-14z'/>" +
@@ -616,12 +610,12 @@ let theme = store('cv-theme') || 'system';
 function applyTheme() {
   if (theme === 'system') { if (hostTheme) root.setAttribute('data-theme', hostTheme); else root.removeAttribute('data-theme'); }
   else root.setAttribute('data-theme', theme);
-  for (const b of document.querySelectorAll('[data-theme-opt]')) b.setAttribute('aria-checked', b.dataset.themeOpt === theme);
 }
+function setTheme(v) { theme = v; store('cv-theme', v); applyTheme(); }
 applyTheme();
 
 /* ---------- Interface language (js/i18n) ---------- */
-// The picker sits in the ⋮ menu and on the start screen. Switching redraws everything the app built
+// The picker sits in Settings and on the start screen. Switching redraws everything the app built
 // in JavaScript; the chat itself (messages, names, file names, system notices, call logs, deleted and
 // omitted placeholders and the date rows) is never translated.
 function markLang() {
@@ -638,11 +632,13 @@ document.addEventListener('langchange', () => {
   if (!$('statsModal').hidden) renderStats();
   if (!$('galModal').hidden) Gallery.show(Gallery.cat);
   if (!$('meModal').hidden) openMeModal();
+  if (!$('pickModal').hidden) closeModal('pickModal');
+  if (Settings.isOpen()) Settings.render();
   VL.relayout();
   if (Tour.active()) Tour.go(Tour.i);
 });
 
-/* ---------- Header ⋮ menu (WhatsApp style): starred, statistics, open, theme, help ---------- */
+/* ---------- Header ⋮ menu (WhatsApp style): chat actions, Settings and help. No preferences here (PROJECT_RULES.md). ---------- */
 const moreBtn = $('moreBtn'), moreMenu = $('moreMenu');
 const menuItems = () => [...moreMenu.querySelectorAll('[role^="menuitem"]')];
 function openMenu() {
@@ -657,12 +653,6 @@ function closeMenu(focusBtn) {
 moreBtn.onclick = () => { if (moreMenu.hidden) openMenu(); else closeMenu(); };
 // Capture: the menu closes (focus back on ⋮) before the item's own action runs, so dialogs it opens return focus to ⋮.
 moreMenu.addEventListener('click', e => { if (e.target.closest('[role^="menuitem"]')) closeMenu(true); }, true);
-moreMenu.addEventListener('click', e => {
-  const tg = e.target.closest('[data-theme-opt]');
-  if (tg) { theme = tg.dataset.themeOpt; store('cv-theme', theme); applyTheme(); }
-  const l = e.target.closest('[data-lang-opt]');
-  if (l) { closeMenu(true); I18N.set(l.dataset.langOpt); }
-});
 document.addEventListener('pointerdown', e => { if (!moreMenu.hidden && !moreMenu.contains(e.target) && !moreBtn.contains(e.target)) closeMenu(); });
 moreMenu.addEventListener('keydown', e => {
   const items = menuItems(), i = items.indexOf(document.activeElement);
@@ -722,7 +712,7 @@ document.addEventListener('keydown', e => {
   if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
-    for (const id of ['vcModal', 'galModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
+    for (const id of ['vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'setModal']) if (!$(id).hidden) { closeModal(id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }
     if (!$('sstrip').hidden) { closeSearch(); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
@@ -733,7 +723,7 @@ document.addEventListener('keydown', e => {
 $('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').innerHTML = ICON.open; $('startDemoIc').innerHTML = ICON.chat;
 for (const [id, ic] of [['startT1', 'lock'], ['startT2', 'ban'], ['startT3', 'check']]) $(id).insertAdjacentHTML('afterbegin', ICON[ic]); $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
 $('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('moreBtn').innerHTML = ICON.more;
-for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'open'], ['miLight', 'sun'], ['miDark', 'moon'], ['miSystem', 'auto'], ['miHelp', 'help']]) $(id).innerHTML = ICON[ic];
+for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'open'], ['miHelp', 'help']]) $(id).innerHTML = ICON[ic];
 $('sClose').innerHTML = ICON.back; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down; $('sList').innerHTML = ICON.list;
 $('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').innerHTML = ICON.lock.replace('width="22" height="22"', 'width="16" height="16"');

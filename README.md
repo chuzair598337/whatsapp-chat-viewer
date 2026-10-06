@@ -22,7 +22,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Star messages to collect them in a side panel while you read (never saved).
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
-- Light, dark and system themes, and a responsive layout for desktop and phone.
+- A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern and the date format, and a responsive layout for desktop and phone.
 - English and Urdu interface, with a right-to-left layout and a Nastaliq font for Urdu. Chat text is never translated, and sent messages stay on the right.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
@@ -57,6 +57,7 @@ whatsapp-chat-viewer/
 │   └── images/                           # README screenshots
 ├── index.html                            # page markup
 ├── css/styles.css                        # styles and light/dark theme tokens
+├── css/settings.css                      # Settings screen
 ├── js/
 │   ├── vendor/jszip.min.js               # JSZip 3.10.1 (MIT)
 │   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
@@ -67,6 +68,7 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
+│   ├── components/                       # media-gallery.js, settings.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
@@ -122,7 +124,7 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/settings` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 

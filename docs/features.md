@@ -17,6 +17,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 11. [Start screen, sample chat and guided tour](#11-start-screen-sample-chat-and-guided-tour)
 12. [Code layout](#12-code-layout)
 13. [Interface languages](#13-interface-languages)
+14. [Settings](#14-settings)
 
 ---
 
@@ -30,7 +31,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **Local preferences only.** The theme, the date order, "which one is you" and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. Chat contents are never stored.
+- **Local preferences only.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. Who you are and the date order belong to the open chat and are not stored. Chat contents are never stored.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -189,7 +190,7 @@ The statistics window shows:
 
 ## 9. Themes
 
-- **Light**, **Dark** and **Match system**, chosen under **Theme** in the header's ⋮ menu. Match system follows `prefers-color-scheme` and updates live when the operating system's setting changes.
+- **Light**, **Dark** and **Match system**, chosen under **Theme** in Settings (⋮ menu, **Settings**). Match system follows `prefers-color-scheme` and updates live when the operating system's setting changes.
 - Colours are CSS custom properties, set on `:root` and overridden under `[data-theme="dark"]`, so the whole interface switches at once.
 - The chat background pattern can be turned off in the sidebar settings.
 
@@ -224,7 +225,7 @@ The statistics window shows:
   2. **Finding things:** search; date and sender filters; jump to date; statistics; media, links and docs; "which one is you" and the date order.
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
   4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links.
-  5. The ⋮ menu (media, links and docs, starred messages, statistics, themes, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
+  5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
 
@@ -254,14 +255,16 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
+| `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, date format, statistics, help and About, and the pick sheet for choices |
 | `js/components/media-gallery.js` | The media, links and docs gallery: its index of attachments and links, the filter chips, grid and list layouts, and paging |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
+| `css/settings.css` | The Settings screen and pick sheet |
 
 ## 13. Interface languages
 
-- **English (US)** is the default. **Urdu (اردو)** is the second language. Pick one under **Language** in the ⋮ menu or with the English / اردو switch at the top of the start screen. The choice is saved on this device as `app_language` and applies at once, even with a chat open or the tour running.
+- **English (US)** is the default. **Urdu (اردو)** is the second language. Pick one under **Language** in Settings or with the English / اردو switch at the top of the start screen. The choice is saved on this device as `app_language` and applies at once, even with a chat open or the tour running.
 - **What is translated:** everything the app says. That covers the start screen, sidebar, header and ⋮ menu, search, filters, starred messages, the gallery and its chips, statistics (including weekday names), the photo, PDF and contact viewers, the guided tour, month headings and dates outside the chat, the poll footer, the "Edited" tag, toasts and error messages.
 - **What is never translated:** the chat itself. Messages, sender and contact names, file names, captions, WhatsApp's own system notices, call logs, deleted-message placeholders, omitted-media lines and the date rows between days are shown exactly as they are in the export, so they look the same in both languages.
 - **Right to left.** In Urdu the page is `dir="rtl"`. The layout uses logical CSS properties, so the side panel, menus and dialogs mirror on their own. A few rules handle the rest: the slide-in drawer, arrow icons, and the arrow keys and swipes in the photo viewer, the gallery chips and the tour, which follow the reading direction.
@@ -269,3 +272,18 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **Mixed text.** Each message, name and system notice gets `dir="auto"`, so an English message reads left to right in the Urdu interface and an Urdu message reads right to left in the English one. The time sits where the text ends. Dates in the date fields and file extensions such as `.zip` stay left to right.
 - **Font.** Urdu text uses Jameel Noori Nastaleeq when it is installed on the device. Its licence doesn't allow shipping it, so the app bundles **Noto Nastaliq Urdu** (SIL Open Font Licence, `fonts/`) as the fallback. It is limited to Arabic-script characters, so Latin text and numbers keep the normal font, and chat bubbles keep the normal font so messages look the same in both languages. Nothing is downloaded.
 - **For developers.** Text lives in `js/i18n/en.js` and `js/i18n/ur.js`. These are scripts rather than JSON files, because a page opened from disk (`file://`) can't fetch JSON. Call `t('section.key', { name: value })`; `{name}` is filled in (wrapped in invisible isolate marks so a Latin name or a number keeps its place in an Urdu sentence), a `key_one` entry is used when `n` is 1, and a missing Urdu entry falls back to English. Static HTML uses `data-i18n`, `data-i18n-html` and `data-i18n-attr`. Switching fires a `langchange` event, and `app.js` redraws the open chat, panels and dialogs.
+
+## 14. Settings
+
+- **Where:** **Settings** in the header's ⋮ menu opens a screen laid out like WhatsApp's Settings. On a phone it slides up as a full-height sheet. ← or `Esc` closes it.
+- **You are:** the card at the top shows who you are in this chat, with your avatar. Tap it to pick another person (or nobody); your messages move to the right in green.
+- **Chats:**
+  - **Theme:** Light, Dark or Match system, in a pick sheet.
+  - **Language:** English or اردو. The whole app redraws in the new language at once, the Settings screen included.
+  - **Background pattern:** a switch for the doodles behind the messages.
+  - **Date format:** Automatic, Day / Month or Month / Day, with the order being used and a **guessed** badge when the chat could be read either way. A forced order that gives impossible dates is refused with a message. Exports written as YYYY-MM-DD have nothing to choose, so the row is disabled.
+- **This chat:** **Chat statistics**.
+- **Help:** **Help and guided tour**, the version and the privacy note.
+- **What is remembered:** the theme, language and background pattern, on this device. Who you are and the date format apply to the open chat only, because a name is chat data and is never stored.
+- **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
+- **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The side panel keeps **Jump to date**. The start screen keeps its English / اردو switch, because no chat is open there yet.

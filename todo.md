@@ -180,6 +180,15 @@ All confirmed findings in `/mnt/project-files/audit/i18n-audit.md`, fixed on `de
 - [x] ⋮ menu: animation corner, logical padding, English label next to its icon (5a-c).
 - [x] Sample chat: an Urdu message and "You deleted this message." from you.
 
+## Phase 14: Settings screen (2026-10-06)
+
+- [x] **Settings screen like WhatsApp's** (`js/components/settings.js`, `css/settings.css`), opened from **Settings** in the ⋮ menu. *New (Phase 14).*
+- [x] Profile card for **You are**; Chats group with Theme, Language, Background pattern and Date format; This chat (statistics); Help and About. *New (Phase 14).*
+- [x] Pick sheet for choices (radio list). *New (Phase 14).*
+- [x] Theme and Language removed from the ⋮ menu; You are, Date format and Background pattern removed from the side panel. *New (Phase 14).*
+- [x] Tour step "Settings" replaces "Which one is you". *New (Phase 14).*
+- [x] Settings rule in `PROJECT_RULES.md` and `CLAUDE.md`. *New (Phase 14).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

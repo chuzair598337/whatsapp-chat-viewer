@@ -2,6 +2,11 @@
 
 ## Unreleased (on `development`)
 
+- **Settings screen, like WhatsApp's.** **Settings** in the ⋮ menu opens one place for every preference: who you are (with your avatar), theme, language, background pattern and date format, plus chat statistics, the tour and an About note. Choices open a WhatsApp-style pick sheet.
+  - The ⋮ menu now holds only chat actions; its Theme and Language lists moved to Settings.
+  - The side panel's View section is gone: who you are, date format and background pattern moved to Settings, and **Jump to date** stays in the side panel.
+  - The theme, language and background pattern are remembered on this device as before. Who you are and the date format stay per chat and aren't stored, because a name is chat data.
+  - The guided tour shows the Settings screen in place of the old "Which one is you" step.
 - **Languages: English and Urdu.** Choose one under **Language** in the ⋮ menu, or with the English / اردو switch on the start screen. The choice is remembered on this device (`app_language` in `localStorage`); English (US) is the default.
   - Everything the app itself says is translated: the start screen, menus, buttons, filter chips, dialogs, the gallery, statistics, the guided tour, date labels outside the chat, status and error messages. The small "Edited" tag follows the interface language too.
   - The chat itself is shown exactly as exported, in either language: messages, names, file names, WhatsApp's system notices, call logs ("Missed voice call"), deleted-message placeholders ("You deleted this message."), omitted media ("Video omitted") and the date rows between days.

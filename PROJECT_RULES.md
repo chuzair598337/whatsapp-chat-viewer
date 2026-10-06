@@ -73,9 +73,14 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `tour-controller`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/settings`, `tour-controller`. There is no build step.
   - **Every word the app shows goes through `t('section.key')`** (or `data-i18n` in `index.html`), with the text added to both `js/i18n/en.js` and `js/i18n/ur.js`. Never translate chat content: messages, names, file names, system notices, call logs, deleted and omitted placeholders and the date rows stay as exported.
   - **Use logical CSS properties** (`margin-inline-start`, `inset-inline-end`, `text-align: start`) instead of left and right, so the Urdu layout mirrors. The chat (`#layer`) is `dir="ltr"` and never mirrors: sent on the right, received and avatars on the left.
   - Match the surrounding style.
+- **Settings.**
+  - **One place for settings.** Every app-wide preference (theme, language, background pattern, display modes) and every per-chat choice (who you are, the date format) lives in the Settings screen, `js/components/settings.js` with `css/settings.css`, opened from **Settings** in the ⋮ menu.
+  - **No settings in menus or the sidebar.** The ⋮ menu and the side panel hold only actions for the open chat (Media, links and docs, Starred messages, Chat statistics, Open another chat, Help). Never put theme or language pickers there.
+  - **Text for every setting.** Each new setting adds its words to both `js/i18n/en.js` and `js/i18n/ur.js` (through `t()`), and a row in `Settings.render()`.
+  - **Storage.** Only display preferences go in `localStorage` (`cv-theme`, `app_language`, `cv-doodle`). Nothing from the chat, such as a name, is ever stored.
 - **Tests.** Run `node tests/parser.test.js` after any parser change, and add a case for each new export format.
 - **Records.** Track work in [todo.md](todo.md), user-facing changes in [CHANGELOG.md](CHANGELOG.md), and behaviour in [docs/features.md](docs/features.md).

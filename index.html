@@ -10,6 +10,7 @@
 <title data-i18n="app.title">Offline Chat Viewer</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpath fill=%27%2325d366%27 d=%27M16 3C8.8 3 3 8.4 3 15c0 2.4.8 4.7 2.1 6.6L4 29l7.7-1.9c1.3.4 2.8.7 4.3.7 7.2 0 13-5.4 13-12S23.2 3 16 3z%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
 
@@ -91,12 +92,8 @@
         <p class="mnote" id="mediaNote"></p>
       </section>
       <section class="sb-sec">
-        <h3 data-i18n="sidebar.view">View</h3>
-        <div class="field"><label for="meSel" data-i18n-html="sidebar.you_are_your_messages_show">You are<small>Your messages show on the right</small></label><select id="meSel"></select></div>
-        <div class="field"><label for="orderSel"><span data-i18n="sidebar.date_format">Date format</span><small id="orderNote"></small></label>
-          <select id="orderSel"><option value="auto" data-i18n="sidebar.automatic">Automatic</option><option value="dmy" data-i18n="sidebar.day_month">Day / Month</option><option value="mdy" data-i18n="sidebar.month_day">Month / Day</option></select></div>
-        <div class="field"><label for="jumpDate" data-i18n-html="sidebar.jump_to_date_first_message">Jump to date<small>First message on or after</small></label><input type="date" id="jumpDate"></div>
-        <div class="field"><label for="doodle" data-i18n="sidebar.background_pattern">Background pattern</label><input type="checkbox" class="switch" id="doodle" checked></div>
+        <h3 data-i18n="sidebar.jump_to_date">Jump to date</h3>
+        <div class="field"><label for="jumpDate" data-i18n="sidebar.first_message_on_or_after">First message on or after</label><input type="date" id="jumpDate"></div>
       </section>
       <section class="sb-sec">
         <h3><span data-i18n="sidebar.participants">Participants</span> <span id="pCount"></span></h3>
@@ -121,19 +118,7 @@
         <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml" data-i18n="common.chat_statistics">Chat statistics</span></button>
         <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml" data-i18n="menu.open_another_chat">Open another chat</span></button>
         <div class="msep" role="separator"></div>
-        <div class="mlabel" id="themeLbl" data-i18n="menu.theme">Theme</div>
-        <div role="group" aria-labelledby="themeLbl">
-          <button role="menuitemradio" data-theme-opt="light" aria-checked="false"><span class="mi" id="miLight"></span><span class="ml" data-i18n="menu.light">Light</span></button>
-          <button role="menuitemradio" data-theme-opt="dark" aria-checked="false"><span class="mi" id="miDark"></span><span class="ml" data-i18n="menu.dark">Dark</span></button>
-          <button role="menuitemradio" data-theme-opt="system" aria-checked="false"><span class="mi" id="miSystem"></span><span class="ml" data-i18n="menu.match_system">Match system</span></button>
-        </div>
-        <div class="msep" role="separator"></div>
-        <div class="mlabel" id="langLbl" data-i18n="common.language">Language</div>
-        <div role="group" aria-labelledby="langLbl">
-          <button role="menuitemradio" data-lang-opt="en-US" aria-checked="false"><span class="mi mi-lang" lang="en">A</span><span class="ml" lang="en">English</span></button>
-          <button role="menuitemradio" data-lang-opt="ur" aria-checked="false"><span class="mi mi-lang" lang="ur">ا</span><span class="ml" lang="ur">اردو</span></button>
-        </div>
-        <div class="msep" role="separator"></div>
+        <button role="menuitem" id="setBtn"><span class="mi" id="miSet"></span><span class="ml" data-i18n="menu.settings">Settings</span></button>
         <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml" data-i18n="menu.help_and_guided_tour">Help and guided tour</span></button>
       </div>
     </header>
@@ -182,6 +167,19 @@
     <header><h2 id="meTitle" data-i18n="me.which_one_is_you">Which one is you?</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
     <div class="body"><p class="lead" data-i18n="me.whatsapp_exports_don_t_say">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
     <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
+  </div>
+</div>
+<div id="setModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
+  <div class="sheet narrow settings">
+    <header><button class="ibtn" id="setBack" aria-label="Close settings" data-i18n-attr="aria-label:settings.close"></button><h2 id="setTitle" data-i18n="settings.title">Settings</h2></header>
+    <div class="body set-body" id="setBody"></div>
+  </div>
+</div>
+<div id="pickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="pickTitle">
+  <div class="sheet narrow pick">
+    <header><h2 id="pickTitle"></h2></header>
+    <div class="body" id="pickList" role="radiogroup" aria-labelledby="pickTitle"></div>
+    <div class="foot"><button class="btn" id="pickCancel" data-i18n="settings.cancel">Cancel</button></div>
   </div>
 </div>
 <div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-attr="aria-label:viewer.photo_viewer">
@@ -249,6 +247,7 @@
 <script src="js/demo-data.js"></script>
 <script src="js/app.js"></script>
 <script src="js/components/media-gallery.js"></script>
+<script src="js/components/settings.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>
 </html>

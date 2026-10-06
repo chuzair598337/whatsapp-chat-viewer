@@ -50,10 +50,12 @@ const Tour = {
       sec: 'finding', key: 'media_links_and',
       id: 'mediaSec'
     }),
-    sideStep({
-      sec: 'finding', key: 'which_one_is',
-      id: 'meSel', field: true
-    }),
+    {
+      sec: 'finding', key: 'settings', settings: true,
+      prep: () => { closeDrawer(); Settings.open(); },
+      // Phones: only the "You are" card, so the tour card below doesn't cover the highlight.
+      target: () => [visEl(document.querySelector('#setModal .set-prof')), innerWidth > 640 && visEl(document.querySelector('#setModal .set-grp'))]
+    },
     chatStep({
       sec: 'messages', key: 'whatsapp_formatting',
       rows: () => [rowOf(m => m.message.startsWith('- Meet at'))]
@@ -171,6 +173,7 @@ const Tour = {
   go(i) {
     this.i = Math.max(0, Math.min(this.steps.length - 1, i));
     const st = this.steps[this.i], last = this.i === this.steps.length - 1, n = this.steps.length;
+    if (!st.settings) Settings.close(true); // only the Settings step shows the Settings screen
     if (st.prep) st.prep();
     const w = f => t('tour_steps.' + st.key + '.' + f), narrow = I18N.look('en-US', 'tour_steps.' + st.key + '.textNarrow');
     $('tourStep').textContent = t('tour.progress', { sec: t('tour_sec.' + st.sec), i: nf(this.i + 1), n: nf(n) });
@@ -189,7 +192,7 @@ const Tour = {
   end() {
     this.i = -1;
     $('tour').hidden = true;
-    closeDrawer();
+    closeDrawer(); Settings.close(true);
     const sb = document.querySelector('#sidebar .sb-scroll'); if (sb) sb.scrollTop = 0; // undo the scrolling done for sidebar steps
     document.body.classList.remove('touring');
     this.complete();

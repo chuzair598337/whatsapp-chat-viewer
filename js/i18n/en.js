@@ -59,22 +59,20 @@ I18N.add('en-US', {
     "to_date": "To date",
     "sender": "Sender",
     "view_all": "View all",
-    "view": "View",
-    "you_are_your_messages_show": "You are<small>Your messages show on the right</small>",
     "date_format": "Date format",
     "automatic": "Automatic",
     "day_month": "Day / Month",
     "month_day": "Month / Day",
-    "jump_to_date_first_message": "Jump to date<small>First message on or after</small>",
     "background_pattern": "Background pattern",
     "participants": "Participants",
     "your_chat_is_read_inside": "Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.",
-    "nobody": "Nobody (all on the left)",
     "reading_dates_as": "Reading dates as {format}",
     "guessed": "guessed",
     "and_more": "and {n} more",
     "statistics": "Statistics",
-    "open_chat": "Open chat"
+    "open_chat": "Open chat",
+    "jump_to_date": "Jump to date",
+    "first_message_on_or_after": "First message on or after"
   },
   "chat": {
     "show_chat_details": "Show chat details",
@@ -97,7 +95,8 @@ I18N.add('en-US', {
     "light": "Light",
     "dark": "Dark",
     "match_system": "Match system",
-    "help_and_guided_tour": "Help and guided tour"
+    "help_and_guided_tour": "Help and guided tour",
+    "settings": "Settings"
   },
   "search": {
     "close_search": "Close search",
@@ -156,7 +155,7 @@ I18N.add('en-US', {
   },
   "me": {
     "which_one_is_you": "Which one is you?",
-    "whatsapp_exports_don_t_say": "WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.",
+    "whatsapp_exports_don_t_say": "WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in Settings.",
     "show_chat": "Show chat",
     "n_messages": "{n} messages",
     "best_guess": "best guess",
@@ -450,10 +449,6 @@ I18N.add('en-US', {
       "title": "Media, links and docs",
       "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. It is also in the ⋮ menu."
     },
-    "which_one_is": {
-      "title": "Which one is you",
-      "text": "Pick yourself here and your messages move to the right, in green. The viewer makes a good guess, and the date order (day/month or month/day) is detected for you too, with an override below it."
-    },
     "whatsapp_formatting": {
       "title": "WhatsApp formatting",
       "text": "*Bold*, _italic_, ~strikethrough~ and `code` are shown the way WhatsApp shows them, along with bulleted and numbered lists, quotes and large emoji-only messages."
@@ -521,6 +516,30 @@ I18N.add('en-US', {
     "all_set": {
       "title": "You're all set",
       "html": "<ul><li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li><li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li><li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li><li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li><li><b>Nothing is saved.</b> Close the tab and the chat is gone.</li><li><b>Shortcuts:</b> / to search, Esc to close, and + − 0 R and the arrow keys in the photo viewer.</li></ul><p class=\"tour-note\">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can't be shown here.</p>"
+    },
+    "settings": {
+      "title": "Settings",
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green. The theme, language, background pattern and date format are here too. The viewer guesses who you are and the date order for you."
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "close": "Close settings",
+    "you_are": "You are",
+    "nobody_chosen": "Nobody chosen",
+    "your_messages_right": "Your messages show on the right",
+    "everyone_left": "Everyone shows on the left",
+    "change_you": "Choose who you are",
+    "chats": "Chats",
+    "pattern_sub": "Light doodles behind the messages",
+    "date_fixed": "This export writes dates as YYYY-MM-DD, so there is nothing to choose.",
+    "this_chat": "This chat",
+    "stats_sub": "Messages per person, the busiest days and hours",
+    "help": "Help",
+    "tour_sub": "Take the tour again or open your own chat",
+    "about": "About",
+    "version": "Version {v}",
+    "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only.",
+    "cancel": "Cancel"
   }
 });
