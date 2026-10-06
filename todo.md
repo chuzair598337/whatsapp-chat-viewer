@@ -188,6 +188,7 @@ All confirmed findings in `/mnt/project-files/audit/i18n-audit.md`, fixed on `de
 - [x] Theme and Language removed from the ⋮ menu; You are, Date format and Background pattern removed from the side panel. *New (Phase 14).*
 - [x] Tour step "Settings" replaces "Which one is you". *New (Phase 14).*
 - [x] Settings rule in `PROJECT_RULES.md` and `CLAUDE.md`. *New (Phase 14).*
+- [x] **Phone layout pass** across every screen at 360/390 px, landscape, tablet and desktop, both languages, light and dark: full-screen Settings, edge-to-edge pick sheets, dialog order, Urdu phone numbers and viewer titles, `dvh` sheets, smaller sample note. *New (Phase 14).*
 
 ## Verification done for this list
 

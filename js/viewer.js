@@ -567,7 +567,7 @@ function contactHTML(e) {
   }
   const many = list && list.length > 1;
   return '<div class="vcard" data-vcf="' + esc(e.name) + '"><button class="vc-main" data-vcard="' + esc(e.name) + '" aria-label="' + t('vc.view_contact') + '">' + av +
-    '<span class="attt"><b title="' + esc(name) + '">' + esc(name) + '</b><small>' + esc(sub) + '</small></span></button>' +
+    '<span class="attt"><b title="' + esc(name) + '" dir="auto">' + esc(name) + '</b><small><bdi>' + esc(sub) + '</bdi></small></span></button>' +
     '<div class="vc-acts"><button data-vcard="' + esc(e.name) + '">' + (many ? t('vc.view_all') : t('vc.view_contact')) + '</button>' +
     '<a href="' + e.url + '" download="' + esc(e.name) + '">' + t('vc.save') + '</a></div></div>';
 }
@@ -578,12 +578,12 @@ function openContact(name) {
   if (!list) { Cards.ready(name).then(l => { if (l) openContact(name); }); return; }
   $('vcTitle').textContent = list.length > 1 ? t('vc.n_contacts', { n: nf(list.length) }) : t('vc.contact');
   $('vcBody').innerHTML = list.length ? list.map(c =>
-    '<section class="vc-one">' + vcAvatar(c, 'big') + '<div class="vc-name"><b>' + esc(c.name) + '</b>' +
+    '<section class="vc-one">' + vcAvatar(c, 'big') + '<div class="vc-name"><b dir="auto">' + esc(c.name) + '</b>' +
       (c.biz ? '<small>' + ICON.check + t('vc.business') + (c.biz !== c.name ? ' · ' + esc(c.biz) : '') + '</small>' : '') +
       (c.org || c.title ? '<small>' + esc([c.title, c.org].filter(Boolean).join(' · ')) + '</small>' : '') + '</div>' +
-      c.phones.map(p => '<div class="vc-row"><span class="vc-ic">' + ICON.phone + '</span><span class="vc-v"><a href="tel:' + esc(p.value.replace(/[^\d+*#]/g, '')) + '">' + esc(p.value) + '</a><small>' + esc(/^vc\./.test(p.label) ? t(p.label) : p.label) + (p.wa ? ' · ' + t('vc.on_whatsapp') : '') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.number') + '" data-copy="' + esc(p.value) + '" aria-label="' + t('vc.copy_number') + '" title="' + t('vc.copy_number') + '">' + ICON.copy + '</button></div>').join('') +
-      c.emails.map(m => '<div class="vc-row"><span class="vc-ic">' + ICON.mail + '</span><span class="vc-v"><a href="mailto:' + esc(m) + '">' + esc(m) + '</a><small>' + t('vc.email') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.email') + '" data-copy="' + esc(m) + '" aria-label="' + t('vc.copy_email') + '" title="' + t('vc.copy_email') + '">' + ICON.copy + '</button></div>').join('') +
-      c.urls.map(u => { const s = safeUrl(u); return s ? '<div class="vc-row"><span class="vc-ic">' + ICON.link + '</span><span class="vc-v"><a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a><small>' + t('vc.website') + '</small></span></div>' : ''; }).join('') +
+      c.phones.map(p => '<div class="vc-row"><span class="vc-ic">' + ICON.phone + '</span><span class="vc-v"><a href="tel:' + esc(p.value.replace(/[^\d+*#]/g, '')) + '"><bdi>' + esc(p.value) + '</bdi></a><small>' + esc(/^vc\./.test(p.label) ? t(p.label) : p.label) + (p.wa ? ' · ' + t('vc.on_whatsapp') : '') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.number') + '" data-copy="' + esc(p.value) + '" aria-label="' + t('vc.copy_number') + '" title="' + t('vc.copy_number') + '">' + ICON.copy + '</button></div>').join('') +
+      c.emails.map(m => '<div class="vc-row"><span class="vc-ic">' + ICON.mail + '</span><span class="vc-v"><a href="mailto:' + esc(m) + '"><bdi>' + esc(m) + '</bdi></a><small>' + t('vc.email') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.email') + '" data-copy="' + esc(m) + '" aria-label="' + t('vc.copy_email') + '" title="' + t('vc.copy_email') + '">' + ICON.copy + '</button></div>').join('') +
+      c.urls.map(u => { const s = safeUrl(u); return s ? '<div class="vc-row"><span class="vc-ic">' + ICON.link + '</span><span class="vc-v"><a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer"><bdi>' + esc(u) + '</bdi></a><small>' + t('vc.website') + '</small></span></div>' : ''; }).join('') +
       (c.about ? '<div class="vc-about txt">' + formatText(c.about) + '</div>' : '') +
     '</section>').join('') : '<p class="lead">' + t('vc.no_details') + '</p>';
   const dl = $('vcSave'); dl.href = e.url; dl.setAttribute('download', e.name);

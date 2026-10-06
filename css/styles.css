@@ -355,7 +355,7 @@ mark.cur { background: var(--hl-cur); }
 @keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
 .toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 95; background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); box-shadow: 0 4px 16px var(--shadow); }
 .modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--overlay); padding: 16px; }
-.sheet { background: var(--panel); border-radius: 12px; width: min(860px, 100%); max-height: min(88vh, 900px); display: flex; flex-direction: column; box-shadow: 0 12px 40px var(--shadow); overflow: hidden; }
+.sheet { background: var(--panel); border-radius: 12px; width: min(860px, 100%); max-height: min(88vh, 900px); max-height: min(88dvh, 900px); display: flex; flex-direction: column; box-shadow: 0 12px 40px var(--shadow); overflow: hidden; }
 .sheet.narrow { width: min(440px, 100%); }
 .sheet header { display: flex; align-items: center; gap: 8px; padding: 10px 8px 10px 20px; background: var(--header); flex: none; }
 .sheet header h2 { margin: 0; font-size: 17px; font-weight: 500; flex: 1; }
@@ -415,10 +415,12 @@ mark.cur { background: var(--hl-cur); }
   .chat-head .who { gap: 10px; }
   .row { inset-inline-start: 10px; inset-inline-end: 10px; }
   .modal { padding: 0; place-items: end stretch; }
-  .sheet, .sheet.narrow { width: 100%; max-height: 92vh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .sheet, .sheet.narrow { width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .sheet .body { padding: 16px; }
   .sgrid { grid-template-columns: minmax(0, 1fr); }
   .fab { inset-inline-end: 12px; }
+  /* The sample note is long: smaller on phones so the chat keeps the room. */
+  .samplebar { font-size: 12.5px; line-height: 1.35; padding: 6px 12px; gap: 2px 10px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
@@ -736,7 +738,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 [dir="rtl"] .switch:checked::after { transform: translateX(-16px); }
 [dir="rtl"] .starpanel { box-shadow: 4px 0 18px rgba(0, 0, 0, .18); animation-name: slidein-rtl; }
 @keyframes slidein-rtl { from { transform: translateX(-30px); opacity: 0; } }
-[dir="rtl"] :is(.lb-nav, #sClose, .glink .gacts a) svg { transform: scaleX(-1); }
+[dir="rtl"] :is(.lb-nav, #sClose, #setBack, .glink .gacts a) svg { transform: scaleX(-1); }
 @media (max-width: 1024px) {
   [dir="rtl"] .sidebar { transform: translateX(105%); box-shadow: -4px 0 24px var(--shadow); }
   [dir="rtl"] .drawer-open .sidebar { transform: none; }

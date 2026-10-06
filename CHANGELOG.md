@@ -7,6 +7,13 @@
   - The side panel's View section is gone: who you are, date format and background pattern moved to Settings, and **Jump to date** stays in the side panel.
   - The theme, language and background pattern are remembered on this device as before. Who you are and the date format stay per chat and aren't stored, because a name is chat data.
   - The guided tour shows the Settings screen in place of the old "Which one is you" step.
+- **Phone layout fixes** (checked at 360 and 390 px, phone landscape, tablet and desktop, in English and Urdu, light and dark):
+  - Settings fills the screen on phones, like WhatsApp, and its choice lists run edge to edge at the bottom instead of stopping short of the right side.
+  - Settings rows keep one even background on iPhone instead of looking greyed out, and rows only highlight on hover where there is a mouse.
+  - "Which one is you?" and Chat statistics opened from Settings now appear on top of it instead of behind it.
+  - In Urdu, phone numbers on contact cards read the right way round (+1 555 0100), and PDF and photo viewer titles keep their order.
+  - Sheets size to the visible screen (`dvh`), so they aren't hidden under the phone's browser bars.
+  - The sample-chat note is smaller on phones, leaving more room for the chat.
 - **Languages: English and Urdu.** Choose one under **Language** in the ⋮ menu, or with the English / اردو switch on the start screen. The choice is remembered on this device (`app_language` in `localStorage`); English (US) is the default.
   - Everything the app itself says is translated: the start screen, menus, buttons, filter chips, dialogs, the gallery, statistics, the guided tour, date labels outside the chat, status and error messages. The small "Edited" tag follows the interface language too.
   - The chat itself is shown exactly as exported, in either language: messages, names, file names, WhatsApp's system notices, call logs ("Missed voice call"), deleted-message placeholders ("You deleted this message."), omitted media ("Video omitted") and the date rows between days.

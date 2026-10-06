@@ -156,19 +156,7 @@
 <div id="drop" class="dropzone" hidden><div data-i18n-html="drop.drop_your_whatsapp_export_here">Drop your WhatsApp export here<br><small>.txt or .zip</small></div></div>
 <div id="loading" class="loading" hidden><div class="box"><b id="loadTitle" data-i18n="loading.reading_chat">Reading chat</b><div class="prog"><i id="progBar"></i></div><small id="loadNote" data-i18n="loading.parsing_on_this_device">Parsing on this device</small></div></div>
 
-<div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
-  <div class="sheet">
-    <header><h2 id="statsTitle" data-i18n="common.chat_statistics">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics" data-i18n-attr="aria-label:stats.close_statistics"></button></header>
-    <div class="body" id="statsBody"></div>
-  </div>
-</div>
-<div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle">
-  <div class="sheet narrow">
-    <header><h2 id="meTitle" data-i18n="me.which_one_is_you">Which one is you?</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
-    <div class="body"><p class="lead" data-i18n="me.whatsapp_exports_don_t_say">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
-    <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
-  </div>
-</div>
+<!-- Settings comes first: dialogs opened from it (who you are, statistics, the pick sheet) sit above it. -->
 <div id="setModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="setTitle">
   <div class="sheet narrow settings">
     <header><button class="ibtn" id="setBack" aria-label="Close settings" data-i18n-attr="aria-label:settings.close"></button><h2 id="setTitle" data-i18n="settings.title">Settings</h2></header>
@@ -182,10 +170,23 @@
     <div class="foot"><button class="btn" id="pickCancel" data-i18n="settings.cancel">Cancel</button></div>
   </div>
 </div>
+<div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+  <div class="sheet">
+    <header><h2 id="statsTitle" data-i18n="common.chat_statistics">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics" data-i18n-attr="aria-label:stats.close_statistics"></button></header>
+    <div class="body" id="statsBody"></div>
+  </div>
+</div>
+<div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle">
+  <div class="sheet narrow">
+    <header><h2 id="meTitle" data-i18n="me.which_one_is_you">Which one is you?</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
+    <div class="body"><p class="lead" data-i18n="me.whatsapp_exports_don_t_say">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
+    <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
+  </div>
+</div>
 <div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-attr="aria-label:viewer.photo_viewer">
-  <div class="lb-top"><div class="lb-who"><b id="lbWho"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)" data-i18n-attr="aria-label:viewer.rotate_photo;title:viewer.rotate_90_r"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)" data-i18n-attr="aria-label:viewer.fit_to_screen;title:viewer.fit_to_screen_0"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo" data-i18n-attr="aria-label:viewer.download_photo;title:viewer.download_photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer" data-i18n-attr="aria-label:viewer.close_photo_viewer"></button></div>
+  <div class="lb-top"><div class="lb-who"><b id="lbWho" dir="auto"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)" data-i18n-attr="aria-label:viewer.rotate_photo;title:viewer.rotate_90_r"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)" data-i18n-attr="aria-label:viewer.fit_to_screen;title:viewer.fit_to_screen_0"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo" data-i18n-attr="aria-label:viewer.download_photo;title:viewer.download_photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer" data-i18n-attr="aria-label:viewer.close_photo_viewer"></button></div>
   <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo" data-i18n-attr="aria-label:viewer.previous_photo"></button><img id="lbImg" alt=""><video id="lbVid" playsinline hidden></video><button class="lb-nav" id="lbNext" aria-label="Next photo" data-i18n-attr="aria-label:viewer.next_photo"></button></div>
-  <div class="lb-cap txt" id="lbCap"></div>
+  <div class="lb-cap txt" id="lbCap" dir="auto"></div>
 </div>
 <div id="galModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="galTitle">
   <div class="sheet gal">
@@ -202,7 +203,7 @@
   </div>
 </div>
 <div id="pdfv" class="lb pdfv" hidden role="dialog" aria-modal="true" aria-label="PDF viewer" data-i18n-attr="aria-label:pdf.pdf_viewer">
-  <div class="lb-top"><div class="lb-who"><b id="pdfTitle"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)" data-i18n-attr="aria-label:pdf.fit_width;title:pdf.fit_width_0"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF" data-i18n-attr="aria-label:pdf.download_pdf;title:pdf.download_pdf"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer" data-i18n-attr="aria-label:pdf.close_pdf_viewer"></button></div>
+  <div class="lb-top"><div class="lb-who"><b id="pdfTitle" dir="auto"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)" data-i18n-attr="aria-label:pdf.fit_width;title:pdf.fit_width_0"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF" data-i18n-attr="aria-label:pdf.download_pdf;title:pdf.download_pdf"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer" data-i18n-attr="aria-label:pdf.close_pdf_viewer"></button></div>
   <div class="pdf-pages" id="pdfPages"></div>
 </div>
 <div id="tourWelcome" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="twTitle" aria-describedby="twLead">
