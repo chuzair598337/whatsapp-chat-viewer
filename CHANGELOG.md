@@ -9,6 +9,19 @@
   - Urdu text uses Jameel Noori Nastaleeq when it is installed. It can't be shipped with the app, so Noto Nastaliq Urdu (Open Font Licence) is bundled as the fallback. No font is downloaded.
   - Messages written in Urdu or Arabic are now laid out right to left in any language, with the time where the text ends.
 - **Sample chat:** a message in Urdu, to show that chat text isn't translated and reads right to left.
+- **Guided tour:** **Try the sample chat** on the start screen starts the tour every time again, not only on the first visit.
+- **Fixes from the production audit** (all 27 findings):
+  - **Opening ZIPs:** the chat now appears as soon as its text is read, and the media fills in afterwards. ZIPs are read in place instead of being loaded into memory whole, so big exports no longer risk crashing a phone. ZIP64 archives (over 65,535 files or 4 GB) now keep all their media. Selecting several files no longer gives up when the first one fails, a dropped folder gets a clear message, and the first chat of a multi-chat ZIP gets its own title.
+  - **Exports in other languages:** times with 上午/下午, 午前/午後, 오전/오후, ص/م, vorm./nachm. and similar now open, and localised export file names are recognised.
+  - **Dates:** choosing a date order that would give a 13th month is refused with a message instead of silently shifting the dates. Changing the order no longer hides another file's progress screen.
+  - **Messages:** links in quotes or `< >` open the right address; links ending in "(…)" keep it; numbered lists keep their numbers (a list going 1, 2, 10 shows 10); Android's "null" placeholder shows as "Message not included in the export"; media left out of an export says so, instead of "Asset not included in ZIP".
+  - **Media:** voice notes keep their waveform after switching chats; "View contact" works on the first click; vCard 4 contact photos show; the photo viewer skips photos hidden by filters; GIFs don't autoplay when reduced motion is on (tap to play).
+  - **Keyboard and screen readers:** dialogs keep focus inside them, and `/` and Ctrl+F don't open search behind a dialog. `Esc` closes the phone search bar from anywhere.
+  - **Security:** a Content-Security-Policy makes the browser block any network request. The live site now publishes only the app's files, not the repo's notes.
+  - **Smaller fixes:** the search cache is reset when media is relinked, a failed PDF preview no longer makes the chat jump, the ZIP note says "This ZIP doesn't include…" rather than "Opened as text only", and the search arrows' enabled check is simpler.
+  - pdf.js stays at 3.11.174 with `eval` disabled, which is the documented fix for CVE-2024-4367; newer versions can't run from a page opened from disk.
+- **Sample chat:** a link in quotes and a numbered list that skips from 2 to 10.
+- **Parser tests:** `node tests/parser.test.js` checks the export formats the sample chat can't show.
 
 - **Media, links and docs:** a gallery of everything shared in the chat, like WhatsApp's.
   - Chips at the top switch between All, Photos, Videos, Audio, Documents, Stickers, Links and Contacts, with counts.

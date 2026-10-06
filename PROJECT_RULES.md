@@ -77,4 +77,5 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - **Every word the app shows goes through `t('section.key')`** (or `data-i18n` in `index.html`), with the text added to both `js/i18n/en.js` and `js/i18n/ur.js`. Never translate chat content: messages, names, file names and system notices stay as exported.
   - **Use logical CSS properties** (`margin-inline-start`, `inset-inline-end`, `text-align: start`) instead of left and right, so the Urdu layout mirrors.
   - Match the surrounding style.
+- **Tests.** Run `node tests/parser.test.js` after any parser change, and add a case for each new export format.
 - **Records.** Track work in [todo.md](todo.md), user-facing changes in [CHANGELOG.md](CHANGELOG.md), and behaviour in [docs/features.md](docs/features.md).

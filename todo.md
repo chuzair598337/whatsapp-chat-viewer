@@ -157,6 +157,18 @@ These are the suggestions from the audit of official export features. Each one w
 - [x] **Language picker** in the ⋮ menu and on the start screen, saved as `app_language`. *New (Phase 11).*
 - [x] **Sample chat: an Urdu message.** *New (Phase 11).*
 
+## Phase 12: production audit fixes (2026-10-06)
+
+All 27 findings in the v1.4.0 audit (`/mnt/project-files/audit/prod-audit.md`), fixed on `development`:
+
+- [x] Quick wins: GIF videos in the photo viewer (1), links in quotes (2), waveforms after switching chats (8), multi-chat ZIP title (10), omitted-media wording (13), `Esc` on the phone search bar (22), search cache (23), search arrows (27).
+- [x] Accessibility: dialogs trap focus (3), GIFs respect reduced motion (24).
+- [x] Parser: non-English AM/PM markers (4), impossible forced date orders (11), Android `null` (12), localised export names (15). Covered by `tests/parser.test.js`.
+- [x] ZIP and memory: ZIP64 (5), streaming reader first (6), chat shows before media is extracted (7), ZIP robustness (20).
+- [x] Hardening: Content-Security-Policy (9), Pages publishes only the app (26). pdf.js kept at 3.11.174 with `isEvalSupported: false`.
+- [x] Other lows: list numbers (14), filters in the photo viewer (16), several files (17), View contact (18), date-order progress screen (19), PDF height estimate (21), vCard 4 photos (25).
+- [x] **Tour from the start screen every time** (Master's report).
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

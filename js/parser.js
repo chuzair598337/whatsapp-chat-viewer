@@ -7,9 +7,13 @@ function parserModule() {
   const INV = /[​‎‏‪-‮⁦-⁩﻿]/g;
   const SP = /[    ]/g;
   const D = '(\\d{1,4})[./-](\\d{1,2})[./-](\\d{1,4})';
-  const T = '(\\d{1,2})[:.](\\d{2})(?:[:.](\\d{2}))?\\s*([AaPp]\\.?\\s?[Mm]\\.?)?';
-  const RE_IOS = new RegExp('^\\[' + D + ',?\\s+' + T + '\\]\\s?(.*)$');
-  const RE_AND = new RegExp('^' + D + ',?\\s+' + T + '\\s?[-\\u2013]\\s(.*)$');
+  // AM/PM markers in the languages WhatsApp exports in. Some come before the time (上午10:00, 오전 10:00).
+  const MARK = '[AaPp]\\.?\\s?[Mm]\\.?|上午|下午|中午|晚上|凌晨|早上|午前|午後|오전|오후|ص|م|vorm\\.|nachm\\.|पूर्वाह्न|अपराह्न|ก่อนเที่ยง|หลังเที่ยง|قبل دوپہر|بعد دوپہر';
+  const PM = /^(?:[Pp]|下午|中午|晚上|午後|오후|م|nachm|अपराह्न|หลังเที่ยง|بعد)/;
+  const T = '(?:(' + MARK + ')\\s?)?(\\d{1,2})[:.](\\d{2})(?:[:.](\\d{2}))?\\s*(' + MARK + ')?';
+  const SEP = '(?:[,،]?\\s+|[,،]?\\s*(?=' + MARK + '))'; // between the date and the time (، is the Arabic comma)
+  const RE_IOS = new RegExp('^\\[' + D + SEP + T + '\\]\\s?(.*)$');
+  const RE_AND = new RegExp('^' + D + SEP + T + '\\s?[-\\u2013]\\s(.*)$');
   const pad = n => (n < 10 ? '0' : '') + n;
 
   function typeFromName(n) {
@@ -47,6 +51,8 @@ function parserModule() {
     t = t.replace(/\s*<This message was edited>\s*$/i, () => { edited = true; return ''; });
     const one = t.indexOf('\n') < 0;
     let m;
+    // Android writes "null" for view-once media and some other messages it can't export.
+    if (one && t.trim() === 'null') return { kind: 'unsupported', text: '', att: [], edited };
     if (one && /^(This message was deleted\.?|You deleted this message\.?|This message was deleted by (an )?admin.*|Waiting for this message.*)$/i.test(t))
       return { kind: 'deleted', text: t, att: [], edited };
     if (one && (m = /^(Missed |Silenced |Declined )?(group )?(voice|video) call(?:,\s*(.*))?$/i.exec(t)))
@@ -90,7 +96,7 @@ function parserModule() {
       if (!m) { m = RE_AND.exec(n); ios = false; }
       if (m) {
         if (ios) iosN++; else andN++;
-        const rest = m[8];
+        const rest = m[9];
         let sender = null, body = rest, sys = false, lrm = false;
         const ci = rest.indexOf(': ');
         if (ci > 0) {
@@ -101,7 +107,7 @@ function parserModule() {
           // "Name:" with nothing after it: WhatsApp writes events (and a few other message types) this way.
           sender = rest.replace(INV, '').trim().slice(0, -1).trim(); body = ''; lrm = false;
         } else sys = true;
-        cur = { a: +m[1], b: +m[2], c: +m[3], al: m[1].length, h: +m[4], mi: +m[5], s: m[6] ? +m[6] : 0, ap: m[7] || '', sender, body, sys, lrm, x: null };
+        cur = { a: +m[1], b: +m[2], c: +m[3], al: m[1].length, h: +m[5], mi: +m[6], s: m[7] ? +m[7] : 0, ap: m[4] || m[8] || '', sender, body, sys, lrm, x: null };
         recs.push(cur);
       } else if (cur) { (cur.x || (cur.x = [])).push(line); }
       else if (line.trim()) skipped++;
@@ -134,7 +140,9 @@ function parserModule() {
       for (const r of recs) { const kD = r.c * 10000 + r.b * 100 + r.a, kM = r.c * 10000 + r.a * 100 + r.b; if (kD < pD) invD++; if (kM < pM) invM++; pD = kD; pM = kM; }
       detected = invM < invD ? 'mdy' : 'dmy';
     }
-    const order = ymd ? 'ymd' : (opts.order === 'dmy' || opts.order === 'mdy') ? opts.order : detected;
+    let order = ymd ? 'ymd' : (opts.order === 'dmy' || opts.order === 'mdy') ? opts.order : detected, rejected = false;
+    // A forced order that would put a 13th month or a 32nd day in the chat can't be right: keep the detected one.
+    if (order !== detected && recs.some(r => (order === 'dmy' ? r.b : r.a) > 12 || (order === 'dmy' ? r.a : r.b) > 31)) { order = detected; rejected = true; }
 
     // --- build messages ---
     const out = new Array(recs.length);
@@ -146,7 +154,7 @@ function parserModule() {
       if (order === 'ymd') { y = r.a; mo = r.b; d = r.c; } else if (order === 'dmy') { d = r.a; mo = r.b; y = r.c; } else { mo = r.a; d = r.b; y = r.c; }
       if (y < 100) y += 2000;
       let h = r.h;
-      if (r.ap) { const pm = /p/i.test(r.ap); h = (h % 12) + (pm ? 12 : 0); }
+      if (r.ap) { const pm = PM.test(r.ap); h = (h % 12) + (pm ? 12 : 0); }
       const t = Date.UTC(y, mo - 1, d, h, r.mi, r.s);
       const dt = new Date(t);
       const dk = dt.getUTCFullYear() + '-' + pad(dt.getUTCMonth() + 1) + '-' + pad(dt.getUTCDate());
@@ -172,7 +180,7 @@ function parserModule() {
     let chatName = null, best = 0;
     for (const [k, v] of sysSenders) if (v > best) { best = v; chatName = k; }
     const participants = [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
-    return { messages: out, participants, twelve, order, detected, ambiguous, chatName, subject, format: iosN >= andN ? 'ios' : 'android', lines, skipped };
+    return { messages: out, participants, twelve, order, detected, ambiguous, rejected, chatName, subject, format: iosN >= andN ? 'ios' : 'android', lines, skipped };
   }
   return { parse, classify, typeFromName };
 }

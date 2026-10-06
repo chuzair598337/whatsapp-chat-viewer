@@ -35,8 +35,8 @@ const Gallery = {
       }
       if (m.message && m.kind !== 'location') {
         const seen = new Set();
-        for (const mm of m.message.matchAll(RE_URL)) {
-          const x = safeUrl(mm[1]);
+        for (const u of urlsIn(m.message)) {
+          const x = safeUrl(u);
           if (x && !seen.has(x.href)) { seen.add(x.href); items.push({ i, cat: 'links', x }); }
         }
       }
@@ -57,7 +57,10 @@ const Gallery = {
   },
   close() { if (!$('galModal').hidden) closeModal('galModal'); },
   // The chat's media changed while the gallery is open (the sample's video finished recording): redraw it.
-  refresh() { if (!$('galModal').hidden && this.shownKey !== S.media) this.show(this.cat); },
+  refresh() { // keeps the scroll position, since media arrives a few files at a time after a ZIP opens
+    if ($('galModal').hidden || this.shownKey === S.media) return;
+    const st = galBody.scrollTop; this.show(this.cat); while (galBody.scrollHeight - galBody.clientHeight < st && this.n < this.list.length) this.more(); galBody.scrollTop = st;
+  },
   show(cat) {
     this.index();
     this.cat = cat; this.shownKey = S.media;
@@ -129,7 +132,7 @@ function tileHTML(it, k) {
   const m = S.msgs[it.i], e = it.e, label = typeLabel(it.a.type) + ', ' + galWhen(m);
   const vid = VIDEO_EXT.test(extOf(e.name));
   let inner;
-  if (it.a.type === 'gif' && vid) inner = '<video src="' + e.url + '" muted loop autoplay playsinline preload="metadata"></video><span class="gbadge">GIF</span>';
+  if (it.a.type === 'gif' && vid) inner = '<video src="' + e.url + '" muted loop' + (reducedMotion() ? '' : ' autoplay') + ' playsinline preload="metadata"></video><span class="gbadge">GIF</span>';
   else if (vid) {
     const poster = Media.posters.get(e.name);
     if (poster === undefined) Posters.request(e.name);

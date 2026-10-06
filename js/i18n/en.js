@@ -202,7 +202,6 @@ I18N.add('en-US', {
     "a_made_up_group_chat": "A made-up group chat and a guided tour of the viewer",
     "open_your_own_chat": "Open your own chat",
     "pick_an_exported_zip_or": "Pick an exported .zip or .txt, or drop it anywhere on the page",
-    "demo_sub_seen": "A made-up group chat to look around in",
     "demo_sub_new": "A made-up group chat with a short guided tour"
   },
   "tour": {
@@ -229,7 +228,10 @@ I18N.add('en-US', {
     "rereading_dates": "Re-reading dates",
     "preparing_sample": "Preparing the sample chat",
     "read_failed_many": "Could not read these files.",
-    "not_whatsapp": "This doesn't look like a WhatsApp chat export: no dated message lines were found."
+    "not_whatsapp": "This doesn't look like a WhatsApp chat export: no dated message lines were found.",
+    "order_rejected": "Some dates in this chat can't be read that way, so the detected order is kept.",
+    "loading_media": "Loading media · {done} of {total}",
+    "folder": "Drop the exported .zip or .txt file, not a folder."
   },
   "chats": {
     "zip_inside": "ZIP inside {name}"
@@ -244,7 +246,9 @@ I18N.add('en-US', {
     "note_text_only_one": "Opened as text only, so the attached file can't be shown. Open the ZIP export to see it.",
     "note_no_media_export": "This export was made without media, so media shows as placeholders.",
     "note_none": "No media in this chat.",
-    "open_photo": "Open photo"
+    "open_photo": "Open photo",
+    "note_zip_missing": "This ZIP doesn't include the {count} attached files.",
+    "note_zip_missing_one": "This ZIP doesn't include the attached file."
   },
   "facts": {
     "messages": "Messages",
@@ -324,8 +328,10 @@ I18N.add('en-US', {
     "no_details": "This contact card has no readable details."
   },
   "att": {
-    "not_in_zip": "Asset not included in ZIP",
-    "text_only": "Not included: opened as text only"
+    "not_in_zip": "Not in this ZIP",
+    "text_only": "Not included: opened as text only",
+    "omitted": "Left out when the chat was exported",
+    "loading": "Loading…"
   },
   "loc": {
     "live": "Live location",

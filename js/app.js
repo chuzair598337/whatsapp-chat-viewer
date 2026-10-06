@@ -2,11 +2,17 @@
 /* =====================================================================
    Loading a chat
    ===================================================================== */
+// Export file names in WhatsApp's languages: "WhatsApp Chat with X", "WhatsApp-Chat mit X", "Chat de WhatsApp con X"…
+const CHAT_NAME = [
+  /^WhatsApp[ -]Chat (?:with |mit |met |med |z |s |- |– )(.+)$/i, /^(?:Chat de WhatsApp|Chat WhatsApp|Conversa do WhatsApp|Discussion WhatsApp) (?:con |com |avec |dengan |cu |- )(.+)$/i,
+  /^Чат WhatsApp с (.+)$/i, /^دردشة واتساب مع (.+)$/, /^(.+) ile WhatsApp Sohbeti$/i, /^WhatsApp(?:-| )?(?:Chat|chat|Sohbeti|Чат)?\s*[-–]\s*(.+)$/i
+];
 function hintFrom(name) {
   const base = (name || '').split('/').pop().replace(/\.(txt|zip)$/i, '').trim();
-  const m = /^WhatsApp Chat (?:with |- |– )(.+)$/i.exec(base);
-  return m ? m[1].trim() : null;
+  for (const re of CHAT_NAME) { const m = re.exec(base); if (m) return m[1].trim(); }
+  return null;
 }
+const isChatName = n => /WhatsApp|واتساب/i.test(baseName(n)) && !!hintFrom(n);
 function showLoading(title) { $('loadTitle').textContent = title; $('loadNote').textContent = t('load.working'); setProgress(0); $('loading').hidden = false; }
 function setProgress(p) { const bar = $('progBar'); bar.parentNode.classList.toggle('indet', p < 0); bar.style.width = p < 0 ? '' : Math.round(p * 100) + '%'; }
 let toastTimer = 0;
@@ -30,7 +36,7 @@ async function detectKind(file) {
 let loadSeq = 0;
 const guard = my => { if (my !== loadSeq) throw new Error(SUPERSEDED); };
 const isStale = e => e && e.message === SUPERSEDED;
-const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || /^WhatsApp Chat.*\.txt$/i.test(baseName(n));
+const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || (/\.txt$/i.test(n) && isChatName(n));
 async function openFiles(list) {
   if (typeof Tour !== 'undefined') Tour.dismiss();
   Gallery.close();
@@ -55,7 +61,7 @@ async function openFiles(list) {
       setNote(t('load.looking_in', { name: file.name })); setProgress(-1);
       let arc = null;
       try { arc = await openArchive(file); guard(my); } catch (e) { if (isStale(e)) throw e; lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name }); continue; }
-      const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
+      const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && isChatName(n));
       if (chats.length > 1 || (inner.length && !chats.length)) {
         for (const c of chats) lib.push({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name });
         for (const z of inner) lib.push({ file, kind, inner: z, label: hintFrom(z) || baseName(z) });
@@ -65,8 +71,30 @@ async function openFiles(list) {
   } catch (e) { if (isStale(e)) return; toast(e && e.message ? e.message : t('load.read_failed_many')); $('loading').hidden = true; return; }
   $('loading').hidden = true;
   if (!lib.length) return;
-  const ok = await openEntry(lib[0], my);
-  if (ok) { S.library = lib; S.libIdx = 0; renderLibrary(); }
+  // The first file that opens is shown; ones that fail (each with its own message) are skipped.
+  for (let k = 0; k < lib.length && my === loadSeq; k++) {
+    if (await openEntry(lib[k], my)) { S.library = lib; S.libIdx = k; renderLibrary(); return; }
+  }
+}
+/* The chat shows as soon as its text is read; its media is extracted afterwards, a few files at a time,
+   and the rows, the media section and the gallery fill in as files arrive. Opening another chat stops it. */
+async function loadMedia(arc, list, my) {
+  let next = 0, failed = 0, last = Date.now();
+  const work = async () => {
+    while (next < list.length && my === loadSeq) {
+      const p = list[next++];
+      try { const b = await arc.extract(p); if (my !== loadSeq) break; Media.stage(Media.map, p, b); } catch (e) { failed++; console.warn('Could not extract', p, e); }
+      Media.pending.delete(Media.key(p));
+      if (Media.loading) Media.loading.done++;
+      if (Date.now() - last > 700) { last = Date.now(); refreshMedia(); }
+    }
+  };
+  try { await Promise.all(Array.from({ length: Math.min(4, list.length) }, work)); }
+  finally { if (arc.close) arc.close(); }
+  if (my !== loadSeq) return;
+  Media.pending.clear(); Media.loading = null;
+  refreshMedia();
+  if (failed) toast(t('load.extract_failed', { n: failed, count: nf(failed) }));
 }
 async function openFile(file) { return openFiles([file]); }
 async function openEntry(entry, my) {
@@ -81,19 +109,19 @@ async function openEntry(entry, my) {
     if (entry.inner) { // an export ZIP stored inside another ZIP
       setNote(t('load.unpacking', { name: baseName(entry.inner) })); setProgress(-1);
       const outer = await openArchive(file);
-      const blob = await outer.extract(entry.inner);
-      if (outer.close) outer.close();
+      let blob;
+      try { blob = await outer.extract(entry.inner); } finally { if (outer.close) outer.close(); }
       guard(my);
       file = new File([blob], baseName(entry.inner), { type: 'application/zip' }); kind = 'zip';
     }
-    let blob = file, hint = entry.label || hintFrom(file.name), chatPath = null;
+    let blob = file, hint = entry.label || hintFrom(file.name), chatPath = null, mediaList = [];
     if (kind === 'zip') {
       setNote(t('load.reading_zip', { size: fmtSize(file.size) })); setProgress(-1);
       arc = await openArchive(file);
       guard(my);
       const txts = arc.names.filter(n => /\.txt$/i.test(n)).sort((a, b) => a.split('/').length - b.split('/').length);
       if (entry.discover) {
-        const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
+        const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && isChatName(n));
         if (chats.length > 1 || (inner.length && !chats.length)) {
           const lib = chats.map(c => ({ file, kind, path: c, label: hintFrom(c) || hintFrom(c.split('/').slice(-2, -1)[0] || '') || c.replace(/\/?_chat\.txt$/i, '') || file.name }))
             .concat(inner.map(z => ({ file, kind, inner: z, label: hintFrom(z) || baseName(z) })));
@@ -101,27 +129,14 @@ async function openEntry(entry, my) {
           S.found = lib; S.foundIdx = 0; entry.path = chats[0]; entry.label = lib[0].label;
         }
       }
-      chatPath = entry.path || txts.find(n => baseName(n) === '_chat.txt') || txts.find(n => /^WhatsApp Chat/i.test(baseName(n))) || txts[0];
+      chatPath = entry.path || txts.find(n => baseName(n) === '_chat.txt') || txts.find(isChatName) || txts[0];
       if (!chatPath) throw new Error(t('load.no_chat_in_zip'));
       blob = await arc.extract(chatPath);
       guard(my);
-      hint = hintFrom(chatPath) || hint;
+      hint = hintFrom(chatPath) || entry.label || hint; // entry.label is the chat's own name once discovery has run
       // With several chats in one ZIP, only take the media stored next to this chat's text file.
       const dir = chatPath.includes('/') ? chatPath.slice(0, chatPath.lastIndexOf('/') + 1) : '';
-      const list = arc.names.filter(n => n !== chatPath && !isChatTxt(n) && !/\.zip$/i.test(n) && (!entry.path || (n.startsWith(dir) && !n.slice(dir.length).includes('/'))));
-      let next = 0, done = 0, failed = 0;
-      setProgress(0); setNote(list.length ? t('load.extracting', { done: 0, total: nf(list.length) }) : t('load.no_media_zip'));
-      const work = async () => {
-        while (next < list.length && my === loadSeq) {
-          const p = list[next++];
-          try { Media.stage(staged, p, await arc.extract(p)); } catch (e) { failed++; console.warn('Could not extract', p, e); }
-          done++;
-          if (done % 4 === 0 || done === list.length) { setProgress(done / list.length); setNote(t('load.extracting', { done: nf(done), total: nf(list.length) })); }
-        }
-      };
-      await Promise.all(Array.from({ length: Math.min(4, list.length) }, work));
-      guard(my);
-      if (failed) toast(t('load.extract_failed', { n: failed, count: nf(failed) }));
+      mediaList = arc.names.filter(n => n !== chatPath && !isChatTxt(n) && !/\.zip$/i.test(n) && (!entry.path || (n.startsWith(dir) && !n.slice(dir.length).includes('/'))));
     }
     setNote(t('load.reading_messages')); setProgress(0);
     const res = await runParse(blob, { order: 'auto' }, setProgress);
@@ -131,12 +146,14 @@ async function openEntry(entry, my) {
     Media.adopt(staged);
     S.source = { blob, name: entry.path ? file.name + ' › ' + entry.label : file.name, size: file.size, hint, sample: false, zip: kind === 'zip' };
     S.order = 'auto'; $('orderSel').value = 'auto';
+    if (mediaList.length) { Media.pending = new Set(mediaList.map(p => Media.key(p))); Media.loading = { done: 0, total: mediaList.length }; }
     applyResult(res, false);
     if (S.res.participants.length > 1) openMeModal();
+    if (mediaList.length) { loadMedia(arc, mediaList, my); arc = null; } // the archive stays open for it
     return true;
   } catch (e) {
     Media.discard(staged);
-    if (!isStale(e)) toast(e && e.message ? e.message : t('load.read_failed'));
+    if (!isStale(e)) toast(e && /NotReadable|NotFound/.test(e.name) ? t('load.folder') : e && e.message ? e.message : t('load.read_failed')); // a dropped folder can't be read
     return false;
   } finally { if (arc && arc.close) arc.close(); if (my === loadSeq) $('loading').hidden = true; }
 }
@@ -226,7 +243,7 @@ function linkMedia() {
       a.url = e ? e.url : null;
       c[a.type] = (c[a.type] || 0) + 1;
       if (e) { found++; if (a.type === 'image' || a.type === 'gif') imgs.push({ i, name: e.name }); }
-      else if (a.name && !a.omitted) missing++;
+      else if (a.name && !a.omitted) { if (!Media.pending.has(Media.key(a.name))) missing++; }
       else omitted++;
     }
   }
@@ -243,8 +260,9 @@ function renderMediaSummary() {
   Gallery.refresh();
   const note = $('mediaNote');
   note.classList.toggle('warn', md.missing > 0);
-  if (md.files || md.found) note.textContent = [t('media.note_found', { found: nf(md.found) }), md.missing && t('media.note_missing', { n: nf(md.missing) }), md.omitted && t('media.note_omitted', { n: nf(md.omitted) })].filter(Boolean).join(' · ') + '.';
-  else if (md.missing) note.textContent = t('media.note_text_only', { n: md.missing, count: nf(md.missing) });
+  if (Media.loading) note.textContent = t('load.loading_media', { done: nf(Media.loading.done), total: nf(Media.loading.total) });
+  else if (md.files || md.found) note.textContent = [t('media.note_found', { found: nf(md.found) }), md.missing && t('media.note_missing', { n: nf(md.missing) }), md.omitted && t('media.note_omitted', { n: nf(md.omitted) })].filter(Boolean).join(' · ') + '.';
+  else if (md.missing) note.textContent = t(S.source && S.source.zip ? 'media.note_zip_missing' : 'media.note_text_only', { n: md.missing, count: nf(md.missing) });
   else note.textContent = total ? t('media.note_no_media_export') : t('media.note_none');
 }
 function computeTitle() {
@@ -429,7 +447,7 @@ function clearSearch() { q1.value = ''; q2.value = ''; runSearch(''); }
 function updateCounts() {
   const n = S.matches.length, txt = !S.q.trim() ? '' : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
   $('count1').textContent = txt; $('count2').textContent = txt;
-  for (const id of ['prev1', 'next1', 'prev2', 'next2']) $(id).disabled = n < 2 && !(n === 1);
+  for (const id of ['prev1', 'next1', 'prev2', 'next2']) $(id).disabled = n === 0;
 }
 function step(d) {
   if (!S.matches.length) return;
@@ -540,8 +558,8 @@ $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(
 
 /* ---------- Modals ---------- */
 // Each modal remembers what had focus, so one opened from another (a contact from the media gallery) returns to the right place.
-function openModal(id) { const m = $(id); m.ret = document.activeElement; m.hidden = false; const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
-function closeModal(id) { const m = $(id); m.hidden = true; if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
+function openModal(id) { const m = $(id); if (m.hidden) m.ret = document.activeElement; m.hidden = false; Dialogs.open(m); const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
+function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
 }
@@ -559,7 +577,11 @@ $('meSel').onchange = e => setMe(e.target.value || null);
 $('orderSel').onchange = async e => {
   S.order = e.target.value;
   showLoading(t('load.rereading_dates'));
-  try { await parseAndShow(true); } catch (err) { if (!isStale(err)) toast(err.message); } finally { $('loading').hidden = true; }
+  const my = ++loadSeq; // a file opened meanwhile takes over, and its progress screen stays up
+  try {
+    await parseAndShow(true, my);
+    if (S.res.rejected) { S.order = 'auto'; e.target.value = 'auto'; toast(t('load.order_rejected')); }
+  } catch (err) { if (!isStale(err)) toast(err.message); } finally { if (my === loadSeq) $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
   let k = S.msgs.findIndex((m, i) => m.dateKey >= dk && S.m2i[i] >= 0);
@@ -693,11 +715,13 @@ document.addEventListener('keydown', e => {
     return;
   }
   const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
+  if (Dialogs.any() && e.key !== 'Escape') return; // no search shortcuts behind an open dialog
   if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     for (const id of ['vcModal', 'galModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }
+    if (!$('sstrip').hidden) { closeSearch(); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
   }
 });
@@ -721,7 +745,7 @@ $('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;
 $('lbClose').innerHTML = ICON.close; $('lbDl').innerHTML = ICON.download; $('lbPrev').innerHTML = ICON.back; $('lbNext').innerHTML = ICON.next; $('lbIn').innerHTML = ICON.plus; $('lbOut').innerHTML = ICON.minus; $('lbFit').innerHTML = ICON.fit;
 
 function refreshMedia() {
-  linkMedia(); buildItems(); VL.items = S.items; renderMediaSummary(); VL.refresh();
+  linkMedia(); S.lc = null; buildItems(); VL.items = S.items; renderMediaSummary(); VL.refresh(); // message text may have changed, so search re-reads it
 }
 /* Loads the made-up sample chat (js/demo-data.js). Used at start-up and by the guided tour. */
 let sampleVideo = null;

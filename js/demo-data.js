@@ -30,6 +30,8 @@ const SAMPLE = [
   `[15/03/2026, 6:12:30${N}AM] Bilal Ahmed: Parking is full at the main gate, use this one`,
   `[15/03/2026, 6:14:02${N}AM] Sara Malik: GPX file for the route: https://github.com/trail-crew/trail-5-gpx`,
   `[15/03/2026, 6:15:40${N}AM] Ayesha Khan: And last year's video so you know the climb https://www.youtube.com/watch?v=trail5-2025 also the weather https://www.metoffice.gov.uk/weather/forecast`,
+  `[15/03/2026, 6:17:05${N}AM] Bilal Ahmed: The ranger desk said "https://www.example.org/trail-5/conditions" is updated every morning`,
+  `[15/03/2026, 6:18:30${N}AM] Omar Farooq: Rules from the board at the gate:`, `1. Stay on the marked path`, `2. Pack out all litter`, `10. Be back before sunset (no idea where 3 to 9 went 😅)`,
   `[15/03/2026, 6:20:41${N}AM] Sara Malik: 5 min away`,
   `[15/03/2026, 6:41:09${N}AM] Omar Farooq: Wifi code for the café later is \`\`\`TRAIL-2026\`\`\``,
   `[15/03/2026, 11:47:50${N}AM] Omar Farooq: ${L}<attached: 00000016-GIF-2026-03-15-11-47-50.mp4>`,

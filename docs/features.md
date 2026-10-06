@@ -23,10 +23,11 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 ## 1. Offline security and privacy
 
 - **Nothing leaves the device.** The page makes no network requests after it loads: no analytics, no fonts, no CDNs, no link previews and no fetched favicons. Every test run checks that the request log is empty.
+- **Enforced by the browser.** A Content-Security-Policy in `index.html` only lets the page load its own files and `blob:`/`data:` URLs, and blocks frames, plugins and form posts. Even a future mistake can't reach the network.
 - **No server code.** GitHub Pages only serves the static files. Opening a chat reads it with the browser's `File` API in memory.
 - **Bundled dependencies.** JSZip 3.10.1 and pdf.js 3.11.174 ship in `js/vendor/`, so the viewer also works when opened straight from disk with no internet connection.
   - pdf.js is only loaded when a chat contains a PDF.
-  - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything.
+  - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
 - **Local preferences only.** The theme, the date order, "which one is you" and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. Chat contents are never stored.
@@ -36,13 +37,15 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 - **Ways to open:** drag and drop anywhere on the page, the open button, or the file picker on the welcome screen. Several files can be picked or dropped at once.
 - **Type detection:** the first bytes are checked (`PK\x03\x04` means ZIP), then the extension and MIME type, so a renamed file still opens correctly.
 - **Plain text (.txt):** the file is read in 2 MB chunks through a streaming `TextDecoder`. Media references in the text appear as "not included" cards.
-- **ZIP archives:** opened with JSZip. The viewer finds `_chat.txt` (iPhone) or the main `WhatsApp Chat with ….txt` (Android), and otherwise falls back to the largest `.txt` file.
+- **ZIP archives:** opened with the built-in streaming reader (below). The viewer finds `_chat.txt` (iPhone) or the main `WhatsApp Chat with ….txt` (Android), and otherwise falls back to the largest `.txt` file.
+  - The chat appears as soon as its text is read. The media is extracted afterwards, four files at a time, and photos, players, the media section and the gallery fill in as files arrive ("Loading media · n of N" in the sidebar, "Loading…" on cards still waiting). Opening another chat stops it.
   - Every other file becomes a `Blob` with the right MIME type, stored in a map keyed by file name.
-- **Unzipping in a worker:** JSZip runs in a background worker built from an inline Blob URL, so the page stays responsive while a large export opens. Browsers block this for a page opened from disk (`file://`), so there JSZip runs on the main thread instead.
+  - Export names in other languages are recognised too ("WhatsApp-Chat mit …", "Chat de WhatsApp con …", "Discussion WhatsApp avec …" and others), for the chat title and for finding chats in a ZIP.
+- **Streaming reader:** reads only the ZIP's file list, then slices each file out and inflates it with the browser's `DecompressionStream('deflate-raw')`, so even a multi-gigabyte export isn't loaded into memory. It supports ZIP64 (over 65,535 files or over 4 GB).
+- **JSZip fallback:** for browsers without `DecompressionStream`, or an archive the streaming reader can't open, JSZip runs in a background worker (or on the main thread for a page opened from disk).
 - **Several chats:** when the picked files hold more than one chat, a **Chats in these files** list appears in the sidebar. Click a chat to switch to it.
   - Sources: several `.txt` or `.zip` files picked together, a ZIP with one chat per folder, or a ZIP that contains other `WhatsApp Chat ….zip` files.
   - Each chat only sees the media from its own folder, so files with the same name in two chats don't get mixed up.
-- **Large archive fallback:** archives over 1.5 GB, or any archive JSZip can't read, go through a built-in reader that reads the ZIP's central directory and inflates entries with the browser's native `DecompressionStream('deflate-raw')`.
 - **Progress:** a loading card shows a progress bar for reading, unzipping and parsing.
 
 ## 3. Date and timestamp parser
@@ -201,7 +204,7 @@ The statistics window shows:
 
 - **Start screen:** every launch opens on a screen that is only about choosing a chat, with no chat viewer behind it. Nothing is kept between visits, so there is never an earlier chat to go back to. It has:
   - a large drop area with a **Browse files** button. A `.zip` with media or a `.txt` without media, and several files at once, are all accepted. Dropping a file anywhere on the page works too;
-  - **Try the sample chat**, which opens the made-up chat and, on the first visit, starts the guided tour;
+  - **Try the sample chat**, which opens the made-up chat and starts the guided tour (every time; **Skip tour** ends it);
   - "How do I export a chat from WhatsApp?" steps for iPhone and Android;
   - the privacy promises: nothing uploaded, nothing saved, works offline.
 
@@ -225,7 +228,7 @@ The statistics window shows:
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
 
-  It starts by itself the first time the sample chat is opened. Finishing or skipping it sets the `has_completed_walkthrough` flag in `localStorage`, which holds no chat data.
+  It starts whenever the sample chat is opened from the start screen. Finishing or skipping it sets the `has_completed_walkthrough` flag in `localStorage`, which holds no chat data.
 - **Help and guided tour:** this item in the header's ⋮ menu opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.
 - **Controls:**
   - Every step has **Skip tour**, **Back** (from step 2) and **Next**, which becomes **Finish** on the last step.

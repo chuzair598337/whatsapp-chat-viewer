@@ -4,8 +4,8 @@
    app keeps zero dependencies and stays offline.
 
    - Every launch opens on the start screen (index.html #start, wired in
-     app.js). Its "Try the sample chat" loads the demo, and on the first
-     visit starts the guided tour.
+     app.js). Its "Try the sample chat" loads the demo and starts the guided tour
+     every time (Skip ends it). Opening your own chat never starts it.
    - The only thing stored is the localStorage flag below, set when the
      tour is finished or skipped. It holds no chat data.
    - "Help and guided tour" in the header's ⋮ menu opens a small dialog to take the tour again
@@ -127,13 +127,11 @@ const Tour = {
     }
   ],
 
-  boot() {
-    $('startDemoSub').textContent = t(store(TOUR_KEY) === 'true' ? 'welcome.demo_sub_seen' : 'welcome.demo_sub_new');
-  },
+  boot() { $('startDemoSub').textContent = t('welcome.demo_sub_new'); },
   async fromStart() {
     sampleReady = loadSample();
     const ok = await sampleReady;
-    if (ok && store(TOUR_KEY) !== 'true') this.start();
+    if (ok) this.start(); // the start screen's sample button always comes with the tour
   },
   complete() { store(TOUR_KEY, 'true'); },
 

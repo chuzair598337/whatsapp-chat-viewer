@@ -119,6 +119,8 @@ python3 -m http.server 8000      # or: npx serve .
 # then open http://localhost:8000
 ```
 
+Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
+
 Notes:
 - The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.

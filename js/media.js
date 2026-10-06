@@ -9,15 +9,40 @@ async function readZip(file) {
   let eocd = -1;
   for (let i = tailLen - 22; i >= 0; i--) if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
   if (eocd < 0) throw new Error(t('zip.damaged'));
-  const count = tail.getUint16(eocd + 10, true), cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
+  let count = tail.getUint16(eocd + 10, true), cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
+  // ZIP64 (over 65,535 files or over 4 GB): the real count, size and offset are in the ZIP64 end record,
+  // found through the locator just before the classic one.
+  if (count === 0xFFFF || cdSize === 0xFFFFFFFF || cdOff === 0xFFFFFFFF) {
+    const lp = eocd - 20;
+    if (lp < 0 || tail.getUint32(lp, true) !== 0x07064b50) throw new Error(t('zip.damaged'));
+    const recOff = Number(tail.getBigUint64(lp + 8, true));
+    const rec = new DataView(await file.slice(recOff, recOff + 56).arrayBuffer());
+    if (rec.getUint32(0, true) !== 0x06064b50) throw new Error(t('zip.damaged'));
+    count = Number(rec.getBigUint64(32, true)); cdSize = Number(rec.getBigUint64(40, true)); cdOff = Number(rec.getBigUint64(48, true));
+  }
   const cd = new DataView(await file.slice(cdOff, cdOff + cdSize).arrayBuffer());
   const entries = new Map(), td = new TextDecoder('utf-8');
   let p = 0;
   for (let k = 0; k < count && p + 46 <= cd.byteLength; k++) {
     if (cd.getUint32(p, true) !== 0x02014b50) break;
-    const method = cd.getUint16(p + 10, true), csize = cd.getUint32(p + 20, true), usize = cd.getUint32(p + 24, true);
-    const nlen = cd.getUint16(p + 28, true), xlen = cd.getUint16(p + 30, true), clen = cd.getUint16(p + 32, true), loff = cd.getUint32(p + 42, true);
+    const method = cd.getUint16(p + 10, true);
+    let csize = cd.getUint32(p + 20, true), usize = cd.getUint32(p + 24, true);
+    const nlen = cd.getUint16(p + 28, true), xlen = cd.getUint16(p + 30, true), clen = cd.getUint16(p + 32, true);
+    let loff = cd.getUint32(p + 42, true);
     const name = td.decode(new Uint8Array(cd.buffer, cd.byteOffset + p + 46, nlen));
+    if (usize === 0xFFFFFFFF || csize === 0xFFFFFFFF || loff === 0xFFFFFFFF) { // ZIP64 extra field (id 1) holds the saturated values, in this order
+      for (let x = p + 46 + nlen, end = x + xlen; x + 4 <= end;) {
+        const id = cd.getUint16(x, true), len = cd.getUint16(x + 2, true);
+        if (id === 1) {
+          let q = x + 4;
+          if (usize === 0xFFFFFFFF) { usize = Number(cd.getBigUint64(q, true)); q += 8; }
+          if (csize === 0xFFFFFFFF) { csize = Number(cd.getBigUint64(q, true)); q += 8; }
+          if (loff === 0xFFFFFFFF) loff = Number(cd.getBigUint64(q, true));
+          break;
+        }
+        x += 4 + len;
+      }
+    }
     if (!name.endsWith('/') && !name.startsWith('__MACOSX/')) entries.set(name, { name, method, csize, usize, loff });
     p += 46 + nlen + xlen + clen;
   }
@@ -54,6 +79,8 @@ const baseName = n => String(n || '').split('/').pop().trim();
 const extOf = n => { const b = baseName(n); return b.includes('.') ? b.split('.').pop().toLowerCase() : ''; };
 const clampR = r => Math.min(1.7, Math.max(0.68, r));
 const Media = {
+  // pending: files of the open ZIP not extracted yet; loading: { done, total } while they are.
+  pending: new Set(), loading: null,
   map: new Map(), dims: new Map(), posters: new Map(), waves: new Map(), cards: new Map(), thumbs: new Map(),
   // Lookup key: the chat text has WhatsApp's invisible direction marks stripped, but file names in the
   // ZIP can still contain them (e.g. "00000020-\u200eName.vcf"), so both sides drop them before matching.
@@ -73,11 +100,16 @@ const Media = {
     for (const u of this.thumbs.values()) if (u) URL.revokeObjectURL(u);
     this.posters.clear(); this.thumbs.clear(); this.cards.clear();
     if (typeof PdfView !== 'undefined') PdfView.reset();
+    if (typeof Waves !== 'undefined') { Waves.tried.clear(); Waves.q = []; Posters.q = []; Cards.q = []; }
+    this.pending.clear(); this.loading = null;
+    if (typeof Cards !== 'undefined') for (const n of [...Cards.waits.keys()]) Cards.settle(n, null);
   }
 };
 
-/* ZIP reading: JSZip (bundled above) first; the native streaming reader is the fallback for
-   archives JSZip can't hold in memory or browsers where it fails. */
+/* ZIP reading: the built-in streaming reader (readZip above) comes first wherever the browser can
+   inflate (DecompressionStream). It reads only the file list and slices each file out on demand, so
+   even a multi-gigabyte export isn't loaded into memory. JSZip (bundled) is the fallback for older
+   browsers and for archives the built-in reader can't open. */
 /* Unzipping runs in a worker so the page stays responsive on big exports. The worker is built from an
    inline Blob URL and loads the bundled JSZip with importScripts. Browsers block that for pages opened
    from disk (file://), so there, or if the worker fails for any reason, JSZip runs on the main thread. */
@@ -110,6 +142,9 @@ async function openArchiveInWorker(file) {
 }
 
 async function openArchive(file) {
+  if (typeof DecompressionStream !== 'undefined') {
+    try { return await nativeArchive(file); } catch (e) { console.warn('The built-in ZIP reader could not open this archive; trying JSZip.', e); }
+  }
   if (file.size < 1.5e9) {
     try { const a = await openArchiveInWorker(file); if (a) return a; }
     catch (e) { console.warn('JSZip could not read this archive; using the built-in reader.', e); return nativeArchive(file); }
@@ -119,7 +154,7 @@ async function openArchive(file) {
       const zip = await JSZip.loadAsync(file);
       const names = [];
       zip.forEach((p, f) => { if (!f.dir && !p.startsWith('__MACOSX/')) names.push(p); });
-      return { names, extract: p => zip.file(p).async('blob') };
+      return { names, extract: p => { const f = zip.file(p); return f ? f.async('blob') : Promise.reject(new Error(t('zip.not_found', { name: p }))); } };
     } catch (e) { console.warn('JSZip could not read this archive; using the built-in reader.', e); }
   }
   return nativeArchive(file);

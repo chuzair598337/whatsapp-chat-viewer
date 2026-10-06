@@ -6,6 +6,23 @@ const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nf = n => n.toLocaleString(I18N.locale());
+/* Dialogs: while one is open, everything else on the page is inert, so Tab, the screen reader and
+   clicks stay inside it. They stack: a contact card opened from the gallery sits on top of it. */
+const Dialogs = {
+  stack: [],
+  SKIP: new Set(['toast', 'loading', 'drop', 'tour', 'tourWelcome']),
+  open(el) { if (!this.stack.includes(el)) this.stack.push(el); this.apply(); },
+  close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); },
+  any() { return this.stack.length > 0; },
+  apply() {
+    const top = this.stack[this.stack.length - 1], start = document.getElementById('start');
+    for (const c of document.body.children) {
+      if (c.tagName === 'SCRIPT' || c.tagName === 'INPUT' || this.SKIP.has(c.id)) continue;
+      // #app stays inert behind the start screen whatever the dialogs do.
+      c.inert = (!!top && c !== top) || (c.id === 'app' && start && !start.hidden);
+    }
+  }
+};
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 const colorIdx = name => hash(name || '') % 10;
@@ -77,14 +94,31 @@ const PRE = '(^|[\\s([{\'".,!?:;>\\-])';
 const POST = '(?=$|[\\s)\\]}\'".,!?:;<\\-])';
 const mk = ch => new RegExp(PRE + '\\' + ch + '(?=\\S)([^\\n]*?\\S)\\' + ch + POST, 'g');
 const RE_B = mk('*'), RE_I = mk('_'), RE_S = mk('~');
-const RE_URL = /\b((?:https?:\/\/|www\.)[^\s<]+[^\s<.,:;"')\]!?*_~])/gi;
+// Links in raw text (link cards, the gallery): urlsIn() trims them the same way formatText does.
+const RE_URL = /\b(?:https?:\/\/|www\.)[^\s<>"]+/gi;
+const urlsIn = text => [...text.matchAll(RE_URL)].map(mm => trimUrl(mm[0])[0]).filter(u => !/^(?:https?:\/\/|www\.)$/i.test(u));
+// formatText finds links in text that is already escaped, so a link stops at an escaped quote or bracket
+// (&quot; &gt; &lt;), and trailing punctuation is left out. A closing ")" stays when the link opened one.
+const RE_URL_ESC = /\b(?:https?:\/\/|www\.)(?:(?!&(?:quot|gt|lt);)[^\s<])+/gi;
+function trimUrl(u) {
+  let tail = '';
+  for (;;) {
+    const m = /(?:&amp;|[.,:;'!?*_~\]])$/.exec(u) || (u.endsWith(')') && (u.match(/\(/g) || []).length < (u.match(/\)/g) || []).length ? [')'] : null);
+    if (!m) return [u, tail];
+    tail = m[0] + tail; u = u.slice(0, -m[0].length);
+  }
+}
 function formatText(raw) {
   const keep = [];
   const hold = html => '\u0000' + (keep.push(html) - 1) + '\u0001';
   let s = esc(raw);
   s = s.replace(/```([\s\S]+?)```/g, (_, c) => hold('<code class="blk">' + c.replace(/^\n|\n$/g, '') + '</code>'));
   s = s.replace(/`([^`\n]+)`/g, (_, c) => hold('<code>' + c + '</code>'));
-  s = s.replace(RE_URL, u => hold('<a href="' + (u.startsWith('www.') ? 'https://' + u : u) + '" target="_blank" rel="noopener noreferrer">' + u + '</a>'));
+  s = s.replace(RE_URL_ESC, all => {
+    const [u, tail] = trimUrl(all);
+    if (/^(?:https?:\/\/|www\.)$/i.test(u)) return all;
+    return hold('<a href="' + (/^www\./i.test(u) ? 'https://' + u : u) + '" target="_blank" rel="noopener noreferrer">' + u + '</a>') + tail;
+  });
   const inline = l => l.replace(RE_B, '$1<strong>$2</strong>').replace(RE_I, '$1<em>$2</em>').replace(RE_S, '$1<del>$2</del>');
   const lines = s.split('\n');
   let html = '', list = null;
@@ -102,7 +136,7 @@ function formatText(raw) {
       html += '<li>' + inline(m[1]) + '</li>';
     } else if ((m = /^(\d{1,3})\. (.*)$/.exec(l))) {
       if (list !== 'ol') { closeList(); html += '<ol start="' + m[1] + '">'; list = 'ol'; }
-      html += '<li>' + inline(m[2]) + '</li>';
+      html += '<li value="' + m[1] + '">' + inline(m[2]) + '</li>';
     } else {
       closeList();
       html += inline(l) + (i < lines.length - 1 ? '<br>' : '');
@@ -257,7 +291,7 @@ function estimate(it, W) {
       else if (a.type === 'sticker') h += W <= 600 ? 150 : 190;
       else if (a.type === 'audio') h += isVoice(a.name) ? 58 : 72;
       else if (a.type === 'contact') h += 108;
-      else h += extOf(a.name) === 'pdf' && !PdfView.failed.has(a.name) ? 66 + 146 : 66;
+      else { const e = Media.get(a.name); h += extOf(a.name) === 'pdf' && !PdfView.failed.has(e ? e.name : a.name) ? 66 + 146 : 66; } // failed is keyed by the ZIP's file name
     } else h += 74;
   }
   if (it.hasLink) h += 70;
@@ -334,7 +368,7 @@ const Posters = {
     this.busy = true;
     while (this.q.length) {
       const name = this.q.shift(), e = Media.get(name);
-      if (!e) continue;
+      if (!e) { this.settle(name, null); continue; }
       const url = await makePoster(e);
       if (!url) continue;
       if (Media.get(name) !== e) { URL.revokeObjectURL(url); continue; }
@@ -382,11 +416,13 @@ function audioHTML(e, m) {
     '<span class="afile-ic">' + ICON.music + '</span></div>';
 }
 // Videos keep their real shape (portrait phone videos down to 9:16), capped at 400px tall like WhatsApp.
+// With reduced motion turned on, GIFs start paused: a tap plays them (in the chat) or the photo viewer does.
+const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null, reducedMotion = () => !!(RM && RM.matches);
 const clampV = r => Math.min(1.9, Math.max(0.5625, r));
 const vBox = r => 'aspect-ratio:' + r + ';width:' + Math.min(330, Math.round(400 * r)) + 'px';
 function videoHTML(e, gif) {
   const d = Media.dims.get(e.name), r = d ? (gif ? clampR(d.w / d.h) : clampV(d.w / d.h)) : 16 / 9;
-  if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '" autoplay muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
+  if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '"' + (reducedMotion() ? '' : ' autoplay') + ' muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
   const poster = Media.posters.get(e.name);
   if (poster === undefined) Posters.request(e.name);
   return '<div class="mvid" data-r="' + r + '" style="' + vBox(r) + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
@@ -467,7 +503,9 @@ function parseVCards(text) {
       else if (p.name === 'X-WA-BIZ-NAME') c.biz = v;
       else if (p.name === 'X-WA-BIZ-DESCRIPTION' || p.name === 'NOTE') c.about = c.about || v;
       else if (p.name === 'PHOTO') {
-        const b64 = p.raw.replace(/\s+/g, ''), kind = (/TYPE=(JPE?G|PNG|GIF|WEBP)/i.exec(p.params) || [, 'JPEG'])[1].toLowerCase().replace('jpg', 'jpeg');
+        let b64 = p.raw.replace(/\s+/g, ''), kind = (/TYPE=(JPE?G|PNG|GIF|WEBP)/i.exec(p.params) || [, 'JPEG'])[1].toLowerCase().replace('jpg', 'jpeg');
+        const uri = /^data:image\/(jpe?g|png|gif|webp);base64,(.*)$/i.exec(b64); // vCard 4 writes the photo as a data: URI
+        if (uri) { kind = uri[1].toLowerCase().replace('jpg', 'jpeg'); b64 = uri[2]; }
         if (/^[A-Za-z0-9+/]+=*$/.test(b64) && b64.length < 3e6) c.photo = 'data:image/' + kind + ';base64,' + b64;
       }
     }
@@ -478,8 +516,15 @@ function parseVCards(text) {
 }
 const vcFileName = n => baseName(n).replace(/^\d+-/, '').replace(/\.vcf$/i, '').trim() || 'Contact';
 const Cards = {
-  q: [], busy: false,
+  q: [], busy: false, waits: new Map(),
   request(name) { if (Media.cards.has(name)) return; Media.cards.set(name, null); this.q.push(name); this.pump(); },
+  // Resolves with the parsed card once it is read (or null if it can't be), however busy the queue is.
+  ready(name) {
+    const got = Media.cards.get(name);
+    if (got) return Promise.resolve(got);
+    return new Promise(res => { (this.waits.get(name) || this.waits.set(name, []).get(name)).push(res); this.request(name); });
+  },
+  settle(name, list) { const w = this.waits.get(name); if (w) { this.waits.delete(name); w.forEach(f => f(list)); } },
   async pump() {
     if (this.busy) return;
     this.busy = true;
@@ -488,8 +533,9 @@ const Cards = {
       if (!e) continue;
       let list = [];
       try { if (e.size < 8e6) list = parseVCards(await e.blob.text()); } catch (err) { /* keep the file-name card */ }
-      if (Media.get(name) !== e) continue; // a different chat was opened meanwhile
+      if (Media.get(name) !== e) { this.settle(name, null); continue; } // a different chat was opened meanwhile
       Media.cards.set(name, list);
+      this.settle(name, list);
       document.querySelectorAll('.vcard[data-vcf="' + CSS.escape(name) + '"]').forEach(el => {
         const row = el.closest('.row'); el.outerHTML = contactHTML(e); if (row) VL.remeasure(+row.dataset.i);
       });
@@ -521,7 +567,7 @@ function openContact(name) {
   const e = Media.get(name);
   if (!e) return;
   const list = Media.cards.get(name);
-  if (!list) { Cards.request(name); setTimeout(() => { if (Media.cards.get(name)) openContact(name); }, 150); return; }
+  if (!list) { Cards.ready(name).then(l => { if (l) openContact(name); }); return; }
   $('vcTitle').textContent = list.length > 1 ? t('vc.n_contacts', { n: nf(list.length) }) : t('vc.contact');
   $('vcBody').innerHTML = list.length ? list.map(c =>
     '<section class="vc-one">' + vcAvatar(c, 'big') + '<div class="vc-name"><b>' + esc(c.name) + '</b>' +
@@ -609,7 +655,7 @@ async function openPdf(name, title) {
   $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
-  $('pdfv').hidden = false; $('pdfClose').focus();
+  $('pdfv').hidden = false; Dialogs.open($('pdfv')); $('pdfClose').focus();
   const gen = PV.gen;
   try {
     const doc = await PdfView.doc(name);
@@ -655,7 +701,7 @@ async function renderPdfPage(el) {
 }
 function closePdf() {
   PV.gen++; if (PV.obs) PV.obs.disconnect();
-  $('pdfv').hidden = true; $('pdfPages').innerHTML = '';
+  $('pdfv').hidden = true; Dialogs.close($('pdfv')); $('pdfPages').innerHTML = '';
 }
 function attHTML(a, m) {
   const e = a.url ? Media.get(a.name) : null;
@@ -674,7 +720,7 @@ function attHTML(a, m) {
   const missing = !!a.name && !a.omitted;
   const kind = a.note ? t('type.video_note') : a.type === 'audio' && a.name && isVoice(a.name) ? t('type.voice') : TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file');
   const title = a.name || (a.type === 'media' ? t('message.media_omitted') : kind + (a.viewOnce ? ' · ' + t('type.view_once') : ''));
-  const alert = S.source && S.source.zip ? t('att.not_in_zip') : missing ? t('att.text_only') : t('att.not_in_zip');
+  const alert = t(!missing ? 'att.omitted' : Media.pending.has(Media.key(a.name)) ? 'att.loading' : S.source && S.source.zip ? 'att.not_in_zip' : 'att.text_only');
   const sub = a.detail ? kind + ' · ' + a.detail : a.name ? kind : '';
   return '<div class="att ' + (missing ? 'missing' : 'omit') + '" data-type="' + a.type + '"' + (a.name ? ' data-name="' + esc(a.name) + '"' : '') + '>' +
     '<span class="atti">' + (ICON[a.type] || ICON.document) + '</span><span class="attt"><b title="' + esc(title) + '">' + esc(title) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') +
@@ -701,7 +747,7 @@ function siteOf(x) {
 }
 function linkCards(text) {
   const urls = [];
-  for (const mm of text.matchAll(RE_URL)) { const x = safeUrl(mm[1]); if (x && !urls.some(u => u.href === x.href)) urls.push(x); }
+  for (const u of urlsIn(text)) { const x = safeUrl(u); if (x && !urls.some(u => u.href === x.href)) urls.push(x); }
   if (!urls.length) return '';
   const x = urls[0], { name, color, shown } = siteOf(x);
   return '<div class="lcard"><a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer"><span class="lbadge" style="background:' + color + '">' + esc((name[0] || '?').toUpperCase()) + '</span>' +
@@ -937,33 +983,35 @@ layer.addEventListener('pointerdown', e => {
 layer.addEventListener('pointermove', e => { if (waveDrag && e.buttons) waveDrag.seek(e); });
 layer.addEventListener('pointerup', () => { waveDrag = null; });
 layer.addEventListener('click', e => {
-  const t = e.target;
-  const lc = t.closest('.lcopy');
+  const tg = e.target;
+  const lc = tg.closest('.lcopy');
   if (lc) { if (lc.dataset.copy) copyText(lc.dataset.copy, t('loc.coordinates')); else copyText(lc.dataset.url); return; }
-  const box = t.closest('.mvid:not(.gifv)');
+  const gv = tg.closest('.gifv');
+  if (gv && reducedMotion()) { const v = gv.querySelector('video'); if (v.paused) v.play().catch(() => {}); else v.pause(); return; }
+  const box = tg.closest('.mvid:not(.gifv)');
   if (box) {
     const v = box.querySelector('video');
-    if (t.closest('.vmute')) { v.muted = !v.muted; return; }
-    if (t.closest('.vfs')) { toggleFullscreen(box); return; }
-    if (t.closest('.vseek')) return;
-    if (t.closest('.vbig, .vpp') || t === v) { if (v.paused) v.play().catch(() => {}); else v.pause(); return; }
+    if (tg.closest('.vmute')) { v.muted = !v.muted; return; }
+    if (tg.closest('.vfs')) { toggleFullscreen(box); return; }
+    if (tg.closest('.vseek')) return;
+    if (tg.closest('.vbig, .vpp') || tg === v) { if (v.paused) v.play().catch(() => {}); else v.pause(); return; }
   }
-  const ap = t.closest('.aplay');
+  const ap = tg.closest('.aplay');
   if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }
-  if (t.closest('.aspeed')) { AudioCtl.speed(); return; }
-  const im = t.closest('[data-lb]');
+  if (tg.closest('.aspeed')) { AudioCtl.speed(); return; }
+  const im = tg.closest('[data-lb]');
   if (im) { openLightbox(im.dataset.lb); return; }
-  const pd = t.closest('[data-pdf]');
+  const pd = tg.closest('[data-pdf]');
   if (pd) { const w = pd.closest('.mdocw'); openPdf(pd.dataset.pdf, w && w.querySelector('.mdoc b') ? w.querySelector('.mdoc b').textContent : ''); return; }
-  const vc = t.closest('[data-vcard]');
+  const vc = tg.closest('[data-vcard]');
   if (vc) { openContact(vc.dataset.vcard); return; }
-  const rm = t.closest('[data-more]');
+  const rm = tg.closest('[data-more]');
   if (rm) { toggleExpand(+rm.dataset.more); return; }
-  const sb = t.closest('[data-star]');
+  const sb = tg.closest('[data-star]');
   if (sb) { toggleStar(+sb.dataset.star); return; }
   // Phones have no hover: tapping a bubble's plain area reveals its star button.
   if (matchMedia('(hover: none)').matches) {
-    const row = t.closest('.row'), on = row && !t.closest('a,button,input,video,img,audio') && !row.classList.contains('tapped');
+    const row = tg.closest('.row'), on = row && !tg.closest('a,button,input,video,img,audio') && !row.classList.contains('tapped');
     layer.querySelectorAll('.row.tapped').forEach(r => r.classList.remove('tapped'));
     if (on && row.querySelector('.starbtn')) row.classList.add('tapped');
   }
@@ -1000,12 +1048,13 @@ document.addEventListener('click', async ev => {
 // the items in its current filter, which can include videos and stickers.
 const LB = { k: -1, start: -1, list: [] };
 function openLightbox(name, list) {
-  list = list || S.images || [];
+  const chat = !list;
+  list = list || (S.images || []).filter(x => S.m2i[x.i] >= 0); // the chat's photos, without ones a filter hides
   const k = list.findIndex(x => x.name === name);
   if (k < 0) return;
-  LB.list = list; LB.chat = list === S.images;
+  LB.list = list; LB.chat = chat;
   LB.k = LB.start = k; LB.focus = document.activeElement;
-  $('lb').hidden = false; showLb(); $('lbClose').focus();
+  $('lb').hidden = false; Dialogs.open($('lb')); showLb(); $('lbClose').focus();
 }
 function showLb() {
   const x = LB.list[LB.k], m = S.msgs[x.i], e = Media.get(x.name);
@@ -1032,7 +1081,7 @@ function lbStep(d) { const k = LB.k + d; if (k < 0 || k >= LB.list.length) retur
 function closeLightbox(silent) {
   const lb = $('lb');
   if (!lb || lb.hidden) return;
-  lb.hidden = true; $('lbImg').removeAttribute('src');
+  lb.hidden = true; Dialogs.close(lb); $('lbImg').removeAttribute('src');
   const v = $('lbVid'); v.pause(); v.removeAttribute('src'); v.load();
   if (silent) return;
   const x = LB.list[LB.k];
