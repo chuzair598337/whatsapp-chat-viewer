@@ -5,7 +5,7 @@
 const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const nf = n => n.toLocaleString();
+const nf = n => n.toLocaleString(I18N.locale());
 function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
 function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
 const colorIdx = name => hash(name || '') % 10;
@@ -111,6 +111,10 @@ function formatText(raw) {
   closeList();
   return html.replace(/\u0000(\d+)\u0001/g, (_, n) => keep[+n]).replace(/\u0000(\d+)\u0001/g, (_, n) => keep[+n]);
 }
+// Direction of a message's text, from its first letter: Urdu or Arabic reads right to left. The time
+// sits where the text ends, so it doesn't cover the last line (css: .bubble.tltr / .trtl).
+const RE_STRONG = /[A-Za-z\u00C0-\u02AF\u0370-\u03FF\u0400-\u052F]|[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFC]/;
+function textDir(s) { const m = RE_STRONG.exec(s); return m && m[0] >= '\u0590' ? 'rtl' : 'ltr'; }
 const RE_JUMBO = /^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|‍|️|\p{Regional_Indicator}|\s)+$/u;
 function isJumbo(t) {
   if (t.length > 24 || !RE_JUMBO.test(t)) return false;
@@ -126,10 +130,18 @@ const S = {
   me: null, title: '', isGroup: false, order: 'auto',
   q: '', re: null, matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
 };
-const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
-const shortFmt = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-const dayFmt = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+// Date labels follow the interface language (js/i18n/i18n.js); makeFormats() runs again when it changes.
+I18N.set(I18N.saved, true);
+let dateFmt, shortFmt, dayFmt;
 const dateCache = new Map();
+function makeFormats() {
+  const loc = I18N.locale();
+  dateFmt = new Intl.DateTimeFormat(loc, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
+  shortFmt = new Intl.DateTimeFormat(loc, { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  dayFmt = new Intl.DateTimeFormat(loc, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  dateCache.clear();
+}
+makeFormats();
 function dateLabel(dk) {
   let v = dateCache.get(dk);
   if (!v) { const [y, m, d] = dk.split('-').map(Number); v = dateFmt.format(Date.UTC(y, m - 1, d)); dateCache.set(dk, v); }
@@ -270,6 +282,7 @@ function hl(html, i) {
   return html.split(/(<[^>]+>)/).map((part, k) => k % 2 ? part : part.replace(S.re, (all, g1) => g1 ? '<mark' + (cur ? ' class="cur"' : '') + '>' + g1 + '</mark>' : all)).join('');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
+const typeLabel = ty => t('type.' + (TYPE_LABEL[ty] ? ty : 'media'));
 const VIDEO_EXT = /^(mp4|mov|3gp|webm|mkv|avi)$/;
 // Voice notes: Android PTT-*, iOS *-AUDIO-*, or any .opus that isn't an Android AUD-* audio file.
 const isVoice = n => { const b = baseName(n); return /^PTT-/i.test(b) || /-AUDIO-/i.test(b) || (extOf(b) === 'opus' && !/^AUD-/i.test(b)); };
@@ -355,17 +368,17 @@ function makePoster(e) {
 }
 
 function audioHTML(e, m) {
-  const fail = '<div class="afail">This browser can\'t play .' + esc(extOf(e.name)) + ' audio. <a href="' + e.url + '" download="' + esc(e.name) + '">Download it</a></div>';
-  const play = '<button class="aplay" aria-label="Play"></button>';
+  const fail = '<div class="afail">' + esc(t('audio.cant_play', { ext: extOf(e.name) })) + ' <a href="' + e.url + '" download="' + esc(e.name) + '">' + t('audio.download_it') + '</a></div>';
+  const play = '<button class="aplay" aria-label="' + t('audio.play') + '"></button>';
   if (isVoice(e.name)) {
     const who = m && m.sender ? m.sender : '';
     return '<div class="aplayer voice" data-audio="' + esc(e.name) + '">' + play +
-      '<div class="atrack">' + waveSVG(e.name) + '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="Playback speed"></button></div>' + fail + '</div>' +
+      '<div class="atrack">' + waveSVG(e.name) + '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="' + t('audio.speed') + '"></button></div>' + fail + '</div>' +
       '<span class="av vav c' + colorIdx(who) + '" title="' + esc(who) + '">' + esc(initials(who)) + '<span class="vmic">' + ICON.audio + '</span></span></div>';
   }
   return '<div class="aplayer file" data-audio="' + esc(e.name) + '">' + play +
-    '<div class="atrack"><span class="afname" title="' + esc(e.name) + '">' + esc(e.name) + '</span><input class="aseek" type="range" min="0" max="1000" value="0" aria-label="Seek audio">' +
-    '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="Playback speed"></button></div>' + fail + '</div>' +
+    '<div class="atrack"><span class="afname" title="' + esc(e.name) + '">' + esc(e.name) + '</span><input class="aseek" type="range" min="0" max="1000" value="0" aria-label="' + t('audio.seek') + '">' +
+    '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="' + t('audio.speed') + '"></button></div>' + fail + '</div>' +
     '<span class="afile-ic">' + ICON.music + '</span></div>';
 }
 // Videos keep their real shape (portrait phone videos down to 9:16), capped at 400px tall like WhatsApp.
@@ -377,10 +390,10 @@ function videoHTML(e, gif) {
   const poster = Media.posters.get(e.name);
   if (poster === undefined) Posters.request(e.name);
   return '<div class="mvid" data-r="' + r + '" style="' + vBox(r) + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
-    '<button class="vbig" aria-label="Play video">' + ICON.play + '</button>' +
+    '<button class="vbig" aria-label="' + t('video.play') + '">' + ICON.play + '</button>' +
     '<span class="vbadge">' + ICON.video + '<span class="vdur">' + fmtSize(e.size) + '</span></span>' +
-    '<div class="vctl"><button class="vpp" aria-label="Play video">' + ICON.play + '</button><input class="vseek" type="range" min="0" max="1000" value="0" aria-label="Seek video"><span class="vtime">–:––</span>' +
-    '<button class="vmute" aria-label="Mute">' + ICON.volume + '</button><button class="vfs" aria-label="Full screen">' + ICON.full + '</button></div></div>';
+    '<div class="vctl"><button class="vpp" aria-label="' + t('video.play') + '">' + ICON.play + '</button><input class="vseek" type="range" min="0" max="1000" value="0" aria-label="' + t('video.seek') + '"><span class="vtime">–:––</span>' +
+    '<button class="vmute" aria-label="' + t('video.mute') + '">' + ICON.volume + '</button><button class="vfs" aria-label="' + t('video.full') + '">' + ICON.full + '</button></div></div>';
 }
 const DX = { pdf: 'pdf', doc: 'doc', docx: 'doc', rtf: 'doc', odt: 'doc', pages: 'doc', xls: 'xls', xlsx: 'xls', csv: 'xls', ods: 'xls', numbers: 'xls', ppt: 'ppt', pptx: 'ppt', key: 'ppt', odp: 'ppt', zip: 'zip', rar: 'zip', '7z': 'zip', gz: 'zip', txt: 'txt', md: 'txt', json: 'txt', log: 'txt' };
 function docHTML(e, type, a) {
@@ -388,19 +401,19 @@ function docHTML(e, type, a) {
   const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4), pdf = ext === 'pdf';
   const title = (a && a.title) || e.name;
   const pages = pdf ? PdfView.pages.get(e.name) : 0;
-  const detail = pages ? pages + ' page' + (pages === 1 ? '' : 's') : (a && a.detail) || '';
+  const detail = pages ? t('doc.pages', { n: pages }) : (a && a.detail) || '';
   const info = (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size);
   const main = pdf
-    ? '<button class="mdoc-main" data-pdf="' + esc(e.name) + '" aria-label="Open ' + esc(title) + '">'
+    ? '<button class="mdoc-main" data-pdf="' + esc(e.name) + '" aria-label="' + esc(t('doc.open', { name: title })) + '">'
     : '<a class="mdoc-main" href="' + e.url + '" target="_blank" rel="noopener">';
   const row = '<div class="mdoc">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
-    '<span class="attt"><b title="' + esc(title) + '">' + esc(title) + '</b><small class="dinfo">' + info + '</small></span>' + (pdf ? '</button>' : '</a>') +
-    '<a class="dl" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="Download ' + esc(title) + '" title="Download">' + ICON.download.replace('width="22" height="22"', 'width="20" height="20"') + '</a></div>';
+    '<span class="attt"><b dir="auto" title="' + esc(title) + '">' + esc(title) + '</b><small class="dinfo">' + info + '</small></span>' + (pdf ? '</button>' : '</a>') +
+    '<a class="dl" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: title })) + '" title="' + t('doc.download') + '">' + ICON.download.replace('width="22" height="22"', 'width="20" height="20"') + '</a></div>';
   if (!pdf) return row;
   const thumb = Media.thumbs.get(e.name);
   if (thumb === undefined) PdfView.thumb(e.name);
   if (thumb === null && Media.thumbs.has(e.name) && PdfView.failed.has(e.name)) return '<div class="mdocw">' + row + '</div>';
-  return '<div class="mdocw"><button class="pdfprev" data-pdf="' + esc(e.name) + '" aria-label="Open ' + esc(title) + '">' +
+  return '<div class="mdocw"><button class="pdfprev" data-pdf="' + esc(e.name) + '" aria-label="' + esc(t('doc.open', { name: title })) + '">' +
     (thumb ? '<img src="' + thumb + '" alt="">' : '<span class="pdfph">' + ICON.document + '</span>') + '</button>' + row + '</div>';
 }
 
@@ -408,7 +421,8 @@ function docHTML(e, type, a) {
    The vCard is read from the ZIP and parsed here. WhatsApp joins several contacts with
    "_$!<VCard-Separator>!$_" and writes multi-line values without folding, so the parser is lenient. */
 const VC_PROP = /^(?:[A-Za-z0-9-]+\.)?(VERSION|N|FN|TEL|EMAIL|ORG|TITLE|ROLE|PHOTO|ADR|URL|NOTE|BDAY|NICKNAME|CATEGORIES|LABEL|REV|UID|PRODID|IMPP|GEO|TZ|SOUND|LOGO|KEY|SOURCE|KIND|X-[A-Za-z0-9-]+)((?:;[^:\n]*)?):(.*)$/i;
-const VC_TEL = { CELL: 'Mobile', MOBILE: 'Mobile', IPHONE: 'iPhone', HOME: 'Home', WORK: 'Work', MAIN: 'Main', FAX: 'Fax', PAGER: 'Pager', OTHER: 'Other' };
+// Phone labels are stored as keys and translated when shown (custom labels from the card are shown as written).
+const VC_TEL = { CELL: 'vc.mobile', MOBILE: 'vc.mobile', IPHONE: 'vc.iphone', HOME: 'vc.home', WORK: 'vc.work', MAIN: 'vc.main', FAX: 'vc.fax', PAGER: 'vc.pager', OTHER: 'vc.other' };
 function parseVCards(text) {
   const out = [];
   for (const chunk of text.replace(/\r\n?/g, '\n').split(/END:VCARD/i)) {
@@ -444,7 +458,7 @@ function parseVCards(text) {
       else if (p.name === 'N') { const f = v.split(';'); n = [f[3], f[1], f[2], f[0], f[4]].filter(x => x && x.trim()).join(' '); }
       else if (p.name === 'TEL' && v) {
         const t = types(p), wa = /waid=(\d+)/i.exec(p.params);
-        c.phones.push({ value: v, label: labels.get(p.group) || VC_TEL[t.find(x => VC_TEL[x])] || 'Phone', wa: !!wa });
+        c.phones.push({ value: v, label: labels.get(p.group) || VC_TEL[t.find(x => VC_TEL[x])] || 'vc.phone', wa: !!wa });
       }
       else if (p.name === 'EMAIL' && v) c.emails.push(v);
       else if (p.name === 'URL' && v) c.urls.push(v);
@@ -493,31 +507,31 @@ function contactHTML(e) {
   if (list && list.length) {
     const c = list[0], more = list.length - 1;
     name = c.name; av = vcAvatar(c, '');
-    sub = more ? 'and ' + more + ' other contact' + (more > 1 ? 's' : '') : c.phones.length ? c.phones[0].value : c.emails[0] || (c.biz ? 'Business account' : 'Contact card');
+    sub = more ? t('vc.more_contacts', { n: more }) : c.phones.length ? c.phones[0].value : c.emails[0] || (c.biz ? t('vc.business') : t('vc.contact_card'));
   } else {
-    name = vcFileName(e.name); sub = 'Contact card'; av = '<span class="av vc-av c' + colorIdx(name) + '">' + ICON.contact + '</span>';
+    name = vcFileName(e.name); sub = t('vc.contact_card'); av = '<span class="av vc-av c' + colorIdx(name) + '">' + ICON.contact + '</span>';
   }
   const many = list && list.length > 1;
-  return '<div class="vcard" data-vcf="' + esc(e.name) + '"><button class="vc-main" data-vcard="' + esc(e.name) + '" aria-label="View contact">' + av +
+  return '<div class="vcard" data-vcf="' + esc(e.name) + '"><button class="vc-main" data-vcard="' + esc(e.name) + '" aria-label="' + t('vc.view_contact') + '">' + av +
     '<span class="attt"><b title="' + esc(name) + '">' + esc(name) + '</b><small>' + esc(sub) + '</small></span></button>' +
-    '<div class="vc-acts"><button data-vcard="' + esc(e.name) + '">' + (many ? 'View all' : 'View contact') + '</button>' +
-    '<a href="' + e.url + '" download="' + esc(e.name) + '">Save .vcf</a></div></div>';
+    '<div class="vc-acts"><button data-vcard="' + esc(e.name) + '">' + (many ? t('vc.view_all') : t('vc.view_contact')) + '</button>' +
+    '<a href="' + e.url + '" download="' + esc(e.name) + '">' + t('vc.save') + '</a></div></div>';
 }
 function openContact(name) {
   const e = Media.get(name);
   if (!e) return;
   const list = Media.cards.get(name);
   if (!list) { Cards.request(name); setTimeout(() => { if (Media.cards.get(name)) openContact(name); }, 150); return; }
-  $('vcTitle').textContent = list.length > 1 ? list.length + ' contacts' : 'Contact';
+  $('vcTitle').textContent = list.length > 1 ? t('vc.n_contacts', { n: nf(list.length) }) : t('vc.contact');
   $('vcBody').innerHTML = list.length ? list.map(c =>
     '<section class="vc-one">' + vcAvatar(c, 'big') + '<div class="vc-name"><b>' + esc(c.name) + '</b>' +
-      (c.biz ? '<small>' + ICON.check + 'Business account' + (c.biz !== c.name ? ' · ' + esc(c.biz) : '') + '</small>' : '') +
+      (c.biz ? '<small>' + ICON.check + t('vc.business') + (c.biz !== c.name ? ' · ' + esc(c.biz) : '') + '</small>' : '') +
       (c.org || c.title ? '<small>' + esc([c.title, c.org].filter(Boolean).join(' · ')) + '</small>' : '') + '</div>' +
-      c.phones.map(p => '<div class="vc-row"><span class="vc-ic">' + ICON.phone + '</span><span class="vc-v"><a href="tel:' + esc(p.value.replace(/[^\d+*#]/g, '')) + '">' + esc(p.value) + '</a><small>' + esc(p.label) + (p.wa ? ' · on WhatsApp' : '') + '</small></span><button class="ibtn vc-copy" data-what="Number" data-copy="' + esc(p.value) + '" aria-label="Copy number" title="Copy number">' + ICON.copy + '</button></div>').join('') +
-      c.emails.map(m => '<div class="vc-row"><span class="vc-ic">' + ICON.mail + '</span><span class="vc-v"><a href="mailto:' + esc(m) + '">' + esc(m) + '</a><small>Email</small></span><button class="ibtn vc-copy" data-what="Email" data-copy="' + esc(m) + '" aria-label="Copy email" title="Copy email">' + ICON.copy + '</button></div>').join('') +
-      c.urls.map(u => { const s = safeUrl(u); return s ? '<div class="vc-row"><span class="vc-ic">' + ICON.link + '</span><span class="vc-v"><a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a><small>Website</small></span></div>' : ''; }).join('') +
+      c.phones.map(p => '<div class="vc-row"><span class="vc-ic">' + ICON.phone + '</span><span class="vc-v"><a href="tel:' + esc(p.value.replace(/[^\d+*#]/g, '')) + '">' + esc(p.value) + '</a><small>' + esc(/^vc\./.test(p.label) ? t(p.label) : p.label) + (p.wa ? ' · ' + t('vc.on_whatsapp') : '') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.number') + '" data-copy="' + esc(p.value) + '" aria-label="' + t('vc.copy_number') + '" title="' + t('vc.copy_number') + '">' + ICON.copy + '</button></div>').join('') +
+      c.emails.map(m => '<div class="vc-row"><span class="vc-ic">' + ICON.mail + '</span><span class="vc-v"><a href="mailto:' + esc(m) + '">' + esc(m) + '</a><small>' + t('vc.email') + '</small></span><button class="ibtn vc-copy" data-what="' + t('vc.email') + '" data-copy="' + esc(m) + '" aria-label="' + t('vc.copy_email') + '" title="' + t('vc.copy_email') + '">' + ICON.copy + '</button></div>').join('') +
+      c.urls.map(u => { const s = safeUrl(u); return s ? '<div class="vc-row"><span class="vc-ic">' + ICON.link + '</span><span class="vc-v"><a href="' + esc(s) + '" target="_blank" rel="noopener noreferrer">' + esc(u) + '</a><small>' + t('vc.website') + '</small></span></div>' : ''; }).join('') +
       (c.about ? '<div class="vc-about txt">' + formatText(c.about) + '</div>' : '') +
-    '</section>').join('') : '<p class="lead">This contact card has no readable details.</p>';
+    '</section>').join('') : '<p class="lead">' + t('vc.no_details') + '</p>';
   const dl = $('vcSave'); dl.href = e.url; dl.setAttribute('download', e.name);
   openModal('vcModal');
 }
@@ -592,7 +606,7 @@ async function openPdf(name, title) {
   if (!e) return;
   pauseVideos(); if (AudioCtl.el && !AudioCtl.el.paused) AudioCtl.el.pause();
   PV.name = name; PV.z = 1; PV.gen++;
-  $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = 'Opening…';
+  $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
   $('pdfv').hidden = false; $('pdfClose').focus();
@@ -601,7 +615,7 @@ async function openPdf(name, title) {
     const doc = await PdfView.doc(name);
     if (gen !== PV.gen) return;
     const v1 = (await doc.getPage(1)).getViewport({ scale: 1 });
-    $('pdfInfo').textContent = doc.numPages + ' page' + (doc.numPages === 1 ? '' : 's');
+    $('pdfInfo').textContent = t('doc.pages', { n: doc.numPages });
     PdfView.pages.set(name, doc.numPages);
     let html = '';
     for (let i = 1; i <= doc.numPages; i++) html += '<div class="pdfpage" data-p="' + i + '" style="aspect-ratio:' + (v1.width / v1.height).toFixed(4) + '"><span class="pdfpn">' + i + '</span></div>';
@@ -611,7 +625,7 @@ async function openPdf(name, title) {
     if (gen !== PV.gen) return;
     const pw = err && err.name === 'PasswordException';
     $('pdfInfo').textContent = '';
-    box.innerHTML = '<div class="pdferr">' + ICON.warn + '<b>' + (pw ? 'This PDF is password protected' : "This PDF couldn't be shown here") + '</b><small>You can still download it and open it in another app.</small></div>';
+    box.innerHTML = '<div class="pdferr">' + ICON.warn + '<b>' + (pw ? t('pdf.locked') : t('pdf.failed')) + '</b><small>' + t('pdf.still_download') + '</small></div>';
   }
 }
 function pdfZoom(d) {
@@ -650,17 +664,17 @@ function attHTML(a, m) {
     if (a.type === 'gif' && vid) return videoHTML(e, true);
     if (a.type === 'image' || a.type === 'gif') {
       const d = Media.dims.get(e.name), r = d ? clampR(d.w / d.h) : 4 / 3;
-      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="Open photo"><img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
+      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="' + t('media.open_photo') + '"><img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
     }
-    if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="Sticker" loading="lazy">';
+    if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="' + t('type.sticker') + '" loading="lazy">';
     if (a.type === 'video') return videoHTML(e, false);
     if (a.type === 'audio') return audioHTML(e, m);
     return docHTML(e, a.type, a);
   }
   const missing = !!a.name && !a.omitted;
-  const kind = a.note || (a.type === 'audio' && a.name && isVoice(a.name) ? 'Voice message' : TYPE_LABEL[a.type]) || 'File';
-  const title = a.name || (kind + (a.viewOnce ? ' · view once' : ''));
-  const alert = S.source && S.source.zip ? 'Asset not included in ZIP' : missing ? 'Not included: opened as text only' : 'Asset not included in ZIP';
+  const kind = a.note ? t('type.video_note') : a.type === 'audio' && a.name && isVoice(a.name) ? t('type.voice') : TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file');
+  const title = a.name || (a.type === 'media' ? t('message.media_omitted') : kind + (a.viewOnce ? ' · ' + t('type.view_once') : ''));
+  const alert = S.source && S.source.zip ? t('att.not_in_zip') : missing ? t('att.text_only') : t('att.not_in_zip');
   const sub = a.detail ? kind + ' · ' + a.detail : a.name ? kind : '';
   return '<div class="att ' + (missing ? 'missing' : 'omit') + '" data-type="' + a.type + '"' + (a.name ? ' data-name="' + esc(a.name) + '"' : '') + '>' +
     '<span class="atti">' + (ICON[a.type] || ICON.document) + '</span><span class="attt"><b title="' + esc(title) + '">' + esc(title) + '</b>' + (sub ? '<small>' + esc(sub) + '</small>' : '') +
@@ -672,7 +686,7 @@ const SITES = [
   [/(^|\.)(youtube\.com|youtu\.be)$/, 'YouTube', '#d4181f'], [/(^|\.)github\.com$/, 'GitHub', '#24292f'], [/(^|\.)(twitter\.com|x\.com)$/, 'X (Twitter)', '#14171a'],
   [/(^|\.)instagram\.com$/, 'Instagram', '#c13584'], [/(^|\.)(facebook\.com|fb\.watch|fb\.com)$/, 'Facebook', '#1877f2'], [/(^|\.)linkedin\.com$/, 'LinkedIn', '#0a66c2'],
   [/(^|\.)tiktok\.com$/, 'TikTok', '#111111'], [/(^|\.)wikipedia\.org$/, 'Wikipedia', '#54595d'], [/(^|\.)reddit\.com$/, 'Reddit', '#e0410b'],
-  [/(^|\.)spotify\.com$/, 'Spotify', '#1a9e4b'], [/^chat\.whatsapp\.com$/, 'WhatsApp group invite', '#128c7e'], [/(^|\.)wa\.me$/, 'WhatsApp chat link', '#128c7e'],
+  [/(^|\.)spotify\.com$/, 'Spotify', '#1a9e4b'], [/^chat\.whatsapp\.com$/, 'site.wa_group', '#128c7e'], [/(^|\.)wa\.me$/, 'site.wa_chat', '#128c7e'],
   [/^(maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl)$/, 'Google Maps', '#1e8e3e'], [/^(docs|drive)\.google\.com$/, 'Google Docs', '#1a73e8'],
   [/(^|\.)amazon\.[a-z.]+$/, 'Amazon', '#b86e00'], [/(^|\.)t\.me$/, 'Telegram', '#2481cc'], [/(^|\.)stackoverflow\.com$/, 'Stack Overflow', '#d16a14'],
 ];
@@ -683,7 +697,7 @@ function safeUrl(u) {
 function siteOf(x) {
   const host = x.hostname.replace(/^www\./, ''), site = SITES.find(sv => sv[0].test(host));
   const shown = (host + x.pathname + x.search).replace(/\/$/, '');
-  return { name: site ? site[1] : host, color: site ? site[2] : 'var(--n' + colorIdx(host) + ')', shown: shown.length > 70 ? shown.slice(0, 68) + '…' : shown };
+  return { name: site ? (/^site\./.test(site[1]) ? t(site[1]) : site[1]) : host, color: site ? site[2] : 'var(--n' + colorIdx(host) + ')', shown: shown.length > 70 ? shown.slice(0, 68) + '…' : shown };
 }
 function linkCards(text) {
   const urls = [];
@@ -692,8 +706,8 @@ function linkCards(text) {
   const x = urls[0], { name, color, shown } = siteOf(x);
   return '<div class="lcard"><a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer"><span class="lbadge" style="background:' + color + '">' + esc((name[0] || '?').toUpperCase()) + '</span>' +
     '<span class="ltxt"><b>' + esc(name) + '</b><small title="' + esc(x.href) + '">' + esc(shown) + '</small></span></a>' +
-    '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="Copy link" title="Copy link">' + ICON.copy + '</button></div>' +
-    (urls.length > 1 ? '<div class="lmore">+ ' + (urls.length - 1) + ' more link' + (urls.length > 2 ? 's' : '') + ' in this message</div>' : '');
+    '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + ICON.copy + '</button></div>' +
+    (urls.length > 1 ? '<div class="lmore">' + t('link.more', { n: urls.length - 1 }) + '</div>' : '');
 }
 /* System notices are grouped like WhatsApp shows them: the encryption and business notices on yellow,
    security-code changes and disappearing-message timers with an icon, and group changes as plain pills. */
@@ -713,11 +727,11 @@ function locHTML(x) {
   const has = x.lat != null, coord = has ? x.lat.toFixed(5) + ', ' + x.lng.toFixed(5) : '';
   // Drawn locally: a grid with a pin, never map tiles, so nothing is fetched.
   const map = has ? '<span class="lmap" aria-hidden="true"><i class="lpin">' + ICON.pin + '</i></span>' : '';
-  const info = '<span class="linfo"><span class="atti">' + ICON.pin + '</span><span class="ltx"><b>' + (x.live ? 'Live location' : 'Location') + '</b><small>' +
-    (has ? esc(coord) : x.live ? 'Not included in exports' : 'Open in maps') + '</small></span></span>';
+  const info = '<span class="linfo"><span class="atti">' + ICON.pin + '</span><span class="ltx"><b>' + (x.live ? t('loc.live') : t('loc.location')) + '</b><small>' +
+    (has ? '<bdi>' + esc(coord) + '</bdi>' : x.live ? t('loc.not_exported') : t('loc.open_maps')) + '</small></span></span>';
   if (!x.url) return '<div class="loc nolink">' + map + info + '</div>';
-  return '<div class="locw"><a class="loc" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" title="Open in maps">' + map + info + '</a>' +
-    (has ? '<button class="lcopy" data-copy="' + esc(coord) + '" aria-label="Copy coordinates" title="Copy coordinates">' + ICON.copy + '</button>' : '') + '</div>';
+  return '<div class="locw"><a class="loc" href="' + esc(x.url) + '" target="_blank" rel="noopener noreferrer" title="' + t('loc.open_maps') + '">' + map + info + '</a>' +
+    (has ? '<button class="lcopy" data-copy="' + esc(coord) + '" aria-label="' + t('loc.copy') + '" title="' + t('loc.copy') + '">' + ICON.copy + '</button>' : '') + '</div>';
 }
 /* Which text a bubble shows. state: '' (short message), 'collapsed', 'expanded' (by the reader),
    or 'search' (opened because a search match is in the hidden part). */
@@ -761,33 +775,33 @@ function makeRow(it, idx) {
   if (it.type === 'sys') {
     const k = sysKind(m.message);
     el.className = 'row sysrow';
-    el.innerHTML = '<span class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(esc(m.message), it.i) + '</span>';
+    el.innerHTML = '<span dir="auto" class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(esc(m.message), it.i) + '</span>';
     return el;
   }
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
   el.className = 'row ' + (m.isOutgoing ? 'out' : 'in') + (it.first ? ' first' : '') + (grp ? ' grp' : '') + (reacts ? ' hasr' : '');
   let body = '';
-  if (it.showName) body += '<div class="name nc' + colorIdx(m.sender) + '">' + hl(esc(m.sender), it.i) + '</div>';
-  const metaInner = (starred ? '<span class="stard" title="Starred">' + ICON.starFill + '</span>' : '') + (m.edited ? '<span class="edtag">Edited</span>' : '') + '<span>' + m.formattedTime + '</span>';
+  if (it.showName) body += '<div dir="auto" class="name nc' + colorIdx(m.sender) + '">' + hl(esc(m.sender), it.i) + '</div>';
+  const metaInner = (starred ? '<span class="stard" title="' + t('msg.starred') + '">' + ICON.starFill + '</span>' : '') + (m.edited ? '<span class="edtag">' + t('msg.edited') + '</span>' : '') + '<span dir="ltr">' + m.formattedTime + '</span>';
   const space = '<span class="mspace' + (m.edited ? ' e' : '') + '"></span>';
   let tailText = true, visual = false, overlay = false, stk = false;
   switch (m.kind) {
     case 'deleted':
-      body += '<div class="txt del">' + ICON.ban + '<span>' + esc(m.isOutgoing ? 'You deleted this message' : 'This message was deleted') + space + '</span></div>'; tailText = false; break;
+      body += '<div class="txt del">' + ICON.ban + '<span>' + esc(m.isOutgoing ? t('msg.you_deleted') : t('msg.deleted')) + space + '</span></div>'; tailText = false; break;
     case 'call': {
       const x = m.extra;
-      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(x.label.charAt(0).toUpperCase() + x.label.slice(1)) + '</b><small>' + esc(x.detail || (x.missed ? 'No answer' : '')) + '</small></div></div>';
+      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(t('call.' + (x.missed ? 'missed_' : '') + (x.group ? 'group_' : '') + (x.video ? 'video' : 'voice'))) + '</b><small>' + esc(x.detail || (x.missed ? t('msg.no_answer') : '')) + '</small></div></div>';
       break;
     }
     case 'poll': {
       const x = m.extra, total = x.options.reduce((a, o) => a + o.votes, 0);
       body += '<div class="poll"><div class="pq">' + ICON.poll + '<span>' + hl(formatText(x.q), it.i) + '</span></div>' + x.options.map(o =>
         '<div class="po"><div class="pol"><span>' + hl(esc(o.label), it.i) + '</span><span>' + o.votes + '</span></div><div class="pbar"><i style="width:' + (total ? Math.round(o.votes / total * 100) : 0) + '%"></i></div></div>').join('') +
-        '<small>Poll · ' + total + ' vote' + (total === 1 ? '' : 's') + '</small></div>';
+        '<small>' + t('msg.poll_votes', { n: total }) + '</small></div>';
       break;
     }
     case 'unsupported':
-      body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>Message not included in the export</b><small>Usually an event. WhatsApp leaves events out of exported chats, so the name, time and replies aren\'t available.</small></span></div>';
+      body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>' + t('msg.event_title') + '</b><small>' + t('msg.event_note') + '</small></span></div>';
       break;
     case 'location':
       body += locHTML(m.extra);
@@ -806,22 +820,22 @@ function makeRow(it, idx) {
   if (tailText) {
     if (m.message && m.kind !== 'poll' && m.kind !== 'call') {
       const sv = shownText(it), btn = (label, open) => '<button class="read-more-btn" data-more="' + it.i + '" aria-expanded="' + open + '">' + label + '</button>';
-      const more = sv.state === 'collapsed' ? '<span class="rm-tail">…' + btn('Read more', false) + '</span>' : sv.state === 'expanded' ? '<div class="rm-less">' + btn('Show less', true) + '</div>' : '';
-      body += '<div class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
+      const more = sv.state === 'collapsed' ? '<span class="rm-tail">…' + btn(t('message.read_more'), false) + '</span>' : sv.state === 'expanded' ? '<div class="rm-less">' + btn(t('message.show_less'), true) + '</div>' : '';
+      body += '<div dir="auto" class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
     }
     else body += '<div class="mline"></div>';
   }
   if (stk) el.className += ' stk';
-  const starBtn = '<button class="starbtn" data-star="' + it.i + '" aria-pressed="' + starred + '" aria-label="' + (starred ? 'Unstar message' : 'Star message') + '" title="' + (starred ? 'Unstar' : 'Star') + '">' + ICON.star + '</button>';
+  const starBtn = '<button class="starbtn" data-star="' + it.i + '" aria-pressed="' + starred + '" aria-label="' + (starred ? t('msg.unstar') : t('msg.star')) + '" title="' + (starred ? t('msg.unstar_short') : t('msg.star_short')) + '">' + ICON.star + '</button>';
   let rx = '';
   if (reacts) {
     const g = new Map();
-    for (const r of m.reactions) g.set(r.emoji, (g.get(r.emoji) || []).concat(r.by === S.me ? 'You' : r.by || ''));
+    for (const r of m.reactions) g.set(r.emoji, (g.get(r.emoji) || []).concat(r.by === S.me ? t('common.you') : r.by || ''));
     const tip = [...g].map(([e, who]) => e + ' ' + who.join(', ')).join('; ');
-    rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="Reactions: ' + esc(tip) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
+    rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="' + esc(t('msg.reactions', { list: tip })) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
   }
   const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
-  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
+  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + textDir(m.message) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   return el;
@@ -871,11 +885,11 @@ function vUI(v) {
   const vd = box.querySelector('.vdur');
   if (vd && isFinite(d) && d > 0) vd.textContent = fmtDur(d);
   const pp = box.querySelector('.vpp');
-  pp.innerHTML = v.paused ? ICON.play : ICON.pause; pp.setAttribute('aria-label', v.paused ? 'Play video' : 'Pause video');
+  pp.innerHTML = v.paused ? ICON.play : ICON.pause; pp.setAttribute('aria-label', v.paused ? t('video.play') : t('video.pause'));
   box.querySelector('.vtime').textContent = (v.currentTime > 0 || !v.paused ? fmtDur(v.currentTime) + ' / ' : '') + fmtDur(d);
   box.querySelector('.vseek').value = isFinite(d) && d ? Math.round(v.currentTime / d * 1000) : 0;
   const mu = box.querySelector('.vmute');
-  mu.innerHTML = v.muted ? ICON.mute : ICON.volume; mu.setAttribute('aria-label', v.muted ? 'Unmute' : 'Mute');
+  mu.innerHTML = v.muted ? ICON.mute : ICON.volume; mu.setAttribute('aria-label', v.muted ? t('video.unmute') : t('video.mute'));
 }
 for (const t of ['timeupdate', 'play', 'pause', 'loadedmetadata', 'durationchange', 'volumechange', 'ended']) {
   layer.addEventListener(t, e => {
@@ -899,15 +913,15 @@ function toggleFullscreen(box) {
   else if (v && v.webkitEnterFullscreen) v.webkitEnterFullscreen();
 }
 async function copyText(text, what) {
-  what = what || 'Link';
-  try { await navigator.clipboard.writeText(text); toast(what + ' copied'); return; } catch (e) { /* fall back */ }
+  what = what || t('copy.link');
+  try { await navigator.clipboard.writeText(text); toast(t('copy.copied', { what })); return; } catch (e) { /* fall back */ }
   const ta = document.createElement('textarea');
   ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:0;top:0';
   document.body.appendChild(ta); ta.select();
   let ok = false;
   try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
   ta.remove();
-  toast(ok ? what + ' copied' : "Couldn't copy here. Select the text and copy it instead.");
+  toast(ok ? t('copy.copied', { what }) : t('copy.failed'));
 }
 let waveDrag = null;
 layer.addEventListener('pointerdown', e => {
@@ -925,7 +939,7 @@ layer.addEventListener('pointerup', () => { waveDrag = null; });
 layer.addEventListener('click', e => {
   const t = e.target;
   const lc = t.closest('.lcopy');
-  if (lc) { if (lc.dataset.copy) copyText(lc.dataset.copy, 'Coordinates'); else copyText(lc.dataset.url); return; }
+  if (lc) { if (lc.dataset.copy) copyText(lc.dataset.copy, t('loc.coordinates')); else copyText(lc.dataset.url); return; }
   const box = t.closest('.mvid:not(.gifv)');
   if (box) {
     const v = box.querySelector('video');
@@ -976,8 +990,8 @@ document.addEventListener('click', async ev => {
   try { await DL.save({ filename: e.name, data: e.blob }); }
   catch (err) {
     const code = err && err.code;
-    if (code === 'rejected_extension' || code === 'extension_not_enabled') toast('.' + extOf(e.name) + " files can't be saved from this page. Open the standalone index.html to download it.");
-    else if (code && code !== 'declined') toast("The file couldn't be saved here.");
+    if (code === 'rejected_extension' || code === 'extension_not_enabled') toast(t('dl.blocked', { ext: extOf(e.name) }));
+    else if (code && code !== 'declined') toast(t('dl.failed'));
   }
 });
 
@@ -1005,8 +1019,8 @@ function showLb() {
     if (AudioCtl.el) AudioCtl.el.pause();
     v.play().catch(() => {});
   } else { v.pause(); v.removeAttribute('src'); lbImg.src = e.url; }
-  lbImg.alt = m.message || TYPE_LABEL[x.type] || 'Photo';
-  $('lbWho').textContent = m.isOutgoing ? 'You' : m.sender;
+  lbImg.alt = m.message || (TYPE_LABEL[x.type] ? typeLabel(x.type) : t('common.photo_alt'));
+  $('lbWho').textContent = m.isOutgoing ? t('common.you') : m.sender;
   $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;
   $('lbPos').textContent = (LB.k + 1) + ' / ' + LB.list.length;
   $('lbCap').innerHTML = m.message ? formatText(m.message) : ''; $('lbCap').hidden = !m.message;
@@ -1092,7 +1106,7 @@ function endPtr(e) {
   stage.classList.remove('dragging');
   if (gest && gest.type === 'pan' && Z.s <= 1.001) {
     const dx = e.clientX - gest.sx;
-    if (Math.abs(dx) > 60) { lbStep(dx < 0 ? 1 : -1); moved = true; }
+    if (Math.abs(dx) > 60) { lbStep((dx < 0) !== I18N.rtl() ? 1 : -1); moved = true; }
   }
   gest = ptrs.size === 1 ? (() => { const q = [...ptrs.values()][0]; return { type: 'pan', sx: q.x, sy: q.y, x: Z.x, y: Z.y }; })() : null;
 }

@@ -7,7 +7,7 @@ function hintFrom(name) {
   const m = /^WhatsApp Chat (?:with |- |– )(.+)$/i.exec(base);
   return m ? m[1].trim() : null;
 }
-function showLoading(title) { $('loadTitle').textContent = title; $('loadNote').textContent = 'Working on this device'; setProgress(0); $('loading').hidden = false; }
+function showLoading(title) { $('loadTitle').textContent = title; $('loadNote').textContent = t('load.working'); setProgress(0); $('loading').hidden = false; }
 function setProgress(p) { const bar = $('progBar'); bar.parentNode.classList.toggle('indet', p < 0); bar.style.width = p < 0 ? '' : Math.round(p * 100) + '%'; }
 let toastTimer = 0;
 function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
@@ -46,13 +46,13 @@ async function openFiles(list) {
     return;
   }
   const lib = [];
-  showLoading('Opening ' + nf(files.length) + ' files');
+  showLoading(t('load.opening_files', { n: nf(files.length) }));
   try {
     for (const file of files) {
       const kind = await detectKind(file);
       guard(my);
       if (kind !== 'zip') { lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.txt$/i, '') }); continue; }
-      setNote('Looking for chats in ' + file.name); setProgress(-1);
+      setNote(t('load.looking_in', { name: file.name })); setProgress(-1);
       let arc = null;
       try { arc = await openArchive(file); guard(my); } catch (e) { if (isStale(e)) throw e; lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name }); continue; }
       const chats = arc.names.filter(isChatTxt), inner = arc.names.filter(n => /\.zip$/i.test(n) && /WhatsApp Chat/i.test(baseName(n)));
@@ -62,7 +62,7 @@ async function openFiles(list) {
       } else lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.zip$/i, '') });
       if (arc.close) arc.close();
     }
-  } catch (e) { if (isStale(e)) return; toast(e && e.message ? e.message : 'Could not read these files.'); $('loading').hidden = true; return; }
+  } catch (e) { if (isStale(e)) return; toast(e && e.message ? e.message : t('load.read_failed_many')); $('loading').hidden = true; return; }
   $('loading').hidden = true;
   if (!lib.length) return;
   const ok = await openEntry(lib[0], my);
@@ -72,14 +72,14 @@ async function openFile(file) { return openFiles([file]); }
 async function openEntry(entry, my) {
   if (my === undefined) my = ++loadSeq;
   let { file } = entry;
-  showLoading('Opening ' + entry.label);
+  showLoading(t('load.opening', { name: entry.label }));
   const staged = new Map();
   let arc = null;
   try {
     let kind = entry.kind || await detectKind(file);
     guard(my);
     if (entry.inner) { // an export ZIP stored inside another ZIP
-      setNote('Unpacking ' + baseName(entry.inner)); setProgress(-1);
+      setNote(t('load.unpacking', { name: baseName(entry.inner) })); setProgress(-1);
       const outer = await openArchive(file);
       const blob = await outer.extract(entry.inner);
       if (outer.close) outer.close();
@@ -88,7 +88,7 @@ async function openEntry(entry, my) {
     }
     let blob = file, hint = entry.label || hintFrom(file.name), chatPath = null;
     if (kind === 'zip') {
-      setNote('Reading ZIP archive · ' + fmtSize(file.size)); setProgress(-1);
+      setNote(t('load.reading_zip', { size: fmtSize(file.size) })); setProgress(-1);
       arc = await openArchive(file);
       guard(my);
       const txts = arc.names.filter(n => /\.txt$/i.test(n)).sort((a, b) => a.split('/').length - b.split('/').length);
@@ -102,7 +102,7 @@ async function openEntry(entry, my) {
         }
       }
       chatPath = entry.path || txts.find(n => baseName(n) === '_chat.txt') || txts.find(n => /^WhatsApp Chat/i.test(baseName(n))) || txts[0];
-      if (!chatPath) throw new Error("This ZIP doesn't contain a chat text file. Look for _chat.txt or 'WhatsApp Chat with ….txt' inside it.");
+      if (!chatPath) throw new Error(t('load.no_chat_in_zip'));
       blob = await arc.extract(chatPath);
       guard(my);
       hint = hintFrom(chatPath) || hint;
@@ -110,23 +110,23 @@ async function openEntry(entry, my) {
       const dir = chatPath.includes('/') ? chatPath.slice(0, chatPath.lastIndexOf('/') + 1) : '';
       const list = arc.names.filter(n => n !== chatPath && !isChatTxt(n) && !/\.zip$/i.test(n) && (!entry.path || (n.startsWith(dir) && !n.slice(dir.length).includes('/'))));
       let next = 0, done = 0, failed = 0;
-      setProgress(0); setNote(list.length ? 'Extracting media · 0 of ' + nf(list.length) : 'No media in this ZIP');
+      setProgress(0); setNote(list.length ? t('load.extracting', { done: 0, total: nf(list.length) }) : t('load.no_media_zip'));
       const work = async () => {
         while (next < list.length && my === loadSeq) {
           const p = list[next++];
           try { Media.stage(staged, p, await arc.extract(p)); } catch (e) { failed++; console.warn('Could not extract', p, e); }
           done++;
-          if (done % 4 === 0 || done === list.length) { setProgress(done / list.length); setNote('Extracting media · ' + nf(done) + ' of ' + nf(list.length)); }
+          if (done % 4 === 0 || done === list.length) { setProgress(done / list.length); setNote(t('load.extracting', { done: nf(done), total: nf(list.length) })); }
         }
       };
       await Promise.all(Array.from({ length: Math.min(4, list.length) }, work));
       guard(my);
-      if (failed) toast(nf(failed) + ' file' + (failed === 1 ? '' : 's') + ' in the ZIP could not be extracted.');
+      if (failed) toast(t('load.extract_failed', { n: failed, count: nf(failed) }));
     }
-    setNote('Reading messages'); setProgress(0);
+    setNote(t('load.reading_messages')); setProgress(0);
     const res = await runParse(blob, { order: 'auto' }, setProgress);
     guard(my);
-    if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
+    if (!res.messages.length) throw new Error(t('load.not_whatsapp'));
     // Success: swap in the new media (revoking the previous chat's URLs) and show the chat.
     Media.adopt(staged);
     S.source = { blob, name: entry.path ? file.name + ' › ' + entry.label : file.name, size: file.size, hint, sample: false, zip: kind === 'zip' };
@@ -136,7 +136,7 @@ async function openEntry(entry, my) {
     return true;
   } catch (e) {
     Media.discard(staged);
-    if (!isStale(e)) toast(e && e.message ? e.message : 'Could not read this file.');
+    if (!isStale(e)) toast(e && e.message ? e.message : t('load.read_failed'));
     return false;
   } finally { if (arc && arc.close) arc.close(); if (my === loadSeq) $('loading').hidden = true; }
 }
@@ -145,7 +145,7 @@ function renderLibrary() {
   sec.hidden = lib.length < 2;
   if (lib.length < 2) return;
   $('chatsCount').textContent = nf(lib.length);
-  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b>' + esc(c.label) + '</b><small>' + esc(c.inner ? 'ZIP inside ' + c.file.name : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
+  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b>' + esc(c.label) + '</b><small>' + esc(c.inner ? t('chats.zip_inside', { name: c.file.name }) : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
 }
 $('chatList').addEventListener('click', async e => {
   const b = e.target.closest('.chatrow'); if (!b) return;
@@ -155,7 +155,7 @@ $('chatList').addEventListener('click', async e => {
 async function parseAndShow(keepMe, my) {
   const res = await runParse(S.source.blob, { order: S.order }, setProgress);
   if (my !== undefined) guard(my);
-  if (!res.messages.length) throw new Error("This doesn't look like a WhatsApp chat export: no dated message lines were found.");
+  if (!res.messages.length) throw new Error(t('load.not_whatsapp'));
   applyResult(res, keepMe);
 }
 function guessMe(res, hint) {
@@ -236,23 +236,23 @@ function linkMedia() {
 function renderMediaSummary() {
   const md = S.media, c = md.c, sm = ic => ic.replace('width="22" height="22"', 'width="14" height="14"');
   // Each tile opens the media gallery on that category (js/components/media-gallery.js), so the counts come from it.
-  $('mediaGrid').innerHTML = GAL_CATS.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + label + ': ' + Gallery.count(k) + '">' +
-    '<i>' + sm(ICON[GAL_ICON[k]]) + '</i><b>' + nf(Gallery.count(k)) + '</b><span>' + (k === 'docs' ? 'Docs' : label) + '</span></button>').join('');
+  $('mediaGrid').innerHTML = GAL_CATS.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + esc(t('media.tile_label', { label: t(label), n: nf(Gallery.count(k)) })) + '">' +
+    '<i>' + sm(ICON[GAL_ICON[k]]) + '</i><b>' + nf(Gallery.count(k)) + '</b><span>' + esc(k === 'docs' ? t('media.docs_short') : t(label)) + '</span></button>').join('');
   const total = c.image + c.gif + c.video + c.audio + c.sticker + c.document + c.contact + c.media;
   $('mediaTotal').textContent = nf(Gallery.count('all'));
   Gallery.refresh();
   const note = $('mediaNote');
   note.classList.toggle('warn', md.missing > 0);
-  if (md.files || md.found) note.textContent = nf(md.found) + ' shown from the archive' + (md.missing ? ' · ' + nf(md.missing) + ' missing from it' : '') + (md.omitted ? ' · ' + nf(md.omitted) + ' omitted at export' : '') + '.';
-  else if (md.missing) note.textContent = 'Opened as text only, so the ' + nf(md.missing) + ' attached file' + (md.missing === 1 ? '' : 's') + ' can\'t be shown. Open the ZIP export to see them.';
-  else note.textContent = total ? 'This export was made without media, so media shows as placeholders.' : 'No media in this chat.';
+  if (md.files || md.found) note.textContent = [t('media.note_found', { found: nf(md.found) }), md.missing && t('media.note_missing', { n: nf(md.missing) }), md.omitted && t('media.note_omitted', { n: nf(md.omitted) })].filter(Boolean).join(' · ') + '.';
+  else if (md.missing) note.textContent = t('media.note_text_only', { n: md.missing, count: nf(md.missing) });
+  else note.textContent = total ? t('media.note_no_media_export') : t('media.note_none');
 }
 function computeTitle() {
   const names = S.res.participants.map(p => p.name);
   const hint = S.source.hint || (S.res.chatName && S.res.chatName !== 'You' ? S.res.chatName : null);
-  if (S.isGroup) return S.res.subject || hint || names.slice(0, 3).join(', ') || 'Group chat';
+  if (S.isGroup) return S.res.subject || hint || names.slice(0, 3).join(', ') || t('chat.group_chat');
   if (hint) return hint;
-  return names.find(n => n !== S.me) || names[0] || 'Chat';
+  return names.find(n => n !== S.me) || names[0] || t('chat.chat');
 }
 function setMe(name, silent) {
   S.me = name || null;
@@ -301,33 +301,34 @@ function renderChrome() {
   avatar($('headAv'), S.title); avatar($('cardAv'), S.title);
   $('headTitle').textContent = S.title; $('cardTitle').textContent = S.title;
   const pN = res.participants.length;
-  $('headSub').textContent = (S.isGroup ? nf(pN) + ' participants · ' : '') + nf(real) + ' messages · ' + range;
-  $('cardSub').textContent = S.isGroup ? 'Group · ' + nf(pN) + ' participants' : pN === 2 ? 'Chat between ' + res.participants.map(p => p.name).join(' and ') : 'Chat';
+  $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
+  $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: res.participants[0].name, b: res.participants[1].name }) : t('chat.chat');
+  const srcName = S.source.sample ? t('facts.sample_chat') : S.source.name;
   const orderName = { dmy: 'DD/MM/YYYY', mdy: 'MM/DD/YYYY', ymd: 'YYYY-MM-DD' }[res.order];
   $('facts').innerHTML =
-    '<div><dt>Messages</dt><dd>' + nf(real) + '</dd></div>' +
-    '<div><dt>Media</dt><dd>' + nf(mediaN) + '</dd></div>' +
-    '<div><dt>First</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
-    '<div><dt>Last</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
-    '<div class="wide"><dt>File</dt><dd title="' + esc(S.source.name) + '">' + esc(S.source.name) + ' · ' + fmtSize(S.source.size) + ' · ' + (res.format === 'ios' ? 'iPhone' : 'Android') + ' format</dd></div>';
+    '<div><dt>' + t('facts.messages') + '</dt><dd>' + nf(real) + '</dd></div>' +
+    '<div><dt>' + t('facts.media') + '</dt><dd>' + nf(mediaN) + '</dd></div>' +
+    '<div><dt>' + t('facts.first') + '</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
+    '<div><dt>' + t('facts.last') + '</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
+    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · ' + fmtSize(S.source.size) + ' · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
   // me select
   const sel = $('meSel');
-  sel.innerHTML = '<option value="">Nobody (all on the left)</option>' + res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '"' + (p.name === S.me ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('');
+  sel.innerHTML = '<option value="">' + t('sidebar.nobody') + '</option>' + res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '"' + (p.name === S.me ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('');
   sel.value = S.me || '';
   // date order
   $('orderSel').disabled = res.order === 'ymd';
-  $('orderNote').innerHTML = 'Reading dates as ' + orderName + (res.ambiguous && S.order === 'auto' ? '<span class="chip">guessed</span>' : '');
+  $('orderNote').innerHTML = esc(t('sidebar.reading_dates_as', { format: orderName })) + (res.ambiguous && S.order === 'auto' ? '<span class="chip">' + t('sidebar.guessed') + '</span>' : '');
   // jump date
   const jd = $('jumpDate'); jd.min = first.dateKey; jd.max = last.dateKey; jd.value = '';
   // participants
   const maxC = res.participants[0] ? res.participants[0].count : 1;
   $('pCount').textContent = nf(pN);
   $('people').innerHTML = res.participants.slice(0, 80).map(p =>
-    '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><div style="min-width:0"><div class="nm">' + esc(p.name) + (p.name === S.me ? '<em>You</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
-    (pN > 80 ? '<div class="res-more">and ' + nf(pN - 80) + ' more</div>' : '');
+    '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><div style="min-width:0"><div class="nm">' + esc(p.name) + (p.name === S.me ? '<em>' + t('common.you') + '</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
+    (pN > 80 ? '<div class="res-more">' + t('sidebar.and_more', { n: nf(pN - 80) }) + '</div>' : '');
   renderMediaSummary();
   renderFilterUI(); renderStars();
-  document.title = S.source.sample ? 'Offline Chat Viewer' : S.title + ' · Chat Viewer';
+  document.title = S.source.sample ? t('app.title') : t('app.title_chat', { chat: S.title });
 }
 
 /* ---------- Filters: date range and sender ---------- */
@@ -335,7 +336,7 @@ function renderFilterUI() {
   const f = S.filter || (S.filter = { from: '', to: '', sender: '' }), first = S.msgs[0].dateKey, last = S.msgs[S.msgs.length - 1].dateKey;
   for (const id of ['fFrom', 'fTo']) { $(id).min = first; $(id).max = last; }
   $('fFrom').value = f.from; $('fTo').value = f.to;
-  $('fSender').innerHTML = '<option value="">Everyone</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? p.name + ' (you)' : p.name) + '</option>').join('');
+  $('fSender').innerHTML = '<option value="">' + t('filter.everyone') + '</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? t('filter.name_you', { name: p.name }) : p.name) + '</option>').join('');
   $('fSender').value = f.sender;
 }
 function renderFilterBar() {
@@ -343,11 +344,11 @@ function renderFilterBar() {
   $('filterbar').hidden = !on; $('fClear').hidden = !on;
   if (!on) return;
   const parts = [];
-  if (f.sender) parts.push('from ' + f.sender);
+  if (f.sender) parts.push(t('filter.from', { name: f.sender }));
   if (f.from && f.to) parts.push(shortFmt.format(dkToT(f.from)) + ' – ' + shortFmt.format(dkToT(f.to)));
-  else if (f.from) parts.push('since ' + shortFmt.format(dkToT(f.from)));
-  else if (f.to) parts.push('until ' + shortFmt.format(dkToT(f.to)));
-  $('fText').textContent = S.shown ? 'Showing ' + nf(S.shown) + ' of ' + nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length) + ' messages · ' + parts.join(' · ') : 'No messages ' + parts.join(' · ') + '.';
+  else if (f.from) parts.push(t('filter.since', { date: shortFmt.format(dkToT(f.from)) }));
+  else if (f.to) parts.push(t('filter.until', { date: shortFmt.format(dkToT(f.to)) }));
+  $('fText').textContent = S.shown ? t('filter.showing', { shown: nf(S.shown), total: nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length), what: parts.join(' · ') }) : t('filter.none', { what: parts.join(' · ') });
 }
 function applyFilter() {
   let from = $('fFrom').value, to = $('fTo').value;
@@ -366,21 +367,21 @@ function toggleStar(i) {
   if (S.starred.has(i)) S.starred.delete(i); else S.starred.add(i);
   rerenderRow(S.m2i[i]);
   renderStars();
-  toast(S.starred.has(i) ? 'Message starred' : 'Star removed');
+  toast(S.starred.has(i) ? t('stars.starred') : t('stars.removed'));
 }
 function msgSnippet(m) {
   if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
   const a = m.attachments[0];
-  return a ? (TYPE_LABEL[a.type] || 'File') + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? 'Poll: ' + m.extra.q : '';
+  return a ? (TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file')) + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? t('common.poll_prefix', { q: m.extra.q }) : '';
 }
 function renderStars() {
   const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;
   $('starBadge').hidden = !n; $('starBadge').textContent = n > 99 ? '99+' : n;
-  $('starTitle').textContent = 'Starred messages' + (n ? ' (' + n + ')' : '');
+  $('starTitle').textContent = n ? t('stars.title_n', { n: nf(n) }) : t('common.starred_messages');
   $('starList').innerHTML = n ? list.map(i => {
     const m = S.msgs[i];
-    return '<button class="res" data-i="' + i + '"><span class="rh"><b>' + esc(m.isOutgoing ? 'You' : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + esc(msgSnippet(m)) + '</span></button>';
-  }).join('') : '<p class="star-empty">' + ICON.star + '<span>No starred messages yet. Hover over a message (or tap it on a phone) and press the star to keep it here while this chat is open.</span></p>';
+    return '<button class="res" data-i="' + i + '"><span class="rh"><b>' + esc(m.isOutgoing ? t('common.you') : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + esc(msgSnippet(m)) + '</span></button>';
+  }).join('') : '<p class="star-empty">' + ICON.star + '<span>' + t('stars.empty') + '</span></p>';
 }
 function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
 function closeStars() { $('starPanel').hidden = true; document.body.classList.remove('stars-open'); }
@@ -426,7 +427,7 @@ function runSearch(q) {
 }
 function clearSearch() { q1.value = ''; q2.value = ''; runSearch(''); }
 function updateCounts() {
-  const n = S.matches.length, txt = !S.q.trim() ? '' : n ? (S.cur + 1) + ' of ' + nf(n) : 'No matches';
+  const n = S.matches.length, txt = !S.q.trim() ? '' : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
   $('count1').textContent = txt; $('count2').textContent = txt;
   for (const id of ['prev1', 'next1', 'prev2', 'next2']) $(id).disabled = n < 2 && !(n === 1);
 }
@@ -459,8 +460,8 @@ function renderResults() {
   const LIM = 200;
   box.innerHTML = S.matches.slice(0, LIM).map((i, k) => {
     const m = S.msgs[i];
-    return '<button class="res" data-k="' + k + '"><span class="rh"><b>' + esc(m.isSystem ? 'System' : m.isOutgoing ? 'You' : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + snippet(m) + '</span></button>';
-  }).join('') + (S.matches.length > LIM ? '<div class="res-more">Showing the first ' + LIM + ' of ' + nf(S.matches.length) + '. Use the arrows to step through all of them.</div>' : '');
+    return '<button class="res" data-k="' + k + '"><span class="rh"><b>' + esc(m.isSystem ? t('search.system') : m.isOutgoing ? t('common.you') : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + snippet(m) + '</span></button>';
+  }).join('') + (S.matches.length > LIM ? '<div class="res-more">' + t('search.first_only', { lim: nf(LIM), n: nf(S.matches.length) }) + '</div>' : '');
 }
 $('results').addEventListener('click', e => { const b = e.target.closest('.res'); if (b) { jumpToMatch(+b.dataset.k); if (isNarrow()) closeDrawer(); } });
 for (const q of [q1, q2]) {
@@ -485,7 +486,8 @@ $('sList').onclick = () => { openDrawer(); setTimeout(() => $('searchSec').scrol
 /* =====================================================================
    Stats
    ===================================================================== */
-const WD = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// Short weekday names in the interface language (1 Jan 2023 was a Sunday).
+const WD = () => [0, 1, 2, 3, 4, 5, 6].map(i => new Intl.DateTimeFormat(I18N.locale(), { weekday: 'short', timeZone: 'UTC' }).format(Date.UTC(2023, 0, 1 + i)));
 function computeStats() {
   const per = new Map(), days = new Map(), wd = new Array(7).fill(0), hr = new Array(24).fill(0);
   let words = 0, media = 0, n = 0, links = 0, emojis = new Map();
@@ -510,25 +512,25 @@ function renderStats() {
   const span = Math.round((dkToT(last) - dkToT(first)) / 864e5) + 1;
   const maxP = st.per[0] ? st.per[0].n : 1;
   const maxD = st.topDays[0] ? st.topDays[0][1] : 1;
-  const maxW = Math.max(1, ...st.wd), maxH = Math.max(1, ...st.hr);
+  const maxW = Math.max(1, ...st.wd), maxH = Math.max(1, ...st.hr), wd = WD();
   const tile = (k, v, s) => '<div class="tile"><dt>' + k + '</dt><dd>' + v + (s ? ' <small>' + s + '</small>' : '') + '</dd></div>';
   $('statsBody').innerHTML =
     '<dl class="tiles" style="margin:0">' +
-      tile('Messages', nf(st.n)) + tile('Words', nf(st.words)) + tile('Media', nf(st.media)) +
-      tile('Active days', nf(st.days.size), 'of ' + nf(span)) + tile('Per active day', (st.n / Math.max(1, st.days.size)).toFixed(1)) + tile('Words per message', (st.words / Math.max(1, st.n)).toFixed(1)) +
+      tile(t('facts.messages'), nf(st.n)) + tile(t('stats.words'), nf(st.words)) + tile(t('facts.media'), nf(st.media)) +
+      tile(t('stats.active_days'), nf(st.days.size), t('stats.of', { n: nf(span) })) + tile(t('stats.per_active_day'), nf(+(st.n / Math.max(1, st.days.size)).toFixed(1))) + tile(t('stats.words_per_message'), nf(+(st.words / Math.max(1, st.n)).toFixed(1))) +
     '</dl>' +
-    '<div class="stat"><h3>Messages by person<span>' + nf(st.per.length) + ' people</span></h3><div class="tbl-wrap"><table class="ptable"><thead><tr><th>Person</th><th>Messages</th><th>Share</th><th>Words</th><th>Media</th></tr></thead><tbody>' +
-      st.per.slice(0, 50).map(p => '<tr><td><span class="pn">' + esc(p.name) + (p.name === S.me ? ' <span style="color:var(--ink-3)">(you)</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') +
+    '<div class="stat"><h3>' + t('stats.by_person') + '<span>' + t('stats.people', { n: nf(st.per.length) }) + '</span></h3><div class="tbl-wrap"><table class="ptable"><thead><tr><th>' + t('stats.person') + '</th><th>' + t('facts.messages') + '</th><th>' + t('stats.share') + '</th><th>' + t('stats.words') + '</th><th>' + t('facts.media') + '</th></tr></thead><tbody>' +
+      st.per.slice(0, 50).map(p => '<tr><td><span class="pn">' + esc(p.name) + (p.name === S.me ? ' <span style="color:var(--ink-3)">' + t('stats.you_paren') + '</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') +
     '</tbody></table></div></div>' +
     '<div class="sgrid">' +
-      '<div class="stat"><h3>Busiest days<span>tap to jump</span></h3><div class="days">' +
+      '<div class="stat"><h3>' + t('stats.busiest_days') + '<span>' + t('stats.tap_to_jump') + '</span></h3><div class="days">' +
         st.topDays.map(([dk, c]) => '<button class="day" data-dk="' + dk + '"><span>' + esc(dayFmt.format(dkToT(dk))) + '</span><span class="dbar"><i style="width:' + (c / maxD * 100).toFixed(1) + '%"></i></span><span class="dn">' + nf(c) + '</span></button>').join('') +
       '</div></div>' +
-      '<div class="stat"><h3>By weekday</h3><div class="vbars">' +
-        st.wd.map((c, i) => '<div class="vbar" data-tip="' + WD[i] + ': ' + nf(c) + ' messages"><i style="height:' + (c / maxW * 100).toFixed(1) + '%"></i></div>').join('') +
-      '</div><div class="vlabels">' + WD.map(d => '<span>' + d + '</span>').join('') + '</div></div>' +
+      '<div class="stat"><h3>' + t('stats.by_weekday') + '</h3><div class="vbars">' +
+        st.wd.map((c, i) => '<div class="vbar" data-tip="' + esc(t('stats.n_messages_tip', { day: wd[i], n: nf(c) })) + '"><i style="height:' + (c / maxW * 100).toFixed(1) + '%"></i></div>').join('') +
+      '</div><div class="vlabels">' + wd.map(d => '<span>' + d + '</span>').join('') + '</div></div>' +
     '</div>' +
-    '<div class="stat"><h3>By hour of day<span>local time from the export</span></h3><div class="vbars">' +
+    '<div class="stat"><h3>' + t('stats.by_hour') + '<span>' + t('stats.local_time') + '</span></h3><div class="vbars">' +
       st.hr.map((c, i) => '<div class="vbar" data-tip="' + String(i).padStart(2, '0') + ':00 – ' + String(i).padStart(2, '0') + ':59: ' + nf(c) + '"><i style="height:' + (c / maxH * 100).toFixed(1) + '%"></i></div>').join('') +
     '</div><div class="vlabels">' + st.hr.map((c, i) => '<span>' + (i % 3 === 0 ? i : '') + '</span>').join('') + '</div></div>';
 }
@@ -546,8 +548,8 @@ for (const m of document.querySelectorAll('.modal')) {
 function openMeModal() {
   const ps = S.res.participants.slice(0, 40);
   $('meList').innerHTML = ps.map((p, k) =>
-    '<label class="meopt"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === S.me ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><span>' + esc(p.name) + '<small>' + nf(p.count) + ' messages' + (p.name === S.me ? ' · best guess' : '') + '</small></span></label>').join('') +
-    '<label class="meopt"><input type="radio" name="me" value=""' + (!S.me ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>None of these<small>Show everyone on the left</small></span></label>';
+    '<label class="meopt"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === S.me ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><span>' + esc(p.name) + '<small>' + t('me.n_messages', { n: nf(p.count) }) + (p.name === S.me ? ' · ' + t('me.best_guess') : '') + '</small></span></label>').join('') +
+    '<label class="meopt"><input type="radio" name="me" value=""' + (!S.me ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
   openModal('meModal');
 }
 $('meDone').onclick = () => { const r = document.querySelector('input[name="me"]:checked'); closeModal('meModal'); setMe(r ? r.value : null); };
@@ -556,7 +558,7 @@ $('meSel').onchange = e => setMe(e.target.value || null);
 /* ---------- Date order, jump to date, doodles ---------- */
 $('orderSel').onchange = async e => {
   S.order = e.target.value;
-  showLoading('Re-reading dates');
+  showLoading(t('load.rereading_dates'));
   try { await parseAndShow(true); } catch (err) { if (!isStale(err)) toast(err.message); } finally { $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
@@ -594,6 +596,27 @@ function applyTheme() {
 }
 applyTheme();
 
+/* ---------- Interface language (js/i18n) ---------- */
+// The picker sits in the ⋮ menu and on the start screen. Switching redraws everything the app built
+// in JavaScript; the chat itself (messages, names, file names, system notices) is never translated.
+function markLang() {
+  for (const b of document.querySelectorAll('[data-lang-opt]')) b.setAttribute(b.closest('.start-lang') ? 'aria-pressed' : 'aria-checked', b.dataset.langOpt === I18N.lang);
+}
+markLang();
+$('start').addEventListener('click', e => { const l = e.target.closest('[data-lang-opt]'); if (l) I18N.set(l.dataset.langOpt); });
+document.addEventListener('langchange', () => {
+  markLang(); makeFormats(); Tour.boot();
+  if (!S.msgs.length) return;
+  renderLibrary(); renderChrome(); renderMediaSummary(); renderFilterUI(); renderFilterBar();
+  if (S.q.trim()) { updateCounts(); renderResults(); }
+  if (!$('starPanel').hidden) renderStars();
+  if (!$('statsModal').hidden) renderStats();
+  if (!$('galModal').hidden) Gallery.show(Gallery.cat);
+  if (!$('meModal').hidden) openMeModal();
+  VL.relayout();
+  if (Tour.active()) Tour.go(Tour.i);
+});
+
 /* ---------- Header ⋮ menu (WhatsApp style): starred, statistics, open, theme, help ---------- */
 const moreBtn = $('moreBtn'), moreMenu = $('moreMenu');
 const menuItems = () => [...moreMenu.querySelectorAll('[role^="menuitem"]')];
@@ -612,6 +635,8 @@ moreMenu.addEventListener('click', e => { if (e.target.closest('[role^="menuitem
 moreMenu.addEventListener('click', e => {
   const t = e.target.closest('[data-theme-opt]');
   if (t) { theme = t.dataset.themeOpt; store('cv-theme', theme); applyTheme(); }
+  const l = e.target.closest('[data-lang-opt]');
+  if (l) { closeMenu(true); I18N.set(l.dataset.langOpt); }
 });
 document.addEventListener('pointerdown', e => { if (!moreMenu.hidden && !moreMenu.contains(e.target) && !moreBtn.contains(e.target)) closeMenu(); });
 moreMenu.addEventListener('keydown', e => {
@@ -659,8 +684,8 @@ document.addEventListener('keydown', e => {
   }
   if (!$('lb').hidden) {
     if (e.key === 'Escape') closeLightbox();
-    else if (e.key === 'ArrowLeft') lbStep(-1);
-    else if (e.key === 'ArrowRight') lbStep(1);
+    else if (e.key === 'ArrowLeft') lbStep(I18N.rtl() ? 1 : -1); // the next photo is on the left in right-to-left
+    else if (e.key === 'ArrowRight') lbStep(I18N.rtl() ? -1 : 1);
     else if (e.key === '+' || e.key === '=') zTo(Z.s * 1.5, undefined, undefined, true);
     else if (e.key === '-') zTo(Z.s / 1.5, undefined, undefined, true);
     else if (e.key === '0') zTo(1, undefined, undefined, true);
@@ -685,8 +710,8 @@ for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'op
 $('sClose').innerHTML = ICON.back; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down; $('sList').innerHTML = ICON.list;
 $('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').innerHTML = ICON.lock.replace('width="22" height="22"', 'width="16" height="16"');
-$('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="18" height="18"') + 'Statistics';
-$('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + 'Open chat';
+$('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.statistics">' + t('sidebar.statistics') + '</span>';
+$('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.open_chat">' + t('sidebar.open_chat') + '</span>';
 for (const b of document.querySelectorAll('[data-close]')) b.innerHTML = ICON.close;
 $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('pdfIn').innerHTML = ICON.plus; $('pdfOut').innerHTML = ICON.minus; $('pdfFit').innerHTML = ICON.fit;
 $('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
@@ -702,7 +727,7 @@ function refreshMedia() {
 let sampleVideo = null;
 async function loadSample() {
   const my = ++loadSeq;
-  showLoading('Preparing the sample chat'); setProgress(-1);
+  showLoading(t('load.preparing_sample')); setProgress(-1);
   let staged = new Map();
   try { staged = await makeSampleMedia(); } catch (e) { console.warn('Sample media could not be generated', e); }
   if (my !== loadSeq) { Media.discard(staged); return false; }

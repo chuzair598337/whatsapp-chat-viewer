@@ -23,6 +23,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
+- English and Urdu interface, with a right-to-left layout and a Nastaliq font for Urdu. Chat text is never translated.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
@@ -59,6 +60,7 @@ whatsapp-chat-viewer/
 ├── js/
 │   ├── vendor/jszip.min.js               # JSZip 3.10.1 (MIT)
 │   ├── vendor/pdfjs/                     # pdf.js 3.11.174 (Apache-2.0), loaded on demand
+│   ├── i18n/                             # i18n.js (t() helper), en.js and ur.js dictionaries
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
 │   ├── text-truncator.js                 # Read more / Show less for long messages
@@ -118,7 +120,7 @@ python3 -m http.server 8000      # or: npx serve .
 ```
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
@@ -140,4 +142,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), and pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), and the Noto Nastaliq Urdu font under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`).

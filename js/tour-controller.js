@@ -15,176 +15,120 @@ const TOUR_KEY = 'has_completed_walkthrough';
 
 const Tour = {
   i: -1, raf: 0, prevFocus: null, rows: [],
-  /* Each step: sec (chapter), title, text (textNarrow for phones and tablets), and target(), which
+  /* Each step: sec (chapter) and key, which name its words in the dictionaries (tour_sec.<sec> and
+     tour_steps.<key>.title / .text / .textNarrow for phones and tablets / .html), and target(), which
      returns the element(s) to spotlight, or nothing for a centred card. chatStep() scrolls the
      timeline to a message of the sample chat first; sideStep() highlights part of the sidebar,
      opening the drawer on narrow screens. */
   steps: [
     {
-      sec: 'Getting started',
-      title: 'Import your WhatsApp chat',
-      text: 'Drag and drop an exported .zip or .txt file anywhere on this page, or use this link. Later, "Open another chat" in the ⋮ menu does the same. All parsing happens locally in your browser, and nothing is ever sent to a server.',
+      sec: 'start', key: 'import_your_whatsapp',
       target: () => vis('sampleOpen') || vis('moreBtn')
     },
     chatStep({
-      sec: 'Getting started',
-      title: 'Timeline and date badges',
-      text: 'Messages are grouped by day under a date badge, like in WhatsApp. While you scroll, the current day stays pinned at the top. Only the messages on screen are drawn, so even chats with tens of thousands of messages stay smooth.',
+      sec: 'start', key: 'timeline_and_date',
       rows: () => [0], sel: '.pill'
     }),
     {
-      sec: 'Finding things',
-      title: 'Search',
-      text: 'Search for any word, sender name or poll option. Every match is highlighted in the chat, with an "n of N" counter, a list of results to jump to, and Enter or Shift+Enter to step through them. Press / to search from anywhere.',
-      textNarrow: 'Tap here to search for any word, sender name or poll option. Every match is highlighted in the chat, and the arrows step through them.',
+      sec: 'finding', key: 'search',
       prep: () => closeDrawer(),
       target: () => isNarrow() ? vis('searchBtn') : vis('searchSec')
     },
     sideStep({
-      sec: 'Finding things',
-      title: 'Date and sender filters',
-      text: 'Show only the messages between two dates, from one person, or both. A bar above the chat says how many messages are showing, with a button to clear the filters.',
+      sec: 'finding', key: 'date_and_sender',
       id: 'filterSec'
     }),
     sideStep({
-      sec: 'Finding things',
-      title: 'Jump to a date',
-      text: 'Pick a day and the chat scrolls straight to its first message. The busiest days in Statistics work the same way.',
+      sec: 'finding', key: 'jump_to_a',
       id: 'jumpDate', field: true
     }),
     sideStep({
-      sec: 'Finding things',
-      title: 'Chat statistics',
-      text: 'See who talks the most, the busiest days, and activity by weekday and by hour, with totals for messages, words and media. It is also in the ⋮ menu.',
+      sec: 'finding', key: 'chat_statistics',
       id: 'cardStats'
     }),
     sideStep({
-      sec: 'Finding things',
-      title: 'Media, links and docs',
-      text: 'Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. It is also in the ⋮ menu.',
+      sec: 'finding', key: 'media_links_and',
       id: 'mediaSec'
     }),
     sideStep({
-      sec: 'Finding things',
-      title: 'Which one is you',
-      text: 'Pick yourself here and your messages move to the right, in green. The viewer makes a good guess, and the date order (day/month or month/day) is detected for you too, with an override below it.',
+      sec: 'finding', key: 'which_one_is',
       id: 'meSel', field: true
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'WhatsApp formatting',
-      text: '*Bold*, _italic_, ~strikethrough~ and `code` are shown the way WhatsApp shows them, along with bulleted and numbered lists, quotes and large emoji-only messages.',
+      sec: 'messages', key: 'whatsapp_formatting',
       rows: () => [rowOf(m => m.message.startsWith('- Meet at'))]
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'Read more',
-      text: 'Long messages are shortened like in WhatsApp. Tap "Read more" to see the whole message and "Show less" to fold it again. A search match in the hidden part opens it for you.',
+      sec: 'messages', key: 'read_more',
       rows: () => [rowOf(m => m.message.startsWith('Trip report'))]
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'Edited, deleted and replies',
-      text: 'Edited messages carry an "Edited" tag by the time, deleted ones show "This message was deleted", and quoted lines appear as a reply quote.',
+      sec: 'messages', key: 'edited_deleted_and',
       rows: () => [rowOf(m => m.edited)]
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'Reactions',
-      text: 'When an export includes reactions, they appear under the message they belong to, with a count. Hover over them to see who reacted.',
+      sec: 'messages', key: 'reactions',
       rows: () => [rowOf(m => m.reactions && m.reactions.length)]
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'System notices',
-      text: 'Encryption notices, group changes, disappearing-message timers and security-code changes are shown as small centred notes, each with its own icon.',
+      sec: 'messages', key: 'system_notices',
       rows: () => [rowOf(m => m.kind === 'system' && /created group/.test(m.message))], sel: '.pill'
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'Calls',
-      text: 'Voice, video and group calls appear as call cards with their length. Missed calls are marked in red.',
+      sec: 'messages', key: 'calls',
       rows: () => [rowOf(m => m.kind === 'call')]
     }),
     chatStep({
-      sec: 'Messages',
-      title: 'Polls',
-      text: 'Polls show the question and each option with its votes, as a bar.',
+      sec: 'messages', key: 'polls',
       rows: () => [rowOf(m => m.kind === 'poll')]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Photos',
-      text: 'Tap a photo to open it full screen. Zoom with the wheel, a pinch or a double tap, drag to pan, rotate with R, and swipe or use the arrow keys to move between photos.',
+      sec: 'media', key: 'photos',
       rows: () => [rowOf(m => hasAtt(m, a => a.type === 'image' && a.url))]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Videos and GIFs',
-      text: 'Videos show a thumbnail with their length and play right in the chat, with a seek bar, mute and full screen. GIFs loop silently with a GIF badge.',
+      sec: 'media', key: 'videos_and_gifs',
       rows: () => [rowOf(m => hasAtt(m, a => a.type === 'video' && a.url))]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Stickers',
-      text: 'Stickers appear without a bubble at WhatsApp\'s size, and animated ones play.',
+      sec: 'media', key: 'stickers',
       rows: () => [rowOf(m => hasAtt(m, a => a.type === 'sticker' && a.url))], sel: '.sticker'
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Voice notes and audio',
-      text: 'Voice notes get a waveform you can tap or drag to seek, and play at 1×, 1.5× or 2×. Music and other audio files get their own player. Only one plays at a time.',
+      sec: 'media', key: 'voice_notes_and',
       rows: () => [rowOf(m => hasAtt(m, a => a.type === 'audio' && isVoice(a.name))), rowOf(m => hasAtt(m, a => a.type === 'audio' && !isVoice(a.name)))]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Built-in PDF viewer',
-      text: 'PDFs show a preview of the first page and the page count. Tap one to read every page here, with zoom and a download button. Other documents get a card with their type and size.',
+      sec: 'media', key: 'built_in_pdf',
       rows: () => [rowOf(m => hasAtt(m, a => /\.pdf$/i.test(a.name || '') && a.url))]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Contact cards',
-      text: 'Shared contacts show the name and number. "View contact" opens every detail, including business info, and "Save .vcf" adds it to your phone\'s contacts.',
+      sec: 'media', key: 'contact_cards',
       rows: () => [rowOf(m => hasAtt(m, a => a.type === 'contact' && a.url))]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Locations',
-      text: 'Shared locations get a small map drawn on your device (no map service is contacted) with the coordinates. Tap it to open the place in your maps app.',
+      sec: 'media', key: 'locations',
       rows: () => [rowOf(m => m.kind === 'location')]
     }),
     chatStep({
-      sec: 'Media',
-      title: 'Links',
-      text: 'Links are clickable, and a card under the message shows the site with a copy button. No preview is fetched, so the page stays offline.',
+      sec: 'media', key: 'links',
       rows: () => [rowOf(m => /github\.com/.test(m.message))]
     }),
     {
-      sec: 'Getting started',
-      title: 'The ⋮ menu',
-      text: 'Media, links and docs, your starred messages, chat statistics, light and dark themes, and this tour are all here. To star a message, hover over it (or tap it on a phone) and press the star.',
+      sec: 'start', key: 'menu',
       prep: () => closeDrawer(),
       target: () => vis('moreBtn')
     },
     {
-      sec: 'What this viewer can do',
-      title: 'You\'re all set',
-      html: '<ul>' +
-        '<li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li>' +
-        '<li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li>' +
-        '<li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li>' +
-        '<li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li>' +
-        '<li><b>Nothing is saved.</b> Close the tab and the chat is gone.</li>' +
-        '<li><b>Shortcuts:</b> / to search, Esc to close, and + − 0 R and the arrow keys in the photo viewer.</li>' +
-        '</ul><p class="tour-note">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can\'t be shown here.</p>',
+      sec: 'abilities', key: 'all_set',
+      html: true,
       prep: () => closeDrawer(),
       target: () => null
     }
   ],
 
   boot() {
-    $('startDemoSub').textContent = store(TOUR_KEY) === 'true' ? 'A made-up group chat to look around in' : 'A made-up group chat with a short guided tour';
+    $('startDemoSub').textContent = t(store(TOUR_KEY) === 'true' ? 'welcome.demo_sub_seen' : 'welcome.demo_sub_new');
   },
   async fromStart() {
     sampleReady = loadSample();
@@ -230,13 +174,14 @@ const Tour = {
     this.i = Math.max(0, Math.min(this.steps.length - 1, i));
     const st = this.steps[this.i], last = this.i === this.steps.length - 1, n = this.steps.length;
     if (st.prep) st.prep();
-    $('tourStep').textContent = st.sec + ' · ' + (this.i + 1) + ' of ' + n;
-    $('tourTitle').textContent = st.title;
-    if (st.html) $('tourText').innerHTML = st.html; // trusted text written above, no chat content
-    else $('tourText').textContent = isNarrow() && st.textNarrow ? st.textNarrow : st.text;
+    const w = f => t('tour_steps.' + st.key + '.' + f), narrow = I18N.look('en-US', 'tour_steps.' + st.key + '.textNarrow');
+    $('tourStep').textContent = t('tour.progress', { sec: t('tour_sec.' + st.sec), i: nf(this.i + 1), n: nf(n) });
+    $('tourTitle').textContent = w('title');
+    if (st.html) $('tourText').innerHTML = w('html'); // trusted text from the dictionaries, no chat content
+    else $('tourText').textContent = isNarrow() && narrow ? w('textNarrow') : w('text');
     $('tourPop').classList.toggle('wide', !!st.html);
     $('tourBack').hidden = this.i === 0;
-    $('tourNext').textContent = last ? 'Finish' : 'Next';
+    $('tourNext').textContent = last ? t('tour.finish') : t('tour.next');
     $('tourDots').innerHTML = '<b style="width:' + Math.round((this.i + 1) / n * 100) + '%"></b>';
     // Let the virtual list render the scrolled-to row before measuring it.
     requestAnimationFrame(() => requestAnimationFrame(() => { this.place(); $('tourNext').focus({ preventScroll: true }); }));
@@ -360,8 +305,9 @@ document.addEventListener('keydown', e => {
     else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); }
     else if (i < 0) { e.preventDefault(); f[0].focus(); }
   } else if (e.key === 'Escape') { e.preventDefault(); if (welcome) Tour.closeWelcome(true); else Tour.end(); }
-  else if (!welcome && e.key === 'ArrowRight') { e.preventDefault(); Tour.next(); }
-  else if (!welcome && e.key === 'ArrowLeft') { e.preventDefault(); Tour.back(); }
+  else if (!welcome && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { // the forward arrow points left in right-to-left
+    e.preventDefault(); if ((e.key === 'ArrowRight') !== I18N.rtl()) Tour.next(); else Tour.back();
+  }
   else if (e.key !== 'Enter' && e.key !== ' ') e.preventDefault();
   e.stopImmediatePropagation();
 }, true);

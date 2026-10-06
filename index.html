@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
 <meta name="description" content="Offline WhatsApp chat viewer. Your chat never leaves your device.">
-<title>Offline Chat Viewer</title>
+<title data-i18n="app.title">Offline Chat Viewer</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cpath fill=%27%2325d366%27 d=%27M16 3C8.8 3 3 8.4 3 15c0 2.4.8 4.7 2.1 6.6L4 29l7.7-1.9c1.3.4 2.8.7 4.3.7 7.2 0 13-5.4 13-12S23.2 3 16 3z%27/%3E%3C/svg%3E">
 <link rel="stylesheet" href="css/styles.css">
 </head>
@@ -13,45 +13,48 @@
 
 <section id="start" class="start" aria-labelledby="startTitle">
   <div class="start-in">
+    <div class="start-lang" role="group" aria-label="Language" data-i18n-attr="aria-label:common.language">
+      <button data-lang-opt="en-US" aria-pressed="false" lang="en" dir="ltr">English</button><button data-lang-opt="ur" aria-pressed="false" lang="ur" dir="rtl">اردو</button>
+    </div>
     <div class="start-brand">
       <span class="logo" id="startLogo"></span>
-      <div><h1 id="startTitle">Chat Viewer</h1><p>Read your exported WhatsApp chats, with photos, voice notes, search and statistics.</p></div>
+      <div><h1 id="startTitle" data-i18n="start.chat_viewer">Chat Viewer</h1><p data-i18n="start.read_your_exported_whatsapp_chats">Read your exported WhatsApp chats, with photos, voice notes, search and statistics.</p></div>
     </div>
     <div class="start-drop" id="startDrop">
       <span class="start-dicon" id="startDropIc"></span>
-      <h2>Drop your WhatsApp export here</h2>
-      <p>A <b>.zip</b> exported with media, or a <b>.txt</b> exported without media. You can pick several chats at once.</p>
-      <button class="btn primary start-browse" id="startBrowse">Browse files</button>
+      <h2 data-i18n="start.drop_your_whatsapp_export_here">Drop your WhatsApp export here</h2>
+      <p data-i18n-html="start.a_zip_exported_with_media">A <b>.zip</b> exported with media, or a <b>.txt</b> exported without media. You can pick several chats at once.</p>
+      <button class="btn primary start-browse" id="startBrowse" data-i18n="start.browse_files">Browse files</button>
     </div>
-    <div class="start-or"><span>or</span></div>
-    <button class="start-demo" id="startDemo"><span class="tw-ic" id="startDemoIc"></span><span><b>Try the sample chat</b><small id="startDemoSub">A made-up group chat with a short guided tour</small></span></button>
+    <div class="start-or"><span data-i18n="start.or">or</span></div>
+    <button class="start-demo" id="startDemo"><span class="tw-ic" id="startDemoIc"></span><span><b data-i18n="start.try_the_sample_chat">Try the sample chat</b><small id="startDemoSub" data-i18n="start.a_made_up_group_chat">A made-up group chat with a short guided tour</small></span></button>
     <details class="start-how">
-      <summary>How do I export a chat from WhatsApp?</summary>
+      <summary data-i18n="start.how_do_i_export_a">How do I export a chat from WhatsApp?</summary>
       <ol>
-        <li><b>iPhone:</b> open the chat, tap the contact or group name, then <b>Export Chat</b>.</li>
-        <li><b>Android:</b> open the chat, tap <b>⋮ › More › Export chat</b>.</li>
-        <li>Choose <b>Attach Media</b> / <b>Include media</b> for photos and voice notes, or <b>Without media</b> for text only.</li>
-        <li>Save the file to your device or send it to your computer, then open it here. No need to unzip it.</li>
+        <li data-i18n-html="start.iphone_open_the_chat_tap"><b>iPhone:</b> open the chat, tap the contact or group name, then <b>Export Chat</b>.</li>
+        <li data-i18n-html="start.android_open_the_chat_tap"><b>Android:</b> open the chat, tap <b>⋮ › More › Export chat</b>.</li>
+        <li data-i18n-html="start.choose_attach_media_include_media">Choose <b>Attach Media</b> / <b>Include media</b> for photos and voice notes, or <b>Without media</b> for text only.</li>
+        <li data-i18n="start.save_the_file_to_your">Save the file to your device or send it to your computer, then open it here. No need to unzip it.</li>
       </ol>
     </details>
     <ul class="start-trust">
-      <li id="startT1">Nothing is uploaded: the chat is read in this browser</li>
-      <li id="startT2">Nothing is saved: close the tab and it's gone</li>
-      <li id="startT3">Works offline</li>
+      <li id="startT1" data-i18n="start.nothing_is_uploaded_the_chat">Nothing is uploaded: the chat is read in this browser</li>
+      <li id="startT2" data-i18n="start.nothing_is_saved_close_the">Nothing is saved: close the tab and it's gone</li>
+      <li id="startT3" data-i18n="start.works_offline">Works offline</li>
     </ul>
   </div>
 </section>
 
 <div id="app" class="app" inert aria-hidden="true">
-  <aside id="sidebar" class="sidebar" aria-label="Chat details">
+  <aside id="sidebar" class="sidebar" aria-label="Chat details" data-i18n-attr="aria-label:common.chat_details">
     <div class="sb-top">
-      <div class="brand"><span class="logo" id="logo"></span><div>Chat Viewer<small>for WhatsApp exports, offline</small></div></div>
-      <button class="ibtn" id="sbOpen" aria-label="Open a chat export" title="Open a chat export"></button>
-      <button class="ibtn sb-close" id="sbClose" aria-label="Close panel"></button>
+      <div class="brand"><span class="logo" id="logo"></span><div data-i18n-html="sidebar.chat_viewer_for_whatsapp_exports">Chat Viewer<small>for WhatsApp exports, offline</small></div></div>
+      <button class="ibtn" id="sbOpen" aria-label="Open a chat export" title="Open a chat export" data-i18n-attr="aria-label:sidebar.open_a_chat_export;title:sidebar.open_a_chat_export"></button>
+      <button class="ibtn sb-close" id="sbClose" aria-label="Close panel" data-i18n-attr="aria-label:sidebar.close_panel"></button>
     </div>
     <div class="sb-scroll" id="sbScroll">
       <section class="sb-sec" id="chatsSec" hidden>
-        <h3>Chats in these files <span id="chatsCount"></span></h3>
+        <h3><span data-i18n="sidebar.chats_in_these_files">Chats in these files</span> <span id="chatsCount"></span></h3>
         <div class="chatlist" id="chatList"></div>
       </section>
       <section class="sb-sec chatcard">
@@ -65,146 +68,152 @@
         </div>
       </section>
       <section class="sb-sec" id="searchSec">
-        <h3><label for="q1">Search messages</label><span id="count1" class="count"></span></h3>
+        <h3><label for="q1" data-i18n="sidebar.search_messages">Search messages</label><span id="count1" class="count"></span></h3>
         <div class="searchbox">
           <span id="sIcon1"></span>
-          <input id="q1" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search">
-          <button class="ibtn sm" id="prev1" aria-label="Previous match (older)" title="Previous match (Shift+Enter)"></button>
-          <button class="ibtn sm" id="next1" aria-label="Next match (newer)" title="Next match (Enter)"></button>
+          <input id="q1" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" data-i18n-attr="placeholder:common.search_this_chat">
+          <button class="ibtn sm" id="prev1" aria-label="Previous match (older)" title="Previous match (Shift+Enter)" data-i18n-attr="aria-label:common.previous_match_older;title:sidebar.previous_match_shift_enter"></button>
+          <button class="ibtn sm" id="next1" aria-label="Next match (newer)" title="Next match (Enter)" data-i18n-attr="aria-label:common.next_match_newer;title:sidebar.next_match_enter"></button>
         </div>
         <div class="results" id="results"></div>
       </section>
       <section class="sb-sec" id="filterSec">
-        <h3>Filter messages <button class="linkbtn" id="fClear" hidden>Clear</button></h3>
-        <div class="field"><label for="fFrom">From date</label><input type="date" id="fFrom"></div>
-        <div class="field"><label for="fTo">To date</label><input type="date" id="fTo"></div>
-        <div class="field"><label for="fSender">Sender</label><select id="fSender"></select></div>
+        <h3><span data-i18n="sidebar.filter_messages">Filter messages</span> <button class="linkbtn" id="fClear" hidden data-i18n="sidebar.clear">Clear</button></h3>
+        <div class="field"><label for="fFrom" data-i18n="sidebar.from_date">From date</label><input type="date" id="fFrom"></div>
+        <div class="field"><label for="fTo" data-i18n="sidebar.to_date">To date</label><input type="date" id="fTo"></div>
+        <div class="field"><label for="fSender" data-i18n="sidebar.sender">Sender</label><select id="fSender"></select></div>
       </section>
       <section class="sb-sec" id="mediaSec">
-        <h3>Media, links and docs <button class="linkbtn" id="mediaAll">View all <span id="mediaTotal"></span></button></h3>
+        <h3><span data-i18n="common.media_links_and_docs">Media, links and docs</span> <button class="linkbtn" id="mediaAll"><span data-i18n="sidebar.view_all">View all</span> <span id="mediaTotal"></span></button></h3>
         <div class="mgrid" id="mediaGrid"></div>
         <p class="mnote" id="mediaNote"></p>
       </section>
       <section class="sb-sec">
-        <h3>View</h3>
-        <div class="field"><label for="meSel">You are<small>Your messages show on the right</small></label><select id="meSel"></select></div>
-        <div class="field"><label for="orderSel">Date format<small id="orderNote"></small></label>
-          <select id="orderSel"><option value="auto">Automatic</option><option value="dmy">Day / Month</option><option value="mdy">Month / Day</option></select></div>
-        <div class="field"><label for="jumpDate">Jump to date<small>First message on or after</small></label><input type="date" id="jumpDate"></div>
-        <div class="field"><label for="doodle">Background pattern</label><input type="checkbox" class="switch" id="doodle" checked></div>
+        <h3 data-i18n="sidebar.view">View</h3>
+        <div class="field"><label for="meSel" data-i18n-html="sidebar.you_are_your_messages_show">You are<small>Your messages show on the right</small></label><select id="meSel"></select></div>
+        <div class="field"><label for="orderSel"><span data-i18n="sidebar.date_format">Date format</span><small id="orderNote"></small></label>
+          <select id="orderSel"><option value="auto" data-i18n="sidebar.automatic">Automatic</option><option value="dmy" data-i18n="sidebar.day_month">Day / Month</option><option value="mdy" data-i18n="sidebar.month_day">Month / Day</option></select></div>
+        <div class="field"><label for="jumpDate" data-i18n-html="sidebar.jump_to_date_first_message">Jump to date<small>First message on or after</small></label><input type="date" id="jumpDate"></div>
+        <div class="field"><label for="doodle" data-i18n="sidebar.background_pattern">Background pattern</label><input type="checkbox" class="switch" id="doodle" checked></div>
       </section>
       <section class="sb-sec">
-        <h3>Participants <span id="pCount"></span></h3>
+        <h3><span data-i18n="sidebar.participants">Participants</span> <span id="pCount"></span></h3>
         <div class="people" id="people"></div>
       </section>
-      <p class="privacy"><span id="lockIc"></span><span>Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</span></p>
+      <p class="privacy"><span id="lockIc"></span><span data-i18n="sidebar.your_chat_is_read_inside">Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</span></p>
     </div>
   </aside>
   <div id="scrim" class="scrim" hidden></div>
   <main class="main">
     <header class="chat-head">
-      <button class="ibtn menu-btn" id="menuBtn" aria-label="Show chat details"></button>
-      <button class="who" id="whoBtn" aria-label="Chat details">
+      <button class="ibtn menu-btn" id="menuBtn" aria-label="Show chat details" data-i18n-attr="aria-label:chat.show_chat_details"></button>
+      <button class="who" id="whoBtn" aria-label="Chat details" data-i18n-attr="aria-label:common.chat_details">
         <span class="av" id="headAv"></span>
         <div><div class="t" id="headTitle"></div><div class="s" id="headSub"></div></div>
       </button>
-      <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)"></button>
-      <button class="ibtn" id="moreBtn" aria-label="Menu" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu"></button>
-      <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden>
-        <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml">Media, links and docs</span></button>
-        <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
-        <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml">Chat statistics</span></button>
-        <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml">Open another chat</span></button>
+      <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)" data-i18n-attr="aria-label:chat.search_ctrl_f;title:chat.search_ctrl_f"></button>
+      <button class="ibtn" id="moreBtn" aria-label="Menu" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu" data-i18n-attr="aria-label:chat.menu;title:chat.menu"></button>
+      <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden data-i18n-attr="aria-label:menu.chat_menu">
+        <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml" data-i18n="common.media_links_and_docs">Media, links and docs</span></button>
+        <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml" data-i18n="common.starred_messages">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
+        <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml" data-i18n="common.chat_statistics">Chat statistics</span></button>
+        <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml" data-i18n="menu.open_another_chat">Open another chat</span></button>
         <div class="msep" role="separator"></div>
-        <div class="mlabel" id="themeLbl">Theme</div>
+        <div class="mlabel" id="themeLbl" data-i18n="menu.theme">Theme</div>
         <div role="group" aria-labelledby="themeLbl">
-          <button role="menuitemradio" data-theme-opt="light" aria-checked="false"><span class="mi" id="miLight"></span><span class="ml">Light</span></button>
-          <button role="menuitemradio" data-theme-opt="dark" aria-checked="false"><span class="mi" id="miDark"></span><span class="ml">Dark</span></button>
-          <button role="menuitemradio" data-theme-opt="system" aria-checked="false"><span class="mi" id="miSystem"></span><span class="ml">Match system</span></button>
+          <button role="menuitemradio" data-theme-opt="light" aria-checked="false"><span class="mi" id="miLight"></span><span class="ml" data-i18n="menu.light">Light</span></button>
+          <button role="menuitemradio" data-theme-opt="dark" aria-checked="false"><span class="mi" id="miDark"></span><span class="ml" data-i18n="menu.dark">Dark</span></button>
+          <button role="menuitemradio" data-theme-opt="system" aria-checked="false"><span class="mi" id="miSystem"></span><span class="ml" data-i18n="menu.match_system">Match system</span></button>
         </div>
         <div class="msep" role="separator"></div>
-        <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml">Help and guided tour</span></button>
+        <div class="mlabel" id="langLbl" data-i18n="common.language">Language</div>
+        <div role="group" aria-labelledby="langLbl">
+          <button role="menuitemradio" data-lang-opt="en-US" aria-checked="false"><span class="mi mi-lang" lang="en">A</span><span class="ml" lang="en" dir="ltr">English</span></button>
+          <button role="menuitemradio" data-lang-opt="ur" aria-checked="false"><span class="mi mi-lang" lang="ur">ا</span><span class="ml" lang="ur" dir="rtl">اردو</span></button>
+        </div>
+        <div class="msep" role="separator"></div>
+        <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml" data-i18n="menu.help_and_guided_tour">Help and guided tour</span></button>
       </div>
     </header>
     <div id="sstrip" class="sstrip" hidden>
-      <button class="ibtn sm" id="sClose" aria-label="Close search"></button>
+      <button class="ibtn sm" id="sClose" aria-label="Close search" data-i18n-attr="aria-label:search.close_search"></button>
       <div class="searchbox">
-        <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat">
+        <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat" data-i18n-attr="aria-label:common.search_this_chat;placeholder:common.search_this_chat">
         <span id="count2" class="count"></span>
       </div>
-      <button class="ibtn sm" id="prev2" aria-label="Previous match (older)"></button>
-      <button class="ibtn sm" id="next2" aria-label="Next match (newer)"></button>
-      <button class="ibtn sm" id="sList" aria-label="Show all results"></button>
+      <button class="ibtn sm" id="prev2" aria-label="Previous match (older)" data-i18n-attr="aria-label:common.previous_match_older"></button>
+      <button class="ibtn sm" id="next2" aria-label="Next match (newer)" data-i18n-attr="aria-label:common.next_match_newer"></button>
+      <button class="ibtn sm" id="sList" aria-label="Show all results" data-i18n-attr="aria-label:search.show_all_results"></button>
     </div>
     <div id="samplebar" class="samplebar" hidden>
-      <span>This is a made-up sample chat. Its photos, video, GIF, sticker, audio and files are generated on this device.</span>
-      <button id="sampleOpen">Open your own export (.txt or .zip)</button>
+      <span data-i18n="banner.this_is_a_made_up">This is a made-up sample chat. Its photos, video, GIF, sticker, audio and files are generated on this device.</span>
+      <button id="sampleOpen" data-i18n="banner.open_your_own_export_txt">Open your own export (.txt or .zip)</button>
     </div>
     <div id="filterbar" class="samplebar fbar" hidden role="status">
       <span id="fText"></span>
-      <button id="fbClear">Clear filters</button>
+      <button id="fbClear" data-i18n="filter.clear_filters">Clear filters</button>
     </div>
     <div class="thread-wrap">
-      <div id="scroller" class="scroller" tabindex="0" aria-label="Messages"><div id="spacer" class="spacer"><div id="layer" class="layer"></div></div></div>
+      <div id="scroller" class="scroller" tabindex="0" aria-label="Messages" data-i18n-attr="aria-label:chat.messages"><div id="spacer" class="spacer"><div id="layer" class="layer"></div></div></div>
       <div id="sticky" class="sticky-date" hidden><span class="pill" id="stickyPill"></span></div>
-      <button id="fabTop" class="fab top" hidden aria-label="Jump to first message" title="Jump to first message"></button>
-      <button id="fab" class="fab" hidden aria-label="Jump to latest message" title="Jump to latest message"></button>
+      <button id="fabTop" class="fab top" hidden aria-label="Jump to first message" title="Jump to first message" data-i18n-attr="aria-label:chat.jump_to_first_message;title:chat.jump_to_first_message"></button>
+      <button id="fab" class="fab" hidden aria-label="Jump to latest message" title="Jump to latest message" data-i18n-attr="aria-label:chat.jump_to_latest_message;title:chat.jump_to_latest_message"></button>
     </div>
   </main>
   <aside id="starPanel" class="starpanel" hidden aria-labelledby="starTitle">
-    <header><h2 id="starTitle">Starred messages</h2><button class="ibtn" id="starClose" aria-label="Close starred messages"></button></header>
+    <header><h2 id="starTitle" data-i18n="common.starred_messages">Starred messages</h2><button class="ibtn" id="starClose" aria-label="Close starred messages" data-i18n-attr="aria-label:stars.close_starred_messages"></button></header>
     <div class="starlist" id="starList"></div>
   </aside>
 </div>
 
-<div id="drop" class="dropzone" hidden><div>Drop your WhatsApp export here<br><small>.txt or .zip</small></div></div>
-<div id="loading" class="loading" hidden><div class="box"><b id="loadTitle">Reading chat</b><div class="prog"><i id="progBar"></i></div><small id="loadNote">Parsing on this device</small></div></div>
+<div id="drop" class="dropzone" hidden><div data-i18n-html="drop.drop_your_whatsapp_export_here">Drop your WhatsApp export here<br><small>.txt or .zip</small></div></div>
+<div id="loading" class="loading" hidden><div class="box"><b id="loadTitle" data-i18n="loading.reading_chat">Reading chat</b><div class="prog"><i id="progBar"></i></div><small id="loadNote" data-i18n="loading.parsing_on_this_device">Parsing on this device</small></div></div>
 
 <div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
   <div class="sheet">
-    <header><h2 id="statsTitle">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics"></button></header>
+    <header><h2 id="statsTitle" data-i18n="common.chat_statistics">Chat statistics</h2><button class="ibtn" data-close aria-label="Close statistics" data-i18n-attr="aria-label:stats.close_statistics"></button></header>
     <div class="body" id="statsBody"></div>
   </div>
 </div>
 <div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle">
   <div class="sheet narrow">
-    <header><h2 id="meTitle">Which one is you?</h2><button class="ibtn" data-close aria-label="Close"></button></header>
-    <div class="body"><p class="lead">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
-    <div class="foot"><button class="btn primary" id="meDone">Show chat</button></div>
+    <header><h2 id="meTitle" data-i18n="me.which_one_is_you">Which one is you?</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
+    <div class="body"><p class="lead" data-i18n="me.whatsapp_exports_don_t_say">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in the side panel.</p><div class="melist" id="meList"></div></div>
+    <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
   </div>
 </div>
-<div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
-  <div class="lb-top"><div class="lb-who"><b id="lbWho"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer"></button></div>
-  <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo"></button><img id="lbImg" alt=""><video id="lbVid" playsinline hidden></video><button class="lb-nav" id="lbNext" aria-label="Next photo"></button></div>
+<div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer" data-i18n-attr="aria-label:viewer.photo_viewer">
+  <div class="lb-top"><div class="lb-who"><b id="lbWho"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)" data-i18n-attr="aria-label:viewer.rotate_photo;title:viewer.rotate_90_r"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)" data-i18n-attr="aria-label:viewer.fit_to_screen;title:viewer.fit_to_screen_0"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo" data-i18n-attr="aria-label:viewer.download_photo;title:viewer.download_photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer" data-i18n-attr="aria-label:viewer.close_photo_viewer"></button></div>
+  <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo" data-i18n-attr="aria-label:viewer.previous_photo"></button><img id="lbImg" alt=""><video id="lbVid" playsinline hidden></video><button class="lb-nav" id="lbNext" aria-label="Next photo" data-i18n-attr="aria-label:viewer.next_photo"></button></div>
   <div class="lb-cap txt" id="lbCap"></div>
 </div>
 <div id="galModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="galTitle">
   <div class="sheet gal">
-    <header><h2 id="galTitle">Media, links and docs</h2><button class="ibtn" data-close aria-label="Close media, links and docs"></button></header>
-    <div class="gchips" id="galChips" role="tablist" aria-label="Show"></div>
+    <header><h2 id="galTitle" data-i18n="common.media_links_and_docs">Media, links and docs</h2><button class="ibtn" data-close aria-label="Close media, links and docs" data-i18n-attr="aria-label:gallery.close_media_links_and_docs"></button></header>
+    <div class="gchips" id="galChips" role="tablist" aria-label="Show" data-i18n-attr="aria-label:gallery.show"></div>
     <div class="gbody" id="galBody"></div>
   </div>
 </div>
 <div id="vcModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="vcTitle">
   <div class="sheet narrow">
-    <header><h2 id="vcTitle">Contact</h2><button class="ibtn" data-close aria-label="Close contact"></button></header>
+    <header><h2 id="vcTitle" data-i18n="contact.contact">Contact</h2><button class="ibtn" data-close aria-label="Close contact" data-i18n-attr="aria-label:contact.close_contact"></button></header>
     <div class="body vc-body" id="vcBody"></div>
-    <div class="foot"><a class="btn" id="vcSave" href="#" download>Save .vcf</a><button class="btn primary" data-close-text>Done</button></div>
+    <div class="foot"><a class="btn" id="vcSave" href="#" download data-i18n="contact.save_vcf">Save .vcf</a><button class="btn primary" data-close-text data-i18n="contact.done">Done</button></div>
   </div>
 </div>
-<div id="pdfv" class="lb pdfv" hidden role="dialog" aria-modal="true" aria-label="PDF viewer">
-  <div class="lb-top"><div class="lb-who"><b id="pdfTitle"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer"></button></div>
+<div id="pdfv" class="lb pdfv" hidden role="dialog" aria-modal="true" aria-label="PDF viewer" data-i18n-attr="aria-label:pdf.pdf_viewer">
+  <div class="lb-top"><div class="lb-who"><b id="pdfTitle"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)" data-i18n-attr="aria-label:pdf.fit_width;title:pdf.fit_width_0"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF" data-i18n-attr="aria-label:pdf.download_pdf;title:pdf.download_pdf"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer" data-i18n-attr="aria-label:pdf.close_pdf_viewer"></button></div>
   <div class="pdf-pages" id="pdfPages"></div>
 </div>
 <div id="tourWelcome" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="twTitle" aria-describedby="twLead">
   <div class="sheet narrow tw">
-    <header><h2 id="twTitle">Welcome to Chat Viewer</h2><button class="ibtn" id="twClose" aria-label="Close"></button></header>
+    <header><h2 id="twTitle" data-i18n="welcome.welcome_to_chat_viewer">Welcome to Chat Viewer</h2><button class="ibtn" id="twClose" aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
     <div class="body">
-      <p class="lead" id="twLead">Read your exported WhatsApp chats with photos, voice notes and search. Everything happens on this device; nothing is uploaded.</p>
-      <p class="tw-note" id="twNote" hidden>The tour uses the sample chat, so the chat you have open will close. Your file isn't changed, and you can open it again afterwards.</p>
+      <p class="lead" id="twLead" data-i18n="welcome.read_your_exported_whatsapp_chats">Read your exported WhatsApp chats with photos, voice notes and search. Everything happens on this device; nothing is uploaded.</p>
+      <p class="tw-note" id="twNote" hidden data-i18n="welcome.the_tour_uses_the_sample">The tour uses the sample chat, so the chat you have open will close. Your file isn't changed, and you can open it again afterwards.</p>
       <div class="tw-opts">
-        <button class="tw-opt" id="twDemo"><span class="tw-ic" id="twDemoIc"></span><span><b>Explore the sample chat</b><small>A made-up group chat and a five-step tour of the viewer</small></span></button>
-        <button class="tw-opt" id="twOwn"><span class="tw-ic" id="twOwnIc"></span><span><b>Open your own chat</b><small>Pick an exported .zip or .txt, or drop it anywhere on the page</small></span></button>
+        <button class="tw-opt" id="twDemo"><span class="tw-ic" id="twDemoIc"></span><span><b data-i18n="welcome.explore_the_sample_chat">Explore the sample chat</b><small data-i18n="welcome.a_made_up_group_chat">A made-up group chat and a guided tour of the viewer</small></span></button>
+        <button class="tw-opt" id="twOwn"><span class="tw-ic" id="twOwnIc"></span><span><b data-i18n="welcome.open_your_own_chat">Open your own chat</b><small data-i18n="welcome.pick_an_exported_zip_or">Pick an exported .zip or .txt, or drop it anywhere on the page</small></span></button>
       </div>
     </div>
   </div>
@@ -217,10 +226,10 @@
     <h2 id="tourTitle"></h2>
     <div class="tour-text" id="tourText"></div>
     <div class="tour-nav">
-      <button class="linkbtn" id="tourSkip">Skip tour</button>
+      <button class="linkbtn" id="tourSkip" data-i18n="tour.skip_tour">Skip tour</button>
       <span class="tour-dots" id="tourDots" aria-hidden="true"></span>
-      <button class="btn" id="tourBack">Back</button>
-      <button class="btn primary" id="tourNext">Next</button>
+      <button class="btn" id="tourBack" data-i18n="tour.back">Back</button>
+      <button class="btn primary" id="tourNext" data-i18n="tour.next">Next</button>
     </div>
   </div>
 </div>
@@ -228,6 +237,9 @@
 <input type="file" id="file" accept=".txt,.zip,text/plain,application/zip" multiple hidden>
 
 <script src="js/vendor/jszip.min.js"></script>
+<script src="js/i18n/i18n.js"></script>
+<script src="js/i18n/en.js"></script>
+<script src="js/i18n/ur.js"></script>
 <script src="js/parser.js"></script>
 <script src="js/media.js"></script>
 <script src="js/text-truncator.js"></script>

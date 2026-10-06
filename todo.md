@@ -149,6 +149,14 @@ These are the suggestions from the audit of official export features. Each one w
 - [x] **Sidebar media tiles open the gallery** on their category. *New (Phase 10).*
 - [x] **Sample chat: a second month** (an April photo and link). *New (Phase 10).*
 
+## Phase 11: languages (2026-10-06)
+
+- [x] **English (US) and Urdu interface**, with a `t('section.key')` helper and one dictionary per language in `js/i18n/`. *New (Phase 11).*
+- [x] **Right-to-left layout for Urdu** using logical CSS properties, with mirrored drawer, bubbles and arrow keys. *New (Phase 11).*
+- [x] **Nastaliq font:** Jameel Noori Nastaleeq when installed, bundled Noto Nastaliq Urdu (OFL) otherwise. *New (Phase 11).*
+- [x] **Language picker** in the ⋮ menu and on the start screen, saved as `app_language`. *New (Phase 11).*
+- [x] **Sample chat: an Urdu message.** *New (Phase 11).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

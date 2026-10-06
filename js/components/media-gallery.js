@@ -9,7 +9,8 @@
    filtered items), the voice-note players, the PDF viewer and contact cards.
    Only files that are in the export are listed. Loaded after app.js.
    ===================================================================== */
-const GAL_CATS = [['all', 'All'], ['photos', 'Photos'], ['videos', 'Videos'], ['audio', 'Audio'], ['docs', 'Documents'], ['stickers', 'Stickers'], ['links', 'Links'], ['contacts', 'Contacts']];
+// Each category with the dictionary key of its name (js/i18n).
+const GAL_CATS = [['all', 'media_gallery.all'], ['photos', 'media_gallery.photos'], ['videos', 'media_gallery.videos'], ['audio', 'media_gallery.audio'], ['docs', 'media_gallery.documents'], ['stickers', 'media_gallery.stickers'], ['links', 'media_gallery.links'], ['contacts', 'media_gallery.contacts']];
 const GAL_OF = { image: 'photos', gif: 'photos', video: 'videos', audio: 'audio', document: 'docs', sticker: 'stickers', contact: 'contacts' };
 const GAL_ICON = { photos: 'image', videos: 'video', audio: 'audio', docs: 'document', stickers: 'sticker', links: 'link', contacts: 'contact', all: 'image' };
 const GAL_GRID = new Set(['photos', 'videos', 'stickers']);
@@ -61,7 +62,7 @@ const Gallery = {
     this.index();
     this.cat = cat; this.shownKey = S.media;
     $('galChips').innerHTML = GAL_CATS.map(([c, label]) => '<button class="chip' + (c === cat ? ' on' : '') + '" role="tab" aria-selected="' + (c === cat) + '" data-cat="' + c + '">' +
-      label + ' <span class="cc">' + nf(this.counts[c]) + '</span></button>').join('');
+      t(label) + ' <span class="cc">' + nf(this.counts[c]) + '</span></button>').join('');
     const on = $('galChips').querySelector('.on');
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     this.list = cat === 'all' ? this.items : this.items.filter(x => x.cat === cat);
@@ -69,10 +70,10 @@ const Gallery = {
     galBody.scrollTop = 0;
     galBody.innerHTML = '';
     if (!this.list.length) {
-      const what = cat === 'all' ? 'media, links or documents' : GAL_CATS.find(c => c[0] === cat)[1].toLowerCase();
+      const none = cat === 'all' ? 'media_gallery.no_items' : GAL_CATS.find(c => c[0] === cat)[1].replace('.', '.no_');
       const txtOnly = cat !== 'links' && !S.media.files && (S.media.missing || S.media.omitted);
-      galBody.innerHTML = '<div class="gempty">' + ICON[GAL_ICON[cat]] + '<b>No ' + what + ' in this chat</b><small>' +
-        (cat === 'links' ? 'Links people send show up here.' : txtOnly ? 'This chat was opened as text only. Open the ZIP export to see its files here.' : 'Shared files show up here when the export includes them.') + '</small></div>';
+      galBody.innerHTML = '<div class="gempty">' + ICON[GAL_ICON[cat]] + '<b>' + t(none) + '</b><small>' +
+        t(cat === 'links' ? 'media_gallery.links_hint' : txtOnly ? 'media_gallery.text_only_hint' : 'media_gallery.files_hint') + '</small></div>';
       return;
     }
     this.more();
@@ -101,7 +102,7 @@ const Gallery = {
     let s = $('galMore');
     if (s) s.remove();
     if (this.n < this.list.length) {
-      galBody.insertAdjacentHTML('beforeend', '<div id="galMore" class="gmore">Loading more…</div>');
+      galBody.insertAdjacentHTML('beforeend', '<div id="galMore" class="gmore">' + t('media_gallery.loading_more') + '</div>');
       s = $('galMore');
       if (!this.io) this.io = new IntersectionObserver(es => { if (es.some(x => x.isIntersecting)) this.more(); }, { root: galBody, rootMargin: '600px' });
       this.io.disconnect(); this.io.observe(s);
@@ -119,13 +120,13 @@ const Gallery = {
 
 function monthLabel(mk) {
   const now = new Date(), [y, mo] = mk.split('-').map(Number);
-  if (y === now.getFullYear() && mo === now.getMonth() + 1) return 'This month';
-  return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString(undefined, { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  if (y === now.getFullYear() && mo === now.getMonth() + 1) return t('media_gallery.this_month');
+  return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString(I18N.locale(), { month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
-function galWhen(m) { return (m.isOutgoing ? 'You' : m.sender) + ' · ' + dateLabel(m.dateKey) + ', ' + m.formattedTime; }
+function galWhen(m) { return t('media_gallery.when', { who: m.isOutgoing ? t('common.you') : m.sender, date: dateLabel(m.dateKey), time: m.formattedTime }); }
 
 function tileHTML(it, k) {
-  const m = S.msgs[it.i], e = it.e, label = TYPE_LABEL[it.a.type] + ', ' + galWhen(m);
+  const m = S.msgs[it.i], e = it.e, label = typeLabel(it.a.type) + ', ' + galWhen(m);
   const vid = VIDEO_EXT.test(extOf(e.name));
   let inner;
   if (it.a.type === 'gif' && vid) inner = '<video src="' + e.url + '" muted loop autoplay playsinline preload="metadata"></video><span class="gbadge">GIF</span>';
@@ -135,30 +136,30 @@ function tileHTML(it, k) {
     inner = '<video src="' + e.url + '" muted playsinline preload="metadata" data-vid="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
       '<span class="gdur">' + ICON.play + '<span>' + (Gallery.durs.has(e.name) ? fmtDur(Gallery.durs.get(e.name)) : '') + '</span></span>';
   } else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
-  return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc('Open ' + label) + '">' + inner + '</button>';
+  return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc(t('media_gallery.open_item', { label })) + '">' + inner + '</button>';
 }
-const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="Show in chat" title="Show in chat">' + galSm('chat') + '</button>';
+const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="' + t('media_gallery.show_in_chat') + '" title="' + t('media_gallery.show_in_chat') + '">' + galSm('chat') + '</button>';
 function rowHTML(it, k) {
   const m = S.msgs[it.i], when = '<small class="gwhen">' + esc(galWhen(m)) + '</small>';
   if (it.cat === 'links') {
     const s = siteOf(it.x), ctx = m.message.replace(RE_URL, ' ').replace(/\s+/g, ' ').trim();
     return '<div class="grow glink"><span class="lbadge" style="background:' + s.color + '">' + esc((s.name[0] || '?').toUpperCase()) + '</span>' +
       '<span class="gtxt"><b>' + esc(s.name) + '</b><a href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(it.x.href) + '">' + esc(s.shown) + '</a>' +
-      (ctx ? '<small class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' +
-      '<span class="gacts"><button class="ibtn sm lcopy" data-url="' + esc(it.x.href) + '" aria-label="Copy link" title="Copy link">' + galSm('copy') + '</button>' +
-      '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="Open link" title="Open link">' + galSm('next') + '</a>' + jumpBtn(it.i) + '</span></div>';
+      (ctx ? '<small dir="auto" class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' +
+      '<span class="gacts"><button class="ibtn sm lcopy" data-url="' + esc(it.x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + galSm('copy') + '</button>' +
+      '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>' + jumpBtn(it.i) + '</span></div>';
   }
   const e = it.e;
   if (it.cat === 'audio') return '<div class="grow gaud">' + audioHTML(e, m) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
   if (it.cat === 'contacts') return '<div class="grow gvc">' + contactHTML(e) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
   // Documents: type badge, title, size and date. PDFs open in the viewer, other files open in a new tab.
   const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4), title = it.a.title || e.name, pdf = ext === 'pdf';
-  const pages = pdf ? PdfView.pages.get(e.name) : 0, detail = pages ? pages + ' page' + (pages === 1 ? '' : 's') : it.a.detail || '';
-  const main = pdf ? '<button class="gmain" data-pdf="' + esc(e.name) + '" data-title="' + esc(title) + '" aria-label="Open ' + esc(title) + '">'
-    : '<a class="gmain" href="' + e.url + '" target="_blank" rel="noopener" aria-label="Open ' + esc(title) + '">';
+  const pages = pdf ? PdfView.pages.get(e.name) : 0, detail = pages ? t('doc.pages', { n: pages }) : it.a.detail || '';
+  const main = pdf ? '<button class="gmain" data-pdf="' + esc(e.name) + '" data-title="' + esc(title) + '" aria-label="' + esc(t('doc.open', { name: title })) + '">'
+    : '<a class="gmain" href="' + e.url + '" target="_blank" rel="noopener" aria-label="' + esc(t('doc.open', { name: title })) + '">';
   return '<div class="grow gdoc">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
-    '<span class="gtxt"><b title="' + esc(title) + '">' + esc(title) + '</b><small>' + (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size) + '</small>' + when + '</span>' + (pdf ? '</button>' : '</a>') +
-    '<span class="gacts"><a class="ibtn sm" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="Download ' + esc(title) + '" title="Download">' + galSm('download') + '</a>' + jumpBtn(it.i) + '</span></div>';
+    '<span class="gtxt"><b dir="auto" title="' + esc(title) + '">' + esc(title) + '</b><small>' + (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size) + '</small>' + when + '</span>' + (pdf ? '</button>' : '</a>') +
+    '<span class="gacts"><a class="ibtn sm" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: title })) + '" title="' + t('doc.download') + '">' + galSm('download') + '</a>' + jumpBtn(it.i) + '</span></div>';
 }
 
 /* ---------- Events ---------- */
@@ -168,7 +169,7 @@ $('galChips').addEventListener('keydown', e => { // arrow keys move between chip
   const cs = [...$('galChips').children], i = cs.indexOf(document.activeElement);
   if (i < 0) return;
   e.preventDefault();
-  const n = cs[(i + (e.key === 'ArrowRight' ? 1 : cs.length - 1)) % cs.length];
+  const n = cs[(i + ((e.key === 'ArrowRight') !== I18N.rtl() ? 1 : cs.length - 1)) % cs.length]; // reversed in right-to-left
   Gallery.show(n.dataset.cat); $('galChips').querySelector('.on').focus();
 });
 galBody.addEventListener('click', e => {

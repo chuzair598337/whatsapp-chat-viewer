@@ -2,6 +2,14 @@
 
 ## Unreleased (on `development`)
 
+- **Languages: English and Urdu.** Choose one under **Language** in the ⋮ menu, or with the English / اردو switch on the start screen. The choice is remembered on this device (`app_language` in `localStorage`); English (US) is the default.
+  - Everything the app itself says is translated: the start screen, menus, buttons, filter chips, dialogs, the gallery, statistics, the guided tour, date labels, status and error messages.
+  - Messages, names, file names and WhatsApp's own system notices are shown exactly as exported, in either language.
+  - Urdu reads right to left: the whole layout mirrors, including the side panel, the bubbles and the arrow keys in the photo viewer and the tour.
+  - Urdu text uses Jameel Noori Nastaleeq when it is installed. It can't be shipped with the app, so Noto Nastaliq Urdu (Open Font Licence) is bundled as the fallback. No font is downloaded.
+  - Messages written in Urdu or Arabic are now laid out right to left in any language, with the time where the text ends.
+- **Sample chat:** a message in Urdu, to show that chat text isn't translated and reads right to left.
+
 - **Media, links and docs:** a gallery of everything shared in the chat, like WhatsApp's.
   - Chips at the top switch between All, Photos, Videos, Audio, Documents, Stickers, Links and Contacts, with counts.
   - Items are newest first under month headings. Photos, videos and stickers show as a square grid, and the rest as rows.

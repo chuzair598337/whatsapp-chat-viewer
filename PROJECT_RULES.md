@@ -9,7 +9,7 @@ These rules apply to everyone changing this repository, people and coding agents
 
 - Everything runs in the browser. No chat text, file name or media may leave the device, whether through `fetch`, XHR, beacons, WebSockets, image pixels, or anything else.
 - Don't add network dependencies: no CDNs, web fonts, analytics or link-preview fetches. Vendor libraries into `js/vendor/` with their license.
-- Don't store chat content. Only display preferences and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [deferred.md](deferred.md).
+- Don't store chat content. Only display preferences, the interface language (`app_language`) and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [deferred.md](deferred.md).
 - Treat every export as hostile input:
   - Escape text before formatting it.
   - Only link `http(s)`, `tel:` and `mailto:` URLs.
@@ -73,6 +73,8 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `tour-controller`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `tour-controller`. There is no build step.
+  - **Every word the app shows goes through `t('section.key')`** (or `data-i18n` in `index.html`), with the text added to both `js/i18n/en.js` and `js/i18n/ur.js`. Never translate chat content: messages, names, file names and system notices stay as exported.
+  - **Use logical CSS properties** (`margin-inline-start`, `inset-inline-end`, `text-align: start`) instead of left and right, so the Urdu layout mirrors.
   - Match the surrounding style.
 - **Records.** Track work in [todo.md](todo.md), user-facing changes in [CHANGELOG.md](CHANGELOG.md), and behaviour in [docs/features.md](docs/features.md).

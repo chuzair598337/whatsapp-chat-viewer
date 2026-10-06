@@ -16,6 +16,7 @@ This page describes what the WhatsApp Chat Viewer does and how each part works. 
 10. [Performance](#10-performance)
 11. [Start screen, sample chat and guided tour](#11-start-screen-sample-chat-and-guided-tour)
 12. [Code layout](#12-code-layout)
+13. [Interface languages](#13-interface-languages)
 
 ---
 
@@ -243,6 +244,8 @@ The scripts are plain browser scripts with no build step. They share globals and
 |---|---|
 | `js/vendor/jszip.min.js` | JSZip 3.10.1 (MIT) |
 | `js/vendor/pdfjs/` | pdf.js 3.11.174 legacy build (Apache-2.0), loaded on demand |
+| `js/i18n/i18n.js` | Interface languages: `t()`, `data-i18n` attributes, switching, the `app_language` setting |
+| `js/i18n/en.js`, `js/i18n/ur.js` | The English and Urdu dictionaries |
 | `js/parser.js` | Line parser, date-order detection, message classification, inline worker setup |
 | `js/media.js` | ZIP reading (worker, JSZip, native), the media map and blob-URL lifecycle, shared audio controller |
 | `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
@@ -252,3 +255,13 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
+
+## 13. Interface languages
+
+- **English (US)** is the default. **Urdu (اردو)** is the second language. Pick one under **Language** in the ⋮ menu or with the English / اردو switch at the top of the start screen. The choice is saved on this device as `app_language` and applies at once, even with a chat open or the tour running.
+- **What is translated:** everything the app says. That covers the start screen, sidebar, header and ⋮ menu, search, filters, starred messages, the gallery and its chips, statistics (including weekday names), the photo, PDF and contact viewers, the guided tour, date badges and month headings, call, poll and deleted-message labels, toasts and error messages.
+- **What is never translated:** the chat itself. Messages, sender and contact names, file names, captions and WhatsApp's own system notices are shown exactly as they are in the export.
+- **Right to left.** In Urdu the page is `dir="rtl"`. The layout uses logical CSS properties, so the side panel, bubbles, star buttons and menus mirror on their own. A few rules handle the rest: the slide-in drawer, bubble tails, arrow icons, and the arrow keys and swipes in the photo viewer, the gallery chips and the tour, which follow the reading direction.
+- **Mixed text.** Each message, name and system notice gets `dir="auto"`, so an English message reads left to right in the Urdu interface and an Urdu message reads right to left in the English one. The time sits where the text ends. Dates in the date fields and file extensions such as `.zip` stay left to right.
+- **Font.** Urdu text uses Jameel Noori Nastaleeq when it is installed on the device. Its licence doesn't allow shipping it, so the app bundles **Noto Nastaliq Urdu** (SIL Open Font Licence, `fonts/`) as the fallback. It is limited to Arabic-script characters, so Latin text and numbers keep the normal font, and chat bubbles keep the normal font so messages look the same in both languages. Nothing is downloaded.
+- **For developers.** Text lives in `js/i18n/en.js` and `js/i18n/ur.js`. These are scripts rather than JSON files, because a page opened from disk (`file://`) can't fetch JSON. Call `t('section.key', { name: value })`; `{name}` is filled in, a `key_one` entry is used when `n` is 1, and a missing Urdu entry falls back to English. Static HTML uses `data-i18n`, `data-i18n-html` and `data-i18n-attr`. Switching fires a `langchange` event, and `app.js` redraws the open chat, panels and dialogs.

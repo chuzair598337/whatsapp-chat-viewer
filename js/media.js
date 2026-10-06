@@ -8,7 +8,7 @@ async function readZip(file) {
   const tail = new DataView(await file.slice(size - tailLen).arrayBuffer());
   let eocd = -1;
   for (let i = tailLen - 22; i >= 0; i--) if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
-  if (eocd < 0) throw new Error('This ZIP file looks damaged. Try exporting the chat again.');
+  if (eocd < 0) throw new Error(t('zip.damaged'));
   const count = tail.getUint16(eocd + 10, true), cdSize = tail.getUint32(eocd + 12, true), cdOff = tail.getUint32(eocd + 16, true);
   const cd = new DataView(await file.slice(cdOff, cdOff + cdSize).arrayBuffer());
   const entries = new Map(), td = new TextDecoder('utf-8');
@@ -23,14 +23,14 @@ async function readZip(file) {
   }
   async function extract(name) {
     const e = entries.get(name);
-    if (!e) throw new Error('File not found in ZIP: ' + name);
+    if (!e) throw new Error(t('zip.not_found', { name }));
     const lh = new DataView(await file.slice(e.loff, e.loff + 30).arrayBuffer());
-    if (lh.getUint32(0, true) !== 0x04034b50) throw new Error('This ZIP file looks damaged.');
+    if (lh.getUint32(0, true) !== 0x04034b50) throw new Error(t('zip.damaged_short'));
     const start = e.loff + 30 + lh.getUint16(26, true) + lh.getUint16(28, true);
     const raw = file.slice(start, start + e.csize);
     if (e.method === 0) return raw;
-    if (e.method !== 8) throw new Error('This ZIP uses an unsupported compression method.');
-    if (typeof DecompressionStream === 'undefined') throw new Error("This browser can't unzip files. Unzip the export and open _chat.txt instead.");
+    if (e.method !== 8) throw new Error(t('zip.method'));
+    if (typeof DecompressionStream === 'undefined') throw new Error(t('zip.no_unzip'));
     return await new Response(raw.stream().pipeThrough(new DecompressionStream('deflate-raw'))).blob();
   }
   return { entries, extract };
@@ -100,7 +100,7 @@ async function openArchiveInWorker(file) {
   const waiting = new Map();
   const fail = err => { dead = err; for (const r of waiting.values()) r.no(err); waiting.clear(); };
   w.onmessage = e => { const r = waiting.get(e.data.id); if (!r) return; waiting.delete(e.data.id); if (e.data.err) r.no(new Error(e.data.err)); else r.ok(e.data.v); };
-  w.onerror = e => { e.preventDefault(); fail(new Error(e.message || 'The unzip worker stopped.')); };
+  w.onerror = e => { e.preventDefault(); fail(new Error(e.message || t('zip.worker'))); };
   const call = (op, extra) => dead ? Promise.reject(dead) : new Promise((ok, no) => { const id = ++seq; waiting.set(id, { ok, no }); w.postMessage(Object.assign({ op, id }, extra)); });
   const close = () => { w.terminate(); URL.revokeObjectURL(url); fail(new Error('closed')); };
   try { await call('init', { lib: new URL(tag.getAttribute('src'), location.href).href }); }
@@ -169,15 +169,15 @@ const AudioCtl = {
     const playing = cur && !a.paused;
     const btn = n.querySelector('.aplay');
     btn.innerHTML = playing ? ICON.pause : ICON.play;
-    btn.setAttribute('aria-label', playing ? 'Pause voice message' : 'Play voice message');
+    btn.setAttribute('aria-label', playing ? t('audio.pause') : t('audio.play'));
     const d = cur && isFinite(a.duration) ? a.duration : this.dur.get(name);
-    const t = cur ? a.currentTime : 0;
-    const frac = d ? t / d : 0;
+    const at = cur ? a.currentTime : 0;
+    const frac = d ? at / d : 0;
     const sk = n.querySelector('.aseek');
     if (sk) sk.value = Math.round(frac * 1000);
     const bars = n.querySelectorAll('.wave rect');
     for (let k = 0; k < bars.length; k++) bars[k].classList.toggle('on', cur && (k + 0.5) / bars.length <= frac);
-    n.querySelector('.atime').textContent = cur && (t > 0 || playing) ? this.fmt(t) + ' / ' + this.fmt(d) : this.fmt(d);
+    n.querySelector('.atime').textContent = cur && (at > 0 || playing) ? this.fmt(at) + ' / ' + this.fmt(d) : this.fmt(d);
     n.querySelector('.aspeed').textContent = this.rate + '×';
     n.classList.toggle('failed', this.failed.has(name));
   },

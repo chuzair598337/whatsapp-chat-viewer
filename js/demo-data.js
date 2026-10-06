@@ -16,6 +16,7 @@ const SAMPLE = [
   `[14/03/2026, 8:05:19${N}AM] Sara Malik: I'm in! _finally_ a cool morning`,
   `[14/03/2026, 8:05:51${N}AM] Omar Farooq: Count me in too 🙌`,
   `[14/03/2026, 8:06:30${N}AM] Bilal Ahmed: Same. I'll bring the first aid kit`,
+  `[14/03/2026, 8:07:12${N}AM] Sara Malik: زبردست! میں سب کے لیے چائے کا تھرماس لے آؤں گی ☕`,
   `[14/03/2026, 8:07:12${N}AM] Omar Farooq: ${L}<attached: 00000007-PHOTO-2026-03-14-08-07-12.jpg>`,
   `[14/03/2026, 8:07:30${N}AM] Omar Farooq: That's the route map from last time`,
   `[14/03/2026, 8:09:03${N}AM] Sara Malik: ${L}POLL:`, `${L}Breakfast after the hike?`, `${L}OPTION: Paratha place (3 votes)`, `${L}OPTION: Coffee only (1 vote)`, `${L}OPTION: Straight home (0 votes)`,
