@@ -42,7 +42,8 @@ I18N.add('en-US', {
     "skip": "Skip tour",
     "next": "Next",
     "back": "Back",
-    "language": "Language"
+    "language": "Language",
+    "list_sep": ", "
   },
   "sidebar": {
     "chat_viewer_for_whatsapp_exports": "Chat Viewer<small>for WhatsApp exports, offline</small>",
@@ -342,11 +343,8 @@ I18N.add('en-US', {
     "coordinates": "Coordinates"
   },
   "msg": {
-    "you_deleted": "You deleted this message",
-    "deleted": "This message was deleted",
     "edited": "Edited",
     "starred": "Starred",
-    "no_answer": "No answer",
     "poll_votes": "Poll · {n} votes",
     "poll_votes_one": "Poll · 1 vote",
     "event_title": "Message not included in the export",
@@ -359,18 +357,7 @@ I18N.add('en-US', {
   },
   "message": {
     "read_more": "Read more",
-    "show_less": "Show less",
-    "media_omitted": "Media omitted"
-  },
-  "call": {
-    "voice": "Voice call",
-    "video": "Video call",
-    "group_voice": "Group voice call",
-    "group_video": "Group video call",
-    "missed_voice": "Missed voice call",
-    "missed_video": "Missed video call",
-    "missed_group_voice": "Missed group voice call",
-    "missed_group_video": "Missed group video call"
+    "show_less": "Show less"
   },
   "copy": {
     "link": "Link",

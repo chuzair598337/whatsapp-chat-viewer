@@ -165,9 +165,11 @@ const S = {
   q: '', re: null, matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
 };
 // Date labels follow the interface language (js/i18n/i18n.js); makeFormats() runs again when it changes.
+// The date rows in the chat are chat content, so they use streamFmt, which is always English.
 I18N.set(I18N.saved, true);
 let dateFmt, shortFmt, dayFmt;
-const dateCache = new Map();
+const dateCache = new Map(), streamCache = new Map();
+const streamFmt = new Intl.DateTimeFormat('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 function makeFormats() {
   const loc = I18N.locale();
   dateFmt = new Intl.DateTimeFormat(loc, { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
@@ -179,6 +181,11 @@ makeFormats();
 function dateLabel(dk) {
   let v = dateCache.get(dk);
   if (!v) { const [y, m, d] = dk.split('-').map(Number); v = dateFmt.format(Date.UTC(y, m - 1, d)); dateCache.set(dk, v); }
+  return v;
+}
+function streamDate(dk) {
+  let v = streamCache.get(dk);
+  if (!v) { const [y, m, d] = dk.split('-').map(Number); v = streamFmt.format(Date.UTC(y, m - 1, d)); streamCache.set(dk, v); }
   return v;
 }
 const dkToT = dk => { const [y, m, d] = dk.split('-').map(Number); return Date.UTC(y, m - 1, d); };
@@ -316,6 +323,7 @@ function hl(html, i) {
   return html.split(/(<[^>]+>)/).map((part, k) => k % 2 ? part : part.replace(S.re, (all, g1) => g1 ? '<mark' + (cur ? ' class="cur"' : '') + '>' + g1 + '</mark>' : all)).join('');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
 const typeLabel = ty => t('type.' + (TYPE_LABEL[ty] ? ty : 'media'));
 const VIDEO_EXT = /^(mp4|mov|3gp|webm|mkv|avi)$/;
 // Voice notes: Android PTT-*, iOS *-AUDIO-*, or any .opus that isn't an Android AUD-* audio file.
@@ -719,7 +727,8 @@ function attHTML(a, m) {
   }
   const missing = !!a.name && !a.omitted;
   const kind = a.note ? t('type.video_note') : a.type === 'audio' && a.name && isVoice(a.name) ? t('type.voice') : TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file');
-  const title = a.name || (a.type === 'media' ? t('message.media_omitted') : kind + (a.viewOnce ? ' · ' + t('type.view_once') : ''));
+  // An omitted file with no name shows WhatsApp's own words ("video omitted"), as exported.
+  const title = a.name || (a.raw ? capFirst(a.raw.replace(/^<|>$/g, '')) : kind + (a.viewOnce ? ' · ' + t('type.view_once') : ''));
   const alert = t(!missing ? 'att.omitted' : Media.pending.has(Media.key(a.name)) ? 'att.loading' : S.source && S.source.zip ? 'att.not_in_zip' : 'att.text_only');
   const sub = a.detail ? kind + ' · ' + a.detail : a.name ? kind : '';
   return '<div class="att ' + (missing ? 'missing' : 'omit') + '" data-type="' + a.type + '"' + (a.name ? ' data-name="' + esc(a.name) + '"' : '') + '>' +
@@ -816,7 +825,7 @@ function toggleExpand(i) {
 }
 function makeRow(it, idx) {
   const el = document.createElement('div');
-  if (it.type === 'date') { el.className = 'row daterow'; el.innerHTML = '<span class="pill">' + esc(dateLabel(it.dateKey)) + '</span>'; return el; }
+  if (it.type === 'date') { el.className = 'row daterow'; el.innerHTML = '<span class="pill">' + esc(streamDate(it.dateKey)) + '</span>'; return el; }
   const m = it.m;
   if (it.type === 'sys') {
     const k = sysKind(m.message);
@@ -833,16 +842,16 @@ function makeRow(it, idx) {
   let tailText = true, visual = false, overlay = false, stk = false;
   switch (m.kind) {
     case 'deleted':
-      body += '<div class="txt del">' + ICON.ban + '<span>' + esc(m.isOutgoing ? t('msg.you_deleted') : t('msg.deleted')) + space + '</span></div>'; tailText = false; break;
+      body += '<div class="txt del">' + ICON.ban + '<span>' + esc(m.message) + space + '</span></div>'; tailText = false; break;
     case 'call': {
       const x = m.extra;
-      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(t('call.' + (x.missed ? 'missed_' : '') + (x.group ? 'group_' : '') + (x.video ? 'video' : 'voice'))) + '</b><small>' + esc(x.detail || (x.missed ? t('msg.no_answer') : '')) + '</small></div></div>';
+      body += '<div class="call' + (x.missed ? ' missed' : '') + '"><span class="ci">' + (x.video ? ICON.video : ICON.phone) + '</span><div><b>' + esc(capFirst(x.label)) + '</b>' + (x.detail ? '<small>' + esc(x.detail) + '</small>' : '') + '</div></div>';
       break;
     }
     case 'poll': {
       const x = m.extra, total = x.options.reduce((a, o) => a + o.votes, 0);
-      body += '<div class="poll"><div class="pq">' + ICON.poll + '<span>' + hl(formatText(x.q), it.i) + '</span></div>' + x.options.map(o =>
-        '<div class="po"><div class="pol"><span>' + hl(esc(o.label), it.i) + '</span><span>' + o.votes + '</span></div><div class="pbar"><i style="width:' + (total ? Math.round(o.votes / total * 100) : 0) + '%"></i></div></div>').join('') +
+      body += '<div class="poll"><div class="pq">' + ICON.poll + '<span dir="auto">' + hl(formatText(x.q), it.i) + '</span></div>' + x.options.map(o =>
+        '<div class="po"><div class="pol"><span dir="auto">' + hl(esc(o.label), it.i) + '</span><span>' + o.votes + '</span></div><div class="pbar"><i style="width:' + (total ? Math.round(o.votes / total * 100) : 0) + '%"></i></div></div>').join('') +
         '<small>' + t('msg.poll_votes', { n: total }) + '</small></div>';
       break;
     }
@@ -896,7 +905,7 @@ function afterRender() {
   const i = VL.fw.find(st + 6);
   const di = S.dateIdx[i];
   const atDateRow = S.items[i].type === 'date' || (i + 1 < n && S.items[i + 1].type === 'date' && VL.fw.sum(i + 1) - st < 40);
-  if (st > 20 && !atDateRow && di >= 0) { stickyPill.textContent = dateLabel(S.items[di].dateKey); stickyEl.hidden = false; }
+  if (st > 20 && !atDateRow && di >= 0) { stickyPill.textContent = streamDate(S.items[di].dateKey); stickyEl.hidden = false; }
   else stickyEl.hidden = true;
   fab.hidden = total - (st + vh) < 400;
   fabTop.hidden = st < vh * 3;

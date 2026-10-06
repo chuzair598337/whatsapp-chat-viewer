@@ -152,7 +152,7 @@ These are the suggestions from the audit of official export features. Each one w
 ## Phase 11: languages (2026-10-06)
 
 - [x] **English (US) and Urdu interface**, with a `t('section.key')` helper and one dictionary per language in `js/i18n/`. *New (Phase 11).*
-- [x] **Right-to-left layout for Urdu** using logical CSS properties, with mirrored drawer, bubbles and arrow keys. *New (Phase 11).*
+- [x] **Right-to-left layout for Urdu** using logical CSS properties, with mirrored drawer, panels and arrow keys. The chat stays left to right (sent on the right). *New (Phase 11).*
 - [x] **Nastaliq font:** Jameel Noori Nastaleeq when installed, bundled Noto Nastaliq Urdu (OFL) otherwise. *New (Phase 11).*
 - [x] **Language picker** in the ⋮ menu and on the start screen, saved as `app_language`. *New (Phase 11).*
 - [x] **Sample chat: an Urdu message.** *New (Phase 11).*
@@ -168,6 +168,17 @@ All 27 findings in the v1.4.0 audit (`/mnt/project-files/audit/prod-audit.md`), 
 - [x] Hardening: Content-Security-Policy (9), Pages publishes only the app (26). pdf.js kept at 3.11.174 with `isEvalSupported: false`.
 - [x] Other lows: list numbers (14), filters in the photo viewer (16), several files (17), View contact (18), date-order progress screen (19), PDF height estimate (21), vCard 4 photos (25).
 - [x] **Tour from the start screen every time** (Master's report).
+
+## Phase 13: Urdu layout audit fixes (2026-10-06)
+
+All confirmed findings in `/mnt/project-files/audit/i18n-audit.md`, fixed on `development`:
+
+- [x] Sent bubbles on the right, received ones and avatars on the left, in both languages (1, 4, N7).
+- [x] Call logs, deleted and omitted placeholders and date rows shown as exported (2, N2). "Edited" stays translated (Master's call).
+- [x] Copy coordinates crash (N1), and the other locals that hid `t()`.
+- [x] Polls (N3), search and starred results (N4), the sidebar file line (N5), isolated values in `t()` (N6), the ZIP worker's error (N8).
+- [x] ⋮ menu: animation corner, logical padding, English label next to its icon (5a-c).
+- [x] Sample chat: an Urdu message and "You deleted this message." from you.
 
 ## Verification done for this list
 

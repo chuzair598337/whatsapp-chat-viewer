@@ -16,7 +16,7 @@ const isChatName = n => /WhatsApp|واتساب/i.test(baseName(n)) && !!hintFrom
 function showLoading(title) { $('loadTitle').textContent = title; $('loadNote').textContent = t('load.working'); setProgress(0); $('loading').hidden = false; }
 function setProgress(p) { const bar = $('progBar'); bar.parentNode.classList.toggle('indet', p < 0); bar.style.width = p < 0 ? '' : Math.round(p * 100) + '%'; }
 let toastTimer = 0;
-function toast(msg) { const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 5000); }
+function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 5000); }
 
 const setNote = t => { $('loadNote').textContent = t; };
 async function detectKind(file) {
@@ -328,7 +328,7 @@ function renderChrome() {
     '<div><dt>' + t('facts.media') + '</dt><dd>' + nf(mediaN) + '</dd></div>' +
     '<div><dt>' + t('facts.first') + '</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
     '<div><dt>' + t('facts.last') + '</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
-    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · ' + fmtSize(S.source.size) + ' · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
+    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
   // me select
   const sel = $('meSel');
   sel.innerHTML = '<option value="">' + t('sidebar.nobody') + '</option>' + res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '"' + (p.name === S.me ? ' selected' : '') + '>' + esc(p.name) + '</option>').join('');
@@ -387,6 +387,8 @@ function toggleStar(i) {
   renderStars();
   toast(S.starred.has(i) ? t('stars.starred') : t('stars.removed'));
 }
+// Date and time of a search or starred result, each isolated so they keep their order in Urdu.
+function resTime(m) { return '<time><bdi>' + esc(shortFmt.format(dkToT(m.dateKey))) + '</bdi>' + t('common.list_sep') + '<bdi dir="ltr">' + m.formattedTime + '</bdi></time>'; }
 function msgSnippet(m) {
   if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
   const a = m.attachments[0];
@@ -398,7 +400,7 @@ function renderStars() {
   $('starTitle').textContent = n ? t('stars.title_n', { n: nf(n) }) : t('common.starred_messages');
   $('starList').innerHTML = n ? list.map(i => {
     const m = S.msgs[i];
-    return '<button class="res" data-i="' + i + '"><span class="rh"><b>' + esc(m.isOutgoing ? t('common.you') : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + esc(msgSnippet(m)) + '</span></button>';
+    return '<button class="res" data-i="' + i + '"><span class="rh"><b dir="auto">' + esc(m.isOutgoing ? t('common.you') : m.sender) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + esc(msgSnippet(m)) + '</span></button>';
   }).join('') : '<p class="star-empty">' + ICON.star + '<span>' + t('stars.empty') + '</span></p>';
 }
 function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
@@ -466,10 +468,10 @@ function jumpToMatch(k) {
   rs.forEach(r => r.classList.toggle('cur', +r.dataset.k === k));
 }
 function snippet(m) {
-  const t = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '', ql = S.q.trim().toLowerCase();
-  const p = t.toLowerCase().indexOf(ql);
+  const tx = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '', ql = S.q.trim().toLowerCase();
+  const p = tx.toLowerCase().indexOf(ql);
   const s = Math.max(0, p - 30);
-  const raw = (s > 0 ? '…' : '') + t.slice(s, s + 140).replace(/\s+/g, ' ');
+  const raw = (s > 0 ? '…' : '') + tx.slice(s, s + 140).replace(/\s+/g, ' ');
   return esc(raw).replace(S.re, (all, g1) => g1 ? '<mark>' + g1 + '</mark>' : all);
 }
 function renderResults() {
@@ -478,7 +480,7 @@ function renderResults() {
   const LIM = 200;
   box.innerHTML = S.matches.slice(0, LIM).map((i, k) => {
     const m = S.msgs[i];
-    return '<button class="res" data-k="' + k + '"><span class="rh"><b>' + esc(m.isSystem ? t('search.system') : m.isOutgoing ? t('common.you') : m.sender) + '</b><time>' + esc(shortFmt.format(dkToT(m.dateKey))) + ', ' + m.formattedTime + '</time></span><span class="rs">' + snippet(m) + '</span></button>';
+    return '<button class="res" data-k="' + k + '"><span class="rh"><b dir="auto">' + esc(m.isSystem ? t('search.system') : m.isOutgoing ? t('common.you') : m.sender) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + snippet(m) + '</span></button>';
   }).join('') + (S.matches.length > LIM ? '<div class="res-more">' + t('search.first_only', { lim: nf(LIM), n: nf(S.matches.length) }) + '</div>' : '');
 }
 $('results').addEventListener('click', e => { const b = e.target.closest('.res'); if (b) { jumpToMatch(+b.dataset.k); if (isNarrow()) closeDrawer(); } });
@@ -620,7 +622,8 @@ applyTheme();
 
 /* ---------- Interface language (js/i18n) ---------- */
 // The picker sits in the ⋮ menu and on the start screen. Switching redraws everything the app built
-// in JavaScript; the chat itself (messages, names, file names, system notices) is never translated.
+// in JavaScript; the chat itself (messages, names, file names, system notices, call logs, deleted and
+// omitted placeholders and the date rows) is never translated.
 function markLang() {
   for (const b of document.querySelectorAll('[data-lang-opt]')) b.setAttribute(b.closest('.start-lang') ? 'aria-pressed' : 'aria-checked', b.dataset.langOpt === I18N.lang);
 }
@@ -655,8 +658,8 @@ moreBtn.onclick = () => { if (moreMenu.hidden) openMenu(); else closeMenu(); };
 // Capture: the menu closes (focus back on ⋮) before the item's own action runs, so dialogs it opens return focus to ⋮.
 moreMenu.addEventListener('click', e => { if (e.target.closest('[role^="menuitem"]')) closeMenu(true); }, true);
 moreMenu.addEventListener('click', e => {
-  const t = e.target.closest('[data-theme-opt]');
-  if (t) { theme = t.dataset.themeOpt; store('cv-theme', theme); applyTheme(); }
+  const tg = e.target.closest('[data-theme-opt]');
+  if (tg) { theme = tg.dataset.themeOpt; store('cv-theme', theme); applyTheme(); }
   const l = e.target.closest('[data-lang-opt]');
   if (l) { closeMenu(true); I18N.set(l.dataset.langOpt); }
 });

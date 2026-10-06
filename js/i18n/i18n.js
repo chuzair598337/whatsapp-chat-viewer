@@ -2,8 +2,9 @@
 /* =====================================================================
    Interface languages. English (US) is the default; Urdu is written right
    to left in a Nastaliq font. Only the app's own words are translated:
-   messages, names, file names and system notices from the export are shown
-   exactly as exported.
+   messages, names, file names, system notices, call logs, deleted and omitted
+   placeholders and the date rows in the chat are shown exactly as exported.
+   The chat (#layer) stays left to right in Urdu: sent messages on the right.
 
    - Dictionaries: js/i18n/en.js and js/i18n/ur.js. They are scripts, not
      JSON files, because a page opened straight from disk (file://) can't
@@ -48,7 +49,8 @@ function t(key, vars) {
   if (s === undefined) s = I18N.look(I18N.lang, key);
   if (s === undefined) s = I18N.look('en-US', key);
   if (s === undefined) return key;
-  return vars ? s.replace(/\{(\w+)\}/g, (all, k) => vars[k] !== undefined ? vars[k] : all) : s;
+  // Each inserted value is isolated (U+2068…U+2069), so a Latin name or a number keeps its place in an Urdu sentence.
+  return vars ? s.replace(/\{(\w+)\}/g, (all, k) => vars[k] !== undefined ? '\u2068' + vars[k] + '\u2069' : all) : s;
 }
 function applyI18n(rootEl) {
   for (const el of rootEl.querySelectorAll('[data-i18n]')) {

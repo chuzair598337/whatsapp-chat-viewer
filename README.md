@@ -23,7 +23,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
-- English and Urdu interface, with a right-to-left layout and a Nastaliq font for Urdu. Chat text is never translated.
+- English and Urdu interface, with a right-to-left layout and a Nastaliq font for Urdu. Chat text is never translated, and sent messages stay on the right.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 

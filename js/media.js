@@ -117,7 +117,7 @@ function zipWorkerSrc() {
   return 'self.onmessage = async e => { const d = e.data; try {' +
     ' if (d.op === "init") { importScripts(d.lib); self.reply = (id, v) => postMessage({ id, v }); return postMessage({ id: d.id, v: true }); }' +
     ' if (d.op === "open") { self.zip = await JSZip.loadAsync(d.file); const names = []; self.zip.forEach((p, f) => { if (!f.dir && !p.startsWith("__MACOSX/")) names.push(p); }); return postMessage({ id: d.id, v: names }); }' +
-    ' if (d.op === "get") { const f = self.zip.file(d.path); if (!f) throw new Error("File not found in ZIP: " + d.path); return postMessage({ id: d.id, v: await f.async("blob") }); }' +
+    ' if (d.op === "get") { const f = self.zip.file(d.path); if (!f) return postMessage({ id: d.id, missing: d.path }); return postMessage({ id: d.id, v: await f.async("blob") }); }' +
     ' } catch (err) { postMessage({ id: d.id, err: String(err && err.message || err) }); } };';
 }
 async function openArchiveInWorker(file) {
@@ -131,7 +131,7 @@ async function openArchiveInWorker(file) {
   let seq = 0, dead = null;
   const waiting = new Map();
   const fail = err => { dead = err; for (const r of waiting.values()) r.no(err); waiting.clear(); };
-  w.onmessage = e => { const r = waiting.get(e.data.id); if (!r) return; waiting.delete(e.data.id); if (e.data.err) r.no(new Error(e.data.err)); else r.ok(e.data.v); };
+  w.onmessage = e => { const r = waiting.get(e.data.id); if (!r) return; waiting.delete(e.data.id); if (e.data.err) r.no(new Error(e.data.err)); else if (e.data.missing) r.no(new Error(t('zip.not_found', { name: e.data.missing }))); else r.ok(e.data.v); };
   w.onerror = e => { e.preventDefault(); fail(new Error(e.message || t('zip.worker'))); };
   const call = (op, extra) => dead ? Promise.reject(dead) : new Promise((ok, no) => { const id = ++seq; waiting.set(id, { ok, no }); w.postMessage(Object.assign({ op, id }, extra)); });
   const close = () => { w.terminate(); URL.revokeObjectURL(url); fail(new Error('closed')); };

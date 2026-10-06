@@ -176,14 +176,14 @@ $('galChips').addEventListener('keydown', e => { // arrow keys move between chip
   Gallery.show(n.dataset.cat); $('galChips').querySelector('.on').focus();
 });
 galBody.addEventListener('click', e => {
-  const t = e.target;
-  const j = t.closest('[data-jump]'); if (j) { Gallery.jump(+j.dataset.jump); return; }
-  const g = t.closest('[data-gk]'); if (g) { Gallery.view(+g.dataset.gk); return; }
-  const lc = t.closest('.lcopy'); if (lc) { copyText(lc.dataset.url); return; }
-  const ap = t.closest('.aplay'); if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }
-  if (t.closest('.aspeed')) { AudioCtl.speed(); return; }
-  const pd = t.closest('[data-pdf]'); if (pd) { openPdf(pd.dataset.pdf, pd.dataset.title || ''); return; }
-  const vc = t.closest('[data-vcard]'); if (vc) openContact(vc.dataset.vcard);
+  const tg = e.target;
+  const j = tg.closest('[data-jump]'); if (j) { Gallery.jump(+j.dataset.jump); return; }
+  const g = tg.closest('[data-gk]'); if (g) { Gallery.view(+g.dataset.gk); return; }
+  const lc = tg.closest('.lcopy'); if (lc) { copyText(lc.dataset.url); return; }
+  const ap = tg.closest('.aplay'); if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }
+  if (tg.closest('.aspeed')) { AudioCtl.speed(); return; }
+  const pd = tg.closest('[data-pdf]'); if (pd) { openPdf(pd.dataset.pdf, pd.dataset.title || ''); return; }
+  const vc = tg.closest('[data-vcard]'); if (vc) openContact(vc.dataset.vcard);
 });
 galBody.addEventListener('input', e => { const sk = e.target.closest('.aseek'); if (sk) AudioCtl.toggle(sk.closest('.aplayer').dataset.audio, sk.value / 1000); });
 galBody.addEventListener('pointerdown', e => { // tap or drag a waveform to seek

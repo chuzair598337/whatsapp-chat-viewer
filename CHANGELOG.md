@@ -3,12 +3,13 @@
 ## Unreleased (on `development`)
 
 - **Languages: English and Urdu.** Choose one under **Language** in the ⋮ menu, or with the English / اردو switch on the start screen. The choice is remembered on this device (`app_language` in `localStorage`); English (US) is the default.
-  - Everything the app itself says is translated: the start screen, menus, buttons, filter chips, dialogs, the gallery, statistics, the guided tour, date labels, status and error messages.
-  - Messages, names, file names and WhatsApp's own system notices are shown exactly as exported, in either language.
-  - Urdu reads right to left: the whole layout mirrors, including the side panel, the bubbles and the arrow keys in the photo viewer and the tour.
+  - Everything the app itself says is translated: the start screen, menus, buttons, filter chips, dialogs, the gallery, statistics, the guided tour, date labels outside the chat, status and error messages. The small "Edited" tag follows the interface language too.
+  - The chat itself is shown exactly as exported, in either language: messages, names, file names, WhatsApp's system notices, call logs ("Missed voice call"), deleted-message placeholders ("You deleted this message."), omitted media ("Video omitted") and the date rows between days.
+  - Urdu reads right to left: the side panel, menus, dialogs and the arrow keys in the photo viewer and the tour mirror. The chat does not: sent messages stay on the right and received ones, with their avatars, on the left, as in WhatsApp.
   - Urdu text uses Jameel Noori Nastaleeq when it is installed. It can't be shipped with the app, so Noto Nastaliq Urdu (Open Font Licence) is bundled as the fallback. No font is downloaded.
   - Messages written in Urdu or Arabic are now laid out right to left in any language, with the time where the text ends.
-- **Sample chat:** a message in Urdu, to show that chat text isn't translated and reads right to left.
+- **Fixes from the Urdu layout audit:** sent bubbles stay on the right in Urdu; call logs, deleted and omitted placeholders and date rows are no longer translated; copying a location's coordinates works again; English polls, search results, starred messages and the sidebar's file line read in the right order in Urdu; names and numbers inside Urdu sentences keep their place; the ⋮ menu opens from the correct corner and the English option sits next to its icon; a missing file inside a ZIP gives a translated message.
+- **Sample chat:** a message in Urdu, to show that chat text isn't translated and reads right to left, and an Urdu message and "You deleted this message." from you, which stay on the right.
 - **Guided tour:** **Try the sample chat** on the start screen starts the tour every time again, not only on the first visit.
 - **Fixes from the production audit** (all 27 findings):
   - **Opening ZIPs:** the chat now appears as soon as its text is read, and the media fills in afterwards. ZIPs are read in place instead of being loaded into memory whole, so big exports no longer risk crashing a phone. ZIP64 archives (over 65,535 files or 4 GB) now keep all their media. Selecting several files no longer gives up when the first one fails, a dropped folder gets a clear message, and the first chat of a multi-chat ZIP gets its own title.

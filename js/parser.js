@@ -70,7 +70,7 @@ function parserModule() {
         : w.includes('sticker') ? 'sticker' : w.startsWith('gif') ? 'gif' : w.includes('document') ? 'document' : w.includes('contact') ? 'contact' : 'media';
       let name = null, cap = m[1], detail = '';
       if (type === 'document' && cap) { const parts = cap.split(/\s*•\s*/); name = parts.shift().trim(); detail = parts.join(' · '); cap = ''; }
-      return media(type, name, cap, true, edited, { viewOnce, detail, note: w.includes('video note') ? 'Video note' : '' });
+      return media(type, name, cap, true, edited, { viewOnce, detail, raw: m[2], note: w.includes('video note') ? 'Video note' : '' });
     }
     if ((m = /^(live )?location: (https?:\/\/\S+)\s*([\s\S]*)$/i.exec(t)))
       return { kind: 'location', text: m[3].trim(), att: [], edited, extra: { url: m[2], live: !!m[1], ...coords(m[2]) } };
