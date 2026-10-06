@@ -562,16 +562,19 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .tour-pop { position: fixed; background: var(--panel); color: var(--ink); border-radius: 12px; padding: 16px 16px 12px; box-shadow: 0 12px 40px rgba(0, 0, 0, .35); transition: left .25s ease, top .25s ease; }
 .tour-step { font-size: 12px; font-weight: 600; color: var(--accent-ink); letter-spacing: .03em; text-transform: uppercase; }
 .tour-pop h2 { margin: 4px 0 6px; font-size: 17px; font-weight: 600; }
-.tour-pop p { margin: 0 0 14px; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
+.tour-text { margin: 0 0 14px; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
+.tour-text ul { margin: 0; padding-left: 18px; }
+.tour-text li { margin: 0 0 6px; }
+.tour-text b { color: var(--ink); font-weight: 600; }
+.tour-text .tour-note { margin: 10px 0 0; font-size: 12.5px; color: var(--ink-3); }
 .tour-nav { display: flex; align-items: center; gap: 8px; }
 .tour-nav .btn { height: 34px; padding: 0 14px; }
 .tour-nav .btn[hidden] { display: none; }
 .tour-nav .linkbtn { color: var(--ink-3); margin-right: auto; padding: 6px 4px; }
-.tour-dots { display: flex; gap: 5px; margin-right: 4px; }
-.tour-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line); }
-.tour-dots i.on { background: var(--accent); }
-[data-theme="dark"] .tour-dots i:not(.on) { background: #3b4a54; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tour-dots i:not(.on) { background: #3b4a54; } }
+.tour-dots { width: 48px; height: 4px; margin-right: 4px; border-radius: 2px; background: var(--line); overflow: hidden; }
+.tour-dots b { display: block; height: 100%; background: var(--accent); transition: width .25s ease; }
+[data-theme="dark"] .tour-dots { background: #3b4a54; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tour-dots { background: #3b4a54; } }
 @media (max-width: 380px) { .tour-dots { display: none; } }
 
 /* ---------- Read more / Show less ---------- */
@@ -630,3 +633,5 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .msep { height: 1px; margin: 6px 0; background: var(--line); }
 .mlabel { padding: 6px 20px 2px 18px; font-size: 12px; font-weight: 600; letter-spacing: .03em; text-transform: uppercase; color: var(--ink-3); }
 @keyframes menuin { from { opacity: 0; transform: scale(.94); } }
+/* The pinned date would cover the top of a highlighted message on phones; step 2 shows the date badges instead. */
+.touring .sticky-date { display: none !important; }

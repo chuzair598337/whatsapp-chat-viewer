@@ -197,16 +197,18 @@ The statistics window shows:
   - two long messages, for Read more;
   - the encryption notice, group events, a disappearing-message timer change and a security-code change;
   - missed and answered calls, a poll, a location, links, reactions and a deleted message;
-  - photos, a video, a GIF, a sticker, a voice note, a music file, a PDF and a text file;
+  - photos, a video, a GIF, a sticker, a voice note, a music file, a PDF, a text file and a contact card;
   - a "video omitted" placeholder.
 
   New features add a line to it; see PROJECT_RULES.md, section 5.
-- **Guided tour:** five steps, each dimming the page and highlighting one part with a spotlight:
-  1. Opening a chat.
-  2. The timeline.
-  3. Search and filters.
-  4. A photo in the chat, for the media viewers.
-  5. The ⋮ menu in the chat header.
+- **Guided tour:** 24 steps in four chapters. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
+  1. **Getting started:** opening a chat; the timeline and date badges.
+  2. **Finding things:** search; date and sender filters; jump to date; statistics; "which one is you" and the date order.
+  3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
+  4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links.
+  5. The ⋮ menu (starred messages, statistics, themes, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
+
+  The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
 
   It starts by itself the first time the sample chat is opened. Finishing or skipping it sets the `has_completed_walkthrough` flag in `localStorage`, which holds no chat data.
 - **Help and guided tour:** this item in the header's ⋮ menu opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.

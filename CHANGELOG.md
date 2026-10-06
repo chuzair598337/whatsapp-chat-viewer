@@ -2,6 +2,8 @@
 
 ## Unreleased (on `development`)
 
+- **Fuller guided tour:** 24 steps instead of five, in four chapters (Getting started, Finding things, Messages, Media). It points at the real control or a real sample message for: search, date and sender filters, jump to date, statistics, "which one is you", formatting, Read more, edited, deleted and reply messages, reactions, system notices, date badges, calls, polls, photos, videos and GIFs, stickers, voice notes and audio, the PDF viewer, contact cards, locations, links and the ⋮ menu. It ends with a summary of what the viewer can do. Sidebar steps open the side panel on phones and tablets, and a progress bar replaces the dots.
+- **Sample chat:** a shared contact card (a made-up park ranger desk), for the contact card step.
 - **Header menu:** the star, statistics, theme, help and open buttons in the chat header are replaced by one ⋮ button, as in WhatsApp, so the chat title has room. It opens a dropdown with:
   - **Starred messages** (with the count), **Chat statistics** and **Open another chat**;
   - **Theme**: Light, Dark or Match system, with a tick on the current one;

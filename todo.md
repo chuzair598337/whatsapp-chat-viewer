@@ -136,6 +136,12 @@ These are the suggestions from the audit of official export features. Each one w
 
 - [x] **One ⋮ button in the chat header** with a dropdown for starred messages, statistics, open another chat, theme (light, dark, system) and help, replacing the separate icons so the title isn't cut short. Keyboard and screen-reader friendly (`role="menu"`). *New (Phase 8).*
 
+## Phase 9: full guided tour (2026-10-06)
+
+- [x] **Tour covers every main feature**, 24 steps in four chapters, each spotlighting a real control or sample message, ending with what the viewer can do. *New (Phase 9).*
+- [x] **Contact card in the sample chat.** *New (Phase 9).*
+- Forwarded labels are not shown: WhatsApp's text export doesn't record them, so the tour's last card says so.
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

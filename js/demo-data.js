@@ -52,6 +52,8 @@ const SAMPLE = [
   `[16/03/2026, 9:15:10${N}AM] Ayesha Khan: Same time next month? 🗓️`,
   `[16/03/2026, 9:16:03${N}AM] Sara Malik: ${L}<attached: 00000030-AUDIO-2026-03-16-09-16-03.opus>`,
   `[16/03/2026, 9:16:20${N}AM] Bilal Ahmed: ${L}<attached: 00000031-Trail-playlist.mp3>`,
+  `[16/03/2026, 9:16:45${N}AM] Bilal Ahmed: ${L}<attached: 00000032-Margalla Park Rangers.vcf>`,
+  `[16/03/2026, 9:16:52${N}AM] Bilal Ahmed: Ranger desk number, in case anyone gets lost next time`,
   `[16/03/2026, 9:16:30${N}AM] Omar Farooq: 👍`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
@@ -118,6 +120,8 @@ async function makeSampleMedia() {
   staged.set('pdf', ['00000026-Trail-notes.pdf', makePdf(['Trail 5 notes', 'Distance: 11.4 km', 'Moving time: 3 h 52 min', 'Elevation gain: 720 m', 'Water used: about 1.6 L each', 'Next time: start 30 minutes earlier'])]);
   staged.set('voice', ['00000030-AUDIO-2026-03-16-09-16-03.opus', makeWav(6)]);
   staged.set('song', ['00000031-Trail-playlist.mp3', makeWav(9)]);
+  staged.set('vcf', ['00000032-Margalla Park Rangers.vcf', new Blob([['BEGIN:VCARD', 'VERSION:3.0', 'N:;Margalla Park Rangers;;;', 'FN:Margalla Park Rangers',
+    'ORG:Margalla Park Rangers', 'TEL;type=WORK;type=VOICE;waid=15550100:+1 555 0100', 'EMAIL;type=WORK:desk@rangers.example', 'END:VCARD'].join('\r\n')], { type: 'text/vcard' })]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();
   for (const [, [name, blob]] of staged) if (blob) Media.stage(out, name, blob);
