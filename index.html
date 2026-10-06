@@ -109,11 +109,21 @@
         <div><div class="t" id="headTitle"></div><div class="s" id="headSub"></div></div>
       </button>
       <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)"></button>
-      <button class="ibtn" id="starBtn" aria-label="Starred messages" title="Starred messages"><span class="sbadge" id="starBadge" hidden></span></button>
-      <button class="ibtn" id="statsBtn" aria-label="Chat statistics" title="Chat statistics"></button>
-      <button class="ibtn" id="themeBtn"></button>
-      <button class="ibtn" id="tourBtn" aria-label="Help and guided tour" title="Help and guided tour"></button>
-      <button class="ibtn hide-sm" id="openBtn" aria-label="Open a chat export" title="Open a chat export"></button>
+      <button class="ibtn" id="moreBtn" aria-label="Menu" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu"></button>
+      <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden>
+        <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
+        <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml">Chat statistics</span></button>
+        <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml">Open another chat</span></button>
+        <div class="msep" role="separator"></div>
+        <div class="mlabel" id="themeLbl">Theme</div>
+        <div role="group" aria-labelledby="themeLbl">
+          <button role="menuitemradio" data-theme-opt="light" aria-checked="false"><span class="mi" id="miLight"></span><span class="ml">Light</span></button>
+          <button role="menuitemradio" data-theme-opt="dark" aria-checked="false"><span class="mi" id="miDark"></span><span class="ml">Dark</span></button>
+          <button role="menuitemradio" data-theme-opt="system" aria-checked="false"><span class="mi" id="miSystem"></span><span class="ml">Match system</span></button>
+        </div>
+        <div class="msep" role="separator"></div>
+        <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml">Help and guided tour</span></button>
+      </div>
     </header>
     <div id="sstrip" class="sstrip" hidden>
       <button class="ibtn sm" id="sClose" aria-label="Close search"></button>

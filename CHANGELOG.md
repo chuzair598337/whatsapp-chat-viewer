@@ -2,6 +2,12 @@
 
 ## Unreleased (on `development`)
 
+- **Header menu:** the star, statistics, theme, help and open buttons in the chat header are replaced by one ⋮ button, as in WhatsApp, so the chat title has room. It opens a dropdown with:
+  - **Starred messages** (with the count), **Chat statistics** and **Open another chat**;
+  - **Theme**: Light, Dark or Match system, with a tick on the current one;
+  - **Help and guided tour**.
+
+  The menu closes on `Esc`, a click outside or after choosing; arrow keys, `Home` and `End` move through it. The tour's last step now points at the ⋮ button. No sample chat line was needed, since messages look the same.
 - **Start screen:** the app now opens on a screen just for choosing a chat. It replaces the welcome pop-up over the sample chat. It offers:
   - a drop area with **Browse files**;
   - **Try the sample chat**, which starts the guided tour on the first visit;
@@ -23,7 +29,7 @@
   - **Explore the sample chat** starts a five-step tour: opening a chat, the timeline, search and filters, media, and themes.
   - **Open your own chat** opens the file picker.
 
-  The tour has Skip, Back and Next or Finish buttons, works with `←`, `→` and `Esc`, and repositions on resize and on phones. A new **?** button in the header brings it back. The only thing remembered is the `has_completed_walkthrough` flag. The tour is written for this app, with no library.
+  The tour has Skip, Back and Next or Finish buttons, works with `←`, `→` and `Esc`, and repositions on resize and on phones. A help item in the header brings it back. The only thing remembered is the `has_completed_walkthrough` flag. The tour is written for this app, with no library.
 - **Sample chat:** moved to `js/demo-data.js`, and it now also shows a disappearing-message change, a security-code change and reactions.
 - **System notices** are now grouped like WhatsApp shows them:
   - security-code changes, with a shield icon;

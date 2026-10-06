@@ -132,6 +132,10 @@ These are the suggestions from the audit of official export features. Each one w
 - [x] **Long messages in the sample chat**, for testing Read more. *New (Phase 7).*
 - [x] **Rule: update the sample chat with each feature**, in PROJECT_RULES.md section 5, the three skills and `CLAUDE.md`. *New (Phase 7).*
 
+## Phase 8: header menu (2026-10-06)
+
+- [x] **One ⋮ button in the chat header** with a dropdown for starred messages, statistics, open another chat, theme (light, dark, system) and help, replacing the separate icons so the title isn't cut short. Keyboard and screen-reader friendly (`role="menu"`). *New (Phase 8).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

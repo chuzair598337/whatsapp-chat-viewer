@@ -153,7 +153,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Results list:** each result shows the sender, date and a snippet, and clicking one jumps to that message.
 - **Sticky date header:** shows the current day while you scroll.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
-- **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. The star button in the header opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
+- **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
 - **Jump to date:** a date picker in the sidebar, plus the busiest days listed in Statistics, take you straight to that day.
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
 - **Keyboard shortcuts:**
@@ -171,7 +171,7 @@ The statistics window shows:
 
 ## 9. Themes
 
-- **Light**, **Dark** and **System**. System follows `prefers-color-scheme` and updates live when the operating system's setting changes.
+- **Light**, **Dark** and **Match system**, chosen under **Theme** in the header's ⋮ menu. Match system follows `prefers-color-scheme` and updates live when the operating system's setting changes.
 - Colours are CSS custom properties, set on `:root` and overridden under `[data-theme="dark"]`, so the whole interface switches at once.
 - The chat background pattern can be turned off in the sidebar settings.
 
@@ -206,10 +206,10 @@ The statistics window shows:
   2. The timeline.
   3. Search and filters.
   4. A photo in the chat, for the media viewers.
-  5. The theme button.
+  5. The ⋮ menu in the chat header.
 
   It starts by itself the first time the sample chat is opened. Finishing or skipping it sets the `has_completed_walkthrough` flag in `localStorage`, which holds no chat data.
-- **Help button (`?`):** in the chat header, it opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.
+- **Help and guided tour:** this item in the header's ⋮ menu opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.
 - **Controls:**
   - Every step has **Skip tour**, **Back** (from step 2) and **Next**, which becomes **Finish** on the last step.
   - Keyboard: `→` and `←` move between steps, `Esc` skips, and focus stays inside the tour card.

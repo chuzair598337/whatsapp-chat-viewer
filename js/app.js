@@ -374,7 +374,6 @@ function msgSnippet(m) {
 function renderStars() {
   const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;
   $('starBadge').hidden = !n; $('starBadge').textContent = n > 99 ? '99+' : n;
-  $('starBtn').setAttribute('aria-label', 'Starred messages' + (n ? ' (' + n + ')' : ''));
   $('starTitle').textContent = 'Starred messages' + (n ? ' (' + n + ')' : '');
   $('starList').innerHTML = n ? list.map(i => {
     const m = S.msgs[i];
@@ -589,13 +588,43 @@ let theme = store('cv-theme') || 'system';
 function applyTheme() {
   if (theme === 'system') { if (hostTheme) root.setAttribute('data-theme', hostTheme); else root.removeAttribute('data-theme'); }
   else root.setAttribute('data-theme', theme);
-  const b = $('themeBtn');
-  b.innerHTML = theme === 'light' ? ICON.sun : theme === 'dark' ? ICON.moon : ICON.auto;
-  const label = 'Theme: ' + (theme === 'system' ? 'match system' : theme) + '. Click to change.';
-  b.setAttribute('aria-label', label); b.title = label;
+  for (const b of document.querySelectorAll('[data-theme-opt]')) b.setAttribute('aria-checked', b.dataset.themeOpt === theme);
 }
-$('themeBtn').onclick = () => { theme = theme === 'system' ? 'light' : theme === 'light' ? 'dark' : 'system'; store('cv-theme', theme); applyTheme(); };
 applyTheme();
+
+/* ---------- Header ⋮ menu (WhatsApp style): starred, statistics, open, theme, help ---------- */
+const moreBtn = $('moreBtn'), moreMenu = $('moreMenu');
+const menuItems = () => [...moreMenu.querySelectorAll('[role^="menuitem"]')];
+function openMenu() {
+  moreMenu.hidden = false; moreBtn.setAttribute('aria-expanded', 'true');
+  menuItems()[0].focus();
+}
+function closeMenu(focusBtn) {
+  if (moreMenu.hidden) return;
+  moreMenu.hidden = true; moreBtn.setAttribute('aria-expanded', 'false');
+  if (focusBtn) moreBtn.focus();
+}
+moreBtn.onclick = () => { if (moreMenu.hidden) openMenu(); else closeMenu(); };
+// Capture: the menu closes (focus back on ⋮) before the item's own action runs, so dialogs it opens return focus to ⋮.
+moreMenu.addEventListener('click', e => { if (e.target.closest('[role^="menuitem"]')) closeMenu(true); }, true);
+moreMenu.addEventListener('click', e => {
+  const t = e.target.closest('[data-theme-opt]');
+  if (t) { theme = t.dataset.themeOpt; store('cv-theme', theme); applyTheme(); }
+});
+document.addEventListener('pointerdown', e => { if (!moreMenu.hidden && !moreMenu.contains(e.target) && !moreBtn.contains(e.target)) closeMenu(); });
+moreMenu.addEventListener('keydown', e => {
+  const items = menuItems(), i = items.indexOf(document.activeElement);
+  let n = null;
+  if (e.key === 'ArrowDown') n = (i + 1) % items.length;
+  else if (e.key === 'ArrowUp') n = (i - 1 + items.length) % items.length;
+  else if (e.key === 'Home') n = 0;
+  else if (e.key === 'End') n = items.length - 1;
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); closeMenu(true); return; }
+  else if (e.key === 'Tab') { closeMenu(); return; }
+  else return;
+  e.preventDefault(); e.stopPropagation(); items[n].focus();
+});
+moreBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' && moreMenu.hidden) { e.preventDefault(); openMenu(); } });
 
 /* ---------- Drawer ---------- */
 function openDrawer() { if (!isNarrow()) return; document.body.classList.add('drawer-open'); $('scrim').hidden = false; }
@@ -649,7 +678,8 @@ document.addEventListener('keydown', e => {
 /* ---------- Static icons ---------- */
 $('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').innerHTML = ICON.open; $('startDemoIc').innerHTML = ICON.chat;
 for (const [id, ic] of [['startT1', 'lock'], ['startT2', 'ban'], ['startT3', 'check']]) $(id).insertAdjacentHTML('afterbegin', ICON[ic]); $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
-$('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('statsBtn').innerHTML = ICON.stats; $('openBtn').innerHTML = ICON.open;
+$('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('moreBtn').innerHTML = ICON.more;
+for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'open'], ['miLight', 'sun'], ['miDark', 'moon'], ['miSystem', 'auto'], ['miHelp', 'help']]) $(id).innerHTML = ICON[ic];
 $('sClose').innerHTML = ICON.back; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down; $('sList').innerHTML = ICON.list;
 $('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').innerHTML = ICON.lock.replace('width="22" height="22"', 'width="16" height="16"');
@@ -660,7 +690,7 @@ $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('p
 $('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
 $('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
 $('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
-$('starBtn').insertAdjacentHTML('afterbegin', ICON.star); $('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;
+$('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;
 $('lbClose').innerHTML = ICON.close; $('lbDl').innerHTML = ICON.download; $('lbPrev').innerHTML = ICON.back; $('lbNext').innerHTML = ICON.next; $('lbIn').innerHTML = ICON.plus; $('lbOut').innerHTML = ICON.minus; $('lbFit').innerHTML = ICON.fit;
 
 function refreshMedia() {

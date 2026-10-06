@@ -23,7 +23,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - Light, dark and system themes, and a responsive layout for desktop and phone.
-- A start screen for picking a chat, plus a sample chat with a five-step guided tour. The **?** button brings the tour back.
+- A start screen for picking a chat, plus a sample chat with a five-step guided tour. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
 The full feature list is in **[docs/features.md](docs/features.md)**, and release notes are in **[CHANGELOG.md](CHANGELOG.md)**.

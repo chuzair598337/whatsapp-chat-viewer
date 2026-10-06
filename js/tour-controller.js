@@ -8,7 +8,7 @@
      visit starts the five-step tour.
    - The only thing stored is the localStorage flag below, set when the
      tour is finished or skipped. It holds no chat data.
-   - The ? button in the header opens a small dialog to take the tour again
+   - "Help and guided tour" in the header's ⋮ menu opens a small dialog to take the tour again
      or open your own chat. It closes on Esc, ✕ or a click outside.
    ===================================================================== */
 const TOUR_KEY = 'has_completed_walkthrough';
@@ -18,8 +18,8 @@ const Tour = {
   steps: [
     {
       title: 'Import your WhatsApp chat',
-      text: 'Drag and drop an exported .zip or .txt file anywhere on this page, or use this button. All parsing happens locally in your browser, and nothing is ever sent to a server.',
-      target: () => vis('openBtn') || vis('sampleOpen') || vis('menuBtn')
+      text: 'Drag and drop an exported .zip or .txt file anywhere on this page, or use this link. Later, "Open another chat" in the ⋮ menu does the same. All parsing happens locally in your browser, and nothing is ever sent to a server.',
+      target: () => vis('sampleOpen') || vis('moreBtn')
     },
     {
       title: 'High-performance timeline',
@@ -44,9 +44,9 @@ const Tour = {
       target: () => { const el = VL.nodes.get(Tour.mediaRow); return el ? el.querySelector('.bubble') : null; }
     },
     {
-      title: 'Make it yours',
-      text: 'Switch between light, dark and system themes with this button. The ? button next to it brings this tour back. You\'re ready to open your own chats!',
-      target: () => vis('themeBtn')
+      title: 'Everything else is in the menu',
+      text: 'The ⋮ menu has your starred messages, chat statistics, light and dark themes, and this tour if you want it again. You\'re ready to open your own chats!',
+      target: () => vis('moreBtn')
     }
   ],
 
@@ -114,7 +114,7 @@ const Tour = {
     document.body.classList.remove('touring');
     this.complete();
     const f = this.prevFocus; this.prevFocus = null;
-    if (f && f.focus && document.contains(f) && f.offsetParent !== null) f.focus(); else $('tourBtn').focus();
+    if (f && f.focus && document.contains(f) && f.offsetParent !== null) f.focus(); else $('moreBtn').focus();
   },
 
   /* ---------- Spotlight and popover placement ---------- */
@@ -170,7 +170,7 @@ function vis(id) {
   return b.width && b.height && b.right > 0 && b.left < innerWidth && b.bottom > 0 && b.top < innerHeight ? el : null;
 }
 
-$('tourBtn').innerHTML = ICON.help; $('twClose').innerHTML = ICON.close;
+$('twClose').innerHTML = ICON.close;
 $('twDemoIc').innerHTML = ICON.chat; $('twOwnIc').innerHTML = ICON.open;
 $('tourBtn').onclick = () => Tour.welcome();
 $('twDemo').onclick = () => Tour.demo();
