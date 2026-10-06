@@ -55,6 +55,8 @@ const SAMPLE = [
   `[16/03/2026, 9:16:45${N}AM] Bilal Ahmed: ${L}<attached: 00000032-Margalla Park Rangers.vcf>`,
   `[16/03/2026, 9:16:52${N}AM] Bilal Ahmed: Ranger desk number, in case anyone gets lost next time`,
   `[16/03/2026, 9:16:30${N}AM] Omar Farooq: 👍`,
+  `[02/04/2026, 7:45:10${N}PM] Sara Malik: ${L}<attached: 00000033-PHOTO-2026-04-02-19-45-10.jpg>`,
+  `[02/04/2026, 7:45:30${N}PM] Sara Malik: Scouting photo for April's trail. Route details: https://www.alltrails.com/trail/ridge-loop`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(b => r(b), type, q));
@@ -122,6 +124,13 @@ async function makeSampleMedia() {
   staged.set('song', ['00000031-Trail-playlist.mp3', makeWav(9)]);
   staged.set('vcf', ['00000032-Margalla Park Rangers.vcf', new Blob([['BEGIN:VCARD', 'VERSION:3.0', 'N:;Margalla Park Rangers;;;', 'FN:Margalla Park Rangers',
     'ORG:Margalla Park Rangers', 'TEL;type=WORK;type=VOICE;waid=15550100:+1 555 0100', 'EMAIL;type=WORK:desk@rangers.example', 'END:VCARD'].join('\r\n')], { type: 'text/vcard' })]);
+  // April scouting photo (a second month, for the media gallery's month sections)
+  c = document.createElement('canvas'); c.width = 720; c.height = 960; g = c.getContext('2d');
+  let sky = g.createLinearGradient(0, 0, 0, 960); sky.addColorStop(0, '#f7b267'); sky.addColorStop(1, '#f4845f'); g.fillStyle = sky; g.fillRect(0, 0, 720, 960);
+  g.fillStyle = '#5b3a5e'; g.beginPath(); g.moveTo(0, 620); g.lineTo(200, 430); g.lineTo(330, 540); g.lineTo(520, 360); g.lineTo(720, 560); g.lineTo(720, 960); g.lineTo(0, 960); g.fill();
+  g.fillStyle = '#3a2440'; g.beginPath(); g.moveTo(0, 760); g.lineTo(260, 640); g.lineTo(460, 720); g.lineTo(720, 650); g.lineTo(720, 960); g.lineTo(0, 960); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.9)'; g.font = 'bold 40px sans-serif'; g.fillText('Ridge loop, April', 40, 90);
+  staged.set('apr', ['00000033-PHOTO-2026-04-02-19-45-10.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();
   for (const [, [name, blob]] of staged) if (blob) Media.stage(out, name, blob);

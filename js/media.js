@@ -159,10 +159,10 @@ const AudioCtl = {
     if (at != null) { if (isFinite(a.duration)) a.currentTime = at * a.duration; return; }
     if (a.paused) { pauseVideos(); a.play().catch(() => {}); } else a.pause();
   },
-  speed() { this.rate = this.rate === 1 ? 1.5 : this.rate === 1.5 ? 2 : 1; if (this.el) this.el.playbackRate = this.rate; layer.querySelectorAll('.aplayer').forEach(n => this.paintNode(n)); },
+  speed() { this.rate = this.rate === 1 ? 1.5 : this.rate === 1.5 ? 2 : 1; if (this.el) this.el.playbackRate = this.rate; document.querySelectorAll('.aplayer').forEach(n => this.paintNode(n)); },
   stop() { if (this.el) { this.el.pause(); this.el.removeAttribute('src'); this.el.load(); } this.name = null; this.dur.clear(); this.failed.clear(); },
   fmt(s) { if (!isFinite(s)) return '–:––'; s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); },
-  paintFor(name) { if (name) layer.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"]').forEach(n => this.paintNode(n)); },
+  paintFor(name) { if (name) document.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"]').forEach(n => this.paintNode(n)); },
   paint() { this.paintFor(this.name); },
   paintNode(n) {
     const name = n.dataset.audio, a = this.el, cur = !!a && name === this.name;

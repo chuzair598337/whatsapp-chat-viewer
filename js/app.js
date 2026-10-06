@@ -33,6 +33,7 @@ const isStale = e => e && e.message === SUPERSEDED;
 const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || /^WhatsApp Chat.*\.txt$/i.test(baseName(n));
 async function openFiles(list) {
   if (typeof Tour !== 'undefined') Tour.dismiss();
+  Gallery.close();
   const files = [...(list || [])].filter(Boolean);
   if (!files.length) return;
   closeDrawer();
@@ -234,11 +235,12 @@ function linkMedia() {
 }
 function renderMediaSummary() {
   const md = S.media, c = md.c, sm = ic => ic.replace('width="22" height="22"', 'width="14" height="14"');
-  const tiles = [['Photos', c.image + c.gif, ICON.image], ['Videos', c.video, ICON.video], ['Audio', c.audio, ICON.audio],
-    ['Stickers', c.sticker, ICON.sticker], ['Documents', c.document, ICON.document], ['Other', c.contact + c.media, ICON.contact]];
-  $('mediaGrid').innerHTML = tiles.map(([k, v, i]) => '<div class="mt"><span>' + sm(i) + k + '</span><b>' + nf(v) + '</b></div>').join('');
-  const total = tiles.reduce((a, t) => a + t[1], 0);
-  $('mediaTotal').textContent = nf(total);
+  // Each tile opens the media gallery on that category (js/components/media-gallery.js), so the counts come from it.
+  $('mediaGrid').innerHTML = GAL_CATS.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + label + ': ' + Gallery.count(k) + '">' +
+    '<i>' + sm(ICON[GAL_ICON[k]]) + '</i><b>' + nf(Gallery.count(k)) + '</b><span>' + (k === 'docs' ? 'Docs' : label) + '</span></button>').join('');
+  const total = c.image + c.gif + c.video + c.audio + c.sticker + c.document + c.contact + c.media;
+  $('mediaTotal').textContent = nf(Gallery.count('all'));
+  Gallery.refresh();
   const note = $('mediaNote');
   note.classList.toggle('warn', md.missing > 0);
   if (md.files || md.found) note.textContent = nf(md.found) + ' shown from the archive' + (md.missing ? ' · ' + nf(md.missing) + ' missing from it' : '') + (md.omitted ? ' · ' + nf(md.omitted) + ' omitted at export' : '') + '.';
@@ -535,9 +537,9 @@ $('statsBody').addEventListener('click', e => { const b = e.target.closest('.day
 $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(); openStats(); };
 
 /* ---------- Modals ---------- */
-let lastFocus = null;
-function openModal(id) { lastFocus = document.activeElement; const m = $(id); m.hidden = false; const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
-function closeModal(id) { $(id).hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+// Each modal remembers what had focus, so one opened from another (a contact from the media gallery) returns to the right place.
+function openModal(id) { const m = $(id); m.ret = document.activeElement; m.hidden = false; const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
+function closeModal(id) { const m = $(id); m.hidden = true; if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
 }
@@ -669,7 +671,7 @@ document.addEventListener('keydown', e => {
   if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
-    for (const id of ['vcModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
+    for (const id of ['vcModal', 'galModal', 'statsModal', 'meModal']) if (!$(id).hidden) { closeModal(id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }
     if (document.body.classList.contains('drawer-open')) closeDrawer();
   }

@@ -304,7 +304,7 @@ const Waves = {
         const max = Math.max(...peaks) || 1;
         if (Media.get(name) !== e) continue; // a different chat was opened meanwhile
         Media.waves.set(name, peaks.map(p => 0.12 + 0.88 * p / max));
-        layer.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"] .atrack .wave').forEach(svg => { svg.outerHTML = waveSVG(name); });
+        document.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"] .atrack .wave').forEach(svg => { svg.outerHTML = waveSVG(name); });
         AudioCtl.paintFor(name);
       } catch (err) { /* keep the pseudo-waveform */ }
     }
@@ -326,7 +326,7 @@ const Posters = {
       if (!url) continue;
       if (Media.get(name) !== e) { URL.revokeObjectURL(url); continue; }
       Media.posters.set(name, url);
-      layer.querySelectorAll('video[data-vid="' + CSS.escape(name) + '"]').forEach(v => { if (!v.getAttribute('poster')) v.setAttribute('poster', url); });
+      document.querySelectorAll('video[data-vid="' + CSS.escape(name) + '"]').forEach(v => { if (!v.getAttribute('poster')) v.setAttribute('poster', url); });
     }
     this.busy = false;
   }
@@ -476,7 +476,7 @@ const Cards = {
       try { if (e.size < 8e6) list = parseVCards(await e.blob.text()); } catch (err) { /* keep the file-name card */ }
       if (Media.get(name) !== e) continue; // a different chat was opened meanwhile
       Media.cards.set(name, list);
-      layer.querySelectorAll('.vcard[data-vcf="' + CSS.escape(name) + '"]').forEach(el => {
+      document.querySelectorAll('.vcard[data-vcf="' + CSS.escape(name) + '"]').forEach(el => {
         const row = el.closest('.row'); el.outerHTML = contactHTML(e); if (row) VL.remeasure(+row.dataset.i);
       });
     }
@@ -679,17 +679,19 @@ const SITES = [
 function safeUrl(u) {
   try { const x = new URL(/^www\./i.test(u) ? 'https://' + u : u); return x.protocol === 'http:' || x.protocol === 'https:' ? x : null; } catch (e) { return null; }
 }
+// The site's name and badge colour, and a short address, all worked out from the URL itself.
+function siteOf(x) {
+  const host = x.hostname.replace(/^www\./, ''), site = SITES.find(sv => sv[0].test(host));
+  const shown = (host + x.pathname + x.search).replace(/\/$/, '');
+  return { name: site ? site[1] : host, color: site ? site[2] : 'var(--n' + colorIdx(host) + ')', shown: shown.length > 70 ? shown.slice(0, 68) + '…' : shown };
+}
 function linkCards(text) {
   const urls = [];
   for (const mm of text.matchAll(RE_URL)) { const x = safeUrl(mm[1]); if (x && !urls.some(u => u.href === x.href)) urls.push(x); }
   if (!urls.length) return '';
-  const x = urls[0], host = x.hostname.replace(/^www\./, '');
-  const site = SITES.find(sv => sv[0].test(host));
-  const name = site ? site[1] : host;
-  const color = site ? site[2] : 'var(--n' + colorIdx(host) + ')';
-  const shown = (host + x.pathname + x.search).replace(/\/$/, '');
+  const x = urls[0], { name, color, shown } = siteOf(x);
   return '<div class="lcard"><a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer"><span class="lbadge" style="background:' + color + '">' + esc((name[0] || '?').toUpperCase()) + '</span>' +
-    '<span class="ltxt"><b>' + esc(name) + '</b><small title="' + esc(x.href) + '">' + esc(shown.length > 70 ? shown.slice(0, 68) + '…' : shown) + '</small></span></a>' +
+    '<span class="ltxt"><b>' + esc(name) + '</b><small title="' + esc(x.href) + '">' + esc(shown) + '</small></span></a>' +
     '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="Copy link" title="Copy link">' + ICON.copy + '</button></div>' +
     (urls.length > 1 ? '<div class="lmore">+ ' + (urls.length - 1) + ' more link' + (urls.length > 2 ? 's' : '') + ' in this message</div>' : '');
 }
@@ -859,7 +861,7 @@ function noteDims(el, w, h) {
 }
 layer.addEventListener('load', e => { if (e.target.tagName === 'IMG') noteDims(e.target, e.target.naturalWidth, e.target.naturalHeight); }, true);
 layer.addEventListener('loadedmetadata', e => { if (e.target.tagName === 'VIDEO') noteDims(e.target, e.target.videoWidth, e.target.videoHeight); }, true);
-function pauseVideos(except) { layer.querySelectorAll('.mvid:not(.gifv) video').forEach(v => { if (v !== except && !v.paused) v.pause(); }); }
+function pauseVideos(except) { [...layer.querySelectorAll('.mvid:not(.gifv) video'), $('lbVid')].forEach(v => { if (v !== except && !v.paused) v.pause(); }); }
 function vUI(v) {
   const box = v.closest('.mvid');
   if (!box || box.classList.contains('gifv')) return;
@@ -980,32 +982,47 @@ document.addEventListener('click', async ev => {
 });
 
 /* ---------- Photo viewer ---------- */
-const LB = { k: -1, start: -1 };
-function openLightbox(name) {
-  const k = (S.images || []).findIndex(x => x.name === name);
+// list: what Previous and Next step through. The chat passes its photos; the media gallery passes
+// the items in its current filter, which can include videos and stickers.
+const LB = { k: -1, start: -1, list: [] };
+function openLightbox(name, list) {
+  list = list || S.images || [];
+  const k = list.findIndex(x => x.name === name);
   if (k < 0) return;
+  LB.list = list; LB.chat = list === S.images;
   LB.k = LB.start = k; LB.focus = document.activeElement;
   $('lb').hidden = false; showLb(); $('lbClose').focus();
 }
 function showLb() {
-  const x = S.images[LB.k], m = S.msgs[x.i], e = Media.get(x.name);
+  const x = LB.list[LB.k], m = S.msgs[x.i], e = Media.get(x.name);
   if (!e) return;
-  $('lbImg').src = e.url; $('lbImg').alt = m.message || 'Photo';
+  const v = $('lbVid'), vid = VIDEO_EXT.test(extOf(e.name)), gif = x.type === 'gif';
+  $('lb').classList.toggle('isvid', vid);
+  lbImg.hidden = vid; v.hidden = !vid;
+  if (vid) {
+    lbImg.removeAttribute('src');
+    v.loop = v.muted = gif; v.controls = !gif; v.src = e.url;
+    if (AudioCtl.el) AudioCtl.el.pause();
+    v.play().catch(() => {});
+  } else { v.pause(); v.removeAttribute('src'); lbImg.src = e.url; }
+  lbImg.alt = m.message || TYPE_LABEL[x.type] || 'Photo';
   $('lbWho').textContent = m.isOutgoing ? 'You' : m.sender;
   $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;
-  $('lbPos').textContent = (LB.k + 1) + ' / ' + S.images.length;
+  $('lbPos').textContent = (LB.k + 1) + ' / ' + LB.list.length;
   $('lbCap').innerHTML = m.message ? formatText(m.message) : ''; $('lbCap').hidden = !m.message;
   const dl = $('lbDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   zReset();
-  $('lbPrev').disabled = LB.k <= 0; $('lbNext').disabled = LB.k >= S.images.length - 1;
+  $('lbPrev').disabled = LB.k <= 0; $('lbNext').disabled = LB.k >= LB.list.length - 1;
 }
-function lbStep(d) { const k = LB.k + d; if (k < 0 || k >= S.images.length) return; LB.k = k; showLb(); }
+function lbStep(d) { const k = LB.k + d; if (k < 0 || k >= LB.list.length) return; LB.k = k; showLb(); }
 function closeLightbox(silent) {
   const lb = $('lb');
   if (!lb || lb.hidden) return;
   lb.hidden = true; $('lbImg').removeAttribute('src');
+  const v = $('lbVid'); v.pause(); v.removeAttribute('src'); v.load();
   if (silent) return;
-  if (LB.k !== LB.start && S.images[LB.k]) VL.scrollTo(S.m2i[S.images[LB.k].i], 'center');
+  const x = LB.list[LB.k];
+  if (LB.chat && LB.k !== LB.start && x && S.m2i[x.i] >= 0) VL.scrollTo(S.m2i[x.i], 'center');
   if (LB.focus && LB.focus.focus && document.contains(LB.focus)) LB.focus.focus();
 }
 $('lbClose').onclick = () => closeLightbox();
@@ -1048,7 +1065,7 @@ lbImg.addEventListener('dragstart', e => e.preventDefault());
 const ptrs = new Map();
 let gest = null, moved = false;
 stage.addEventListener('pointerdown', e => {
-  if (e.target.closest('.lb-nav')) return;
+  if (e.target.closest('.lb-nav') || e.target.tagName === 'VIDEO') return; // leave the video's own controls alone
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
   try { stage.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
   moved = false;

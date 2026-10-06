@@ -143,8 +143,23 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - `Esc` closes it.
 
 **Sidebar media summary**
-- Counts of photos, videos, audio, stickers, documents and other media.
+- A tile for each kind (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts) with its count. Tapping one opens the media gallery on that kind, and **View all** opens it on All.
 - How many referenced files were found and how many are missing.
+
+**Media, links and docs gallery** (`js/components/media-gallery.js`)
+- Opens from the sidebar tiles or **Media, links and docs** in the ⋮ menu, on **All** unless a tile picked a kind.
+- A row of chips at the top (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts), each with its count. It scrolls sideways on narrow screens, and the arrow keys move between chips.
+- Everything is newest first, under month headings ("This month", then "March 2026" and so on).
+- Photos (with GIFs), videos and stickers are a square grid: 4 across, or 3 on phones. Videos show their length and a play icon. Tapping one opens the full-screen viewer, and Previous and Next (or swiping) step through the items in the current filter, playing videos and GIFs in place.
+- Documents, audio, links and contacts are rows:
+  - documents: type badge, title, page count, size, sender and date; PDFs open in the PDF viewer, and there is a download button;
+  - audio: the same voice-note and music players as in the chat, with waveform, seek and speed;
+  - links: site badge, site name, address, the message text around the link, copy and open buttons;
+  - contacts: the contact card with **View contact** and **Save .vcf**.
+- Every row has a **Show in chat** button that closes the gallery and jumps to the message.
+- Files missing from the export are still listed, with "Not in export" or the reason, so the counts match the chat. Tapping one shows its message. A `.txt`-only import gets a note saying files can't be shown.
+- A category with nothing in it says so ("No videos in this chat").
+- Items are added 120 at a time as you scroll, so chats with thousands of files stay smooth.
 
 ## 7. Search and navigation
 
@@ -201,12 +216,12 @@ The statistics window shows:
   - a "video omitted" placeholder.
 
   New features add a line to it; see PROJECT_RULES.md, section 5.
-- **Guided tour:** 24 steps in four chapters. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
+- **Guided tour:** 25 steps in four chapters. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
   1. **Getting started:** opening a chat; the timeline and date badges.
-  2. **Finding things:** search; date and sender filters; jump to date; statistics; "which one is you" and the date order.
+  2. **Finding things:** search; date and sender filters; jump to date; statistics; media, links and docs; "which one is you" and the date order.
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
   4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links.
-  5. The ⋮ menu (starred messages, statistics, themes, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
+  5. The ⋮ menu (media, links and docs, starred messages, statistics, themes, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
 
@@ -234,6 +249,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
 | `js/viewer.js` | Formatting, the virtual list, row rendering, media players, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
+| `js/components/media-gallery.js` | The media, links and docs gallery: its index of attachments and links, the filter chips, grid and list layouts, and paging |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |

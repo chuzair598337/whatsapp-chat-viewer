@@ -60,6 +60,12 @@ const Tour = {
     }),
     sideStep({
       sec: 'Finding things',
+      title: 'Media, links and docs',
+      text: 'Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. It is also in the ⋮ menu.',
+      id: 'mediaSec'
+    }),
+    sideStep({
+      sec: 'Finding things',
       title: 'Which one is you',
       text: 'Pick yourself here and your messages move to the right, in green. The viewer makes a good guess, and the date order (day/month or month/day) is detected for you too, with an override below it.',
       id: 'meSel', field: true
@@ -157,7 +163,7 @@ const Tour = {
     {
       sec: 'Getting started',
       title: 'The ⋮ menu',
-      text: 'Your starred messages, chat statistics, light and dark themes, and this tour are all here. To star a message, hover over it (or tap it on a phone) and press the star.',
+      text: 'Media, links and docs, your starred messages, chat statistics, light and dark themes, and this tour are all here. To star a message, hover over it (or tap it on a phone) and press the star.',
       prep: () => closeDrawer(),
       target: () => vis('moreBtn')
     },

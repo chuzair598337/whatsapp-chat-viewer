@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Media, links and docs:** a gallery of everything shared in the chat, like WhatsApp's.
+  - Chips at the top switch between All, Photos, Videos, Audio, Documents, Stickers, Links and Contacts, with counts.
+  - Items are newest first under month headings. Photos, videos and stickers show as a square grid, and the rest as rows.
+  - The photo viewer steps through the current filter and now plays videos and GIFs too.
+  - Rows reuse the chat's players, PDF viewer and contact cards, and have a **Show in chat** button.
+  - Missing files are listed with the reason, and very large chats load as you scroll.
+  - Open it from the new tiles in the sidebar's media section or from the ⋮ menu. The tour has a step for it.
+- **Sample chat:** an April photo and link, so the gallery shows two months.
+
 ## 1.4.0 (2026-10-06)
 
 - **Fuller guided tour:** 24 steps instead of five, in four chapters (Getting started, Finding things, Messages, Media). It points at the real control or a real sample message for: search, date and sender filters, jump to date, statistics, "which one is you", formatting, Read more, edited, deleted and reply messages, reactions, system notices, date badges, calls, polls, photos, videos and GIFs, stickers, voice notes and audio, the PDF viewer, contact cards, locations, links and the ⋮ menu. It ends with a summary of what the viewer can do. Sidebar steps open the side panel on phones and tablets, and a progress bar replaces the dots.

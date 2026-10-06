@@ -142,6 +142,13 @@ These are the suggestions from the audit of official export features. Each one w
 - [x] **Contact card in the sample chat.** *New (Phase 9).*
 - Forwarded labels are not shown: WhatsApp's text export doesn't record them, so the tour's last card says so.
 
+## Phase 10: media gallery (2026-10-06)
+
+- [x] **Media, links and docs gallery** with filter chips, month sections, grid and list layouts, empty states and paging. *New (Phase 10).*
+- [x] **Photo viewer steps through the gallery's filter**, including videos and GIFs. *New (Phase 10).*
+- [x] **Sidebar media tiles open the gallery** on their category. *New (Phase 10).*
+- [x] **Sample chat: a second month** (an April photo and link). *New (Phase 10).*
+
 ## Verification done for this list
 
 - iPhone ZIP with photos, video, stickers, voice, PDF and contacts.

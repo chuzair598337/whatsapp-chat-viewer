@@ -81,7 +81,7 @@
         <div class="field"><label for="fSender">Sender</label><select id="fSender"></select></div>
       </section>
       <section class="sb-sec" id="mediaSec">
-        <h3>Media <span id="mediaTotal"></span></h3>
+        <h3>Media, links and docs <button class="linkbtn" id="mediaAll">View all <span id="mediaTotal"></span></button></h3>
         <div class="mgrid" id="mediaGrid"></div>
         <p class="mnote" id="mediaNote"></p>
       </section>
@@ -111,6 +111,7 @@
       <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)"></button>
       <button class="ibtn" id="moreBtn" aria-label="Menu" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu"></button>
       <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden>
+        <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml">Media, links and docs</span></button>
         <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
         <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml">Chat statistics</span></button>
         <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml">Open another chat</span></button>
@@ -174,8 +175,15 @@
 </div>
 <div id="lb" class="lb" hidden role="dialog" aria-modal="true" aria-label="Photo viewer">
   <div class="lb-top"><div class="lb-who"><b id="lbWho"></b><small id="lbWhen"></small></div><span id="lbPos" class="lb-pos"></span><div class="lb-tools"><button class="ibtn" id="lbOut" aria-label="Zoom out" title="Zoom out (−)"></button><span class="lb-zoom" id="lbZoom">100%</span><button class="ibtn" id="lbIn" aria-label="Zoom in" title="Zoom in (+)"></button><button class="ibtn" id="lbRot" aria-label="Rotate photo" title="Rotate 90° (R)"></button><button class="ibtn" id="lbFit" aria-label="Fit to screen" title="Fit to screen (0)"></button></div><a class="ibtn" id="lbDl" title="Download photo" aria-label="Download photo"></a><button class="ibtn" id="lbClose" aria-label="Close photo viewer"></button></div>
-  <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo"></button><img id="lbImg" alt=""><button class="lb-nav" id="lbNext" aria-label="Next photo"></button></div>
+  <div class="lb-stage" id="lbStage"><button class="lb-nav" id="lbPrev" aria-label="Previous photo"></button><img id="lbImg" alt=""><video id="lbVid" playsinline hidden></video><button class="lb-nav" id="lbNext" aria-label="Next photo"></button></div>
   <div class="lb-cap txt" id="lbCap"></div>
+</div>
+<div id="galModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="galTitle">
+  <div class="sheet gal">
+    <header><h2 id="galTitle">Media, links and docs</h2><button class="ibtn" data-close aria-label="Close media, links and docs"></button></header>
+    <div class="gchips" id="galChips" role="tablist" aria-label="Show"></div>
+    <div class="gbody" id="galBody"></div>
+  </div>
 </div>
 <div id="vcModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="vcTitle">
   <div class="sheet narrow">
@@ -226,6 +234,7 @@
 <script src="js/viewer.js"></script>
 <script src="js/demo-data.js"></script>
 <script src="js/app.js"></script>
+<script src="js/components/media-gallery.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>
 </html>
