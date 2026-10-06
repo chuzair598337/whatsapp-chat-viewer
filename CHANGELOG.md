@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.4.0 (2026-10-06)
 
 - **Fuller guided tour:** 24 steps instead of five, in four chapters (Getting started, Finding things, Messages, Media). It points at the real control or a real sample message for: search, date and sender filters, jump to date, statistics, "which one is you", formatting, Read more, edited, deleted and reply messages, reactions, system notices, date badges, calls, polls, photos, videos and GIFs, stickers, voice notes and audio, the PDF viewer, contact cards, locations, links and the ⋮ menu. It ends with a summary of what the viewer can do. Sidebar steps open the side panel on phones and tablets, and a progress bar replaces the dots.
 - **Sample chat:** a shared contact card (a made-up park ranger desk), for the contact card step.
