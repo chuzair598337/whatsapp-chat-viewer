@@ -18,7 +18,10 @@
 - **Search bar on large screens** now opens under the chat header, as on phones, instead of in the side panel.
 - **Search bar on phones:** the results-list button is gone, and a clear ✕ close button sits at the end of the bar. It closes and clears the search.
 - **Esc** closes the dialog on top (for example the sort sheet over the gallery), not the one under it.
-- **Gap under the last message.** The chat now leaves room under its last message, so with date filters on (or at the end of any chat) it no longer sits flush with the bottom edge.
+- **Gap under the last message.** The chat now leaves a 28 px gap under its last message, so with date filters on (or at the end of any chat) it no longer sits flush with the bottom edge.
+- **iPhone HEIC photos show in every browser.** Outside Safari they are decoded with a bundled HEIC decoder (libheif, WebAssembly, loaded only when a chat has one; nothing is fetched) and shown in the chat, the photo viewer and the gallery. Download still saves the original `.heic`; the dev preview, which can't save `.heic`, saves the photo as a `.jpg`. A HEIC that can't be decoded still gets the file card.
+- **The star no longer appears on hover.** Hovering a message shows only the ⌄ menu button, as in WhatsApp Web; Star and Unstar are in the message menu.
+- **The message menu opens under its message**, lined up with the bubble and only as wide as its options. Near the bottom of the window the chat scrolls up to make room; at the very end of the chat the menu opens above the message. It used to stretch across the whole window on computers.
 - **Chat statistics:** the charts (busiest days, by weekday, by hour of day) now come right after the totals, and **Messages by person** moves below them.
 - **Messages by person sorts by any column.** Tap Person, Messages, Share, Words or Media to sort; tap again to reverse. It now lists everyone, not just the top 50.
 - **Sample chat:** an Arabic verse with its Urdu translation in one message, and an Arabic group message, to try the fonts, search and the message menu.

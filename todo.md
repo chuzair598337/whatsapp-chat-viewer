@@ -218,6 +218,9 @@ Findings from the audit of a large real group export (many members, mixed langua
 - [x] No gap under the last message when date filters are on. *New (Phase 16).*
 - [x] Chat statistics: charts above Messages by person. *New (Phase 16).*
 - [x] Messages by person sortable by every column, both directions; lists everyone. *New (Phase 16).*
+- [x] HEIC photos show outside Safari (bundled libheif). *New (Phase 16).*
+- [x] No star button on hover; the menu has Star. *New (Phase 16).*
+- [x] Message menu sized to its options and placed under the message, scrolling the chat up when needed. *New (Phase 16).*
 
 ## Verification done for this list
 

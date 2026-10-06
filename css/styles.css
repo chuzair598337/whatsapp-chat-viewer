@@ -526,8 +526,6 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .fbar #fText { min-width: 0; overflow-wrap: anywhere; }
 
 /* ---------- Stars ---------- */
-.starbtn { position: absolute; top: 2px; width: 28px; height: 28px; border: 0; border-radius: 50%; display: grid; place-items: center; background: var(--panel); color: var(--ink-3); box-shadow: 0 1px 2px var(--shadow); cursor: pointer; opacity: 0; transition: opacity .12s; z-index: 2; }
-.starbtn svg { width: 16px; height: 16px; }
 /* Message menu (js/components/message-menu.js): the ⌄ button shows on hover, like WhatsApp Web. */
 .mmore { position: absolute; top: 2px; inset-inline-end: 2px; z-index: 2; width: 26px; height: 22px; padding: 0; border: 0; border-radius: 0 6px 0 10px; display: grid; place-items: center; background: inherit; color: var(--ink-3); cursor: pointer; opacity: 0; transition: opacity .12s; box-shadow: -6px 0 8px -2px var(--mm-fade, transparent); }
 .mmore svg { width: 18px; height: 18px; }
@@ -539,16 +537,11 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 /* Long-press opens the menu on phones, so the browser's own callout and text selection stay out of the way. */
 .bubble { -webkit-touch-callout: none; }
 @media (hover: none) { .bubble { -webkit-user-select: none; user-select: none; } }
-.ctxmenu { position: fixed; top: 0; left: 0; inset-inline-end: auto; z-index: 90; min-width: 220px; max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px); overflow-y: auto; transform-origin: top left; }
+/* .menu.ctxmenu outranks the header .menu rules further down (absolute, pinned to the right), which stretched it across the window. */
+.menu.ctxmenu { position: fixed; top: 0; left: 0; right: auto; inset-inline-end: auto; z-index: 90; width: max-content; min-width: 200px; max-width: min(300px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); overflow-y: auto; transform-origin: top left; }
 .ctxmenu .mm-head { display: grid; gap: 1px; padding: 4px 18px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
 .ctxmenu .mm-head b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ctxmenu .mm-head small { color: var(--ink-3); font-size: 12px; }
-.row.in .starbtn { inset-inline-end: -34px; }
-.row.out .starbtn { inset-inline-start: -34px; }
-@media (hover: hover) { .row:hover .starbtn { opacity: 1; } }
-.starbtn:focus-visible, .bubble:focus-within .starbtn { opacity: 1; }
-.starbtn[aria-pressed="true"] { color: #f5b301; }
-@media (hover: none) { .starbtn { pointer-events: none; } .row.tapped .starbtn { opacity: 1; pointer-events: auto; } }
 .stard { display: inline-flex; color: var(--ink-3); }
 .stard svg { width: 12px; height: 12px; }
 .meta.ov .stard { color: #fff; }

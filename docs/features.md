@@ -119,7 +119,8 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 |---|---|
 | **Photos** | Loaded lazily (`loading="lazy"`), with the space reserved from the image's aspect ratio. Clicking opens a full-screen viewer (details below). |
 | **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. iPhone animated stickers (`.was`, a ZIP holding a Lottie animation) play and loop with the bundled Lottie player, in the chat and in the gallery; if one can't be read it falls back to an "Animated sticker" file card with a download button. |
-| **Files the browser can't show** | A photo, sticker or video the browser can't decode (HEIC outside Safari, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
+| **HEIC photos** (iPhone `.heic` / `.heif`) | Safari shows them itself. Other browsers get them decoded by the bundled libheif (`js/vendor/libheif`, WebAssembly, loaded only when needed, nothing fetched) and shown like any photo, in the chat, the photo viewer and the gallery. Download keeps the original file. |
+| **Files the browser can't show** | A photo, sticker or video the browser can't decode (a HEIC that can't be decoded, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
 | **GIFs** | Marked with a GIF badge and loop automatically. iPhone exports store GIFs as `-GIF-….mp4`, so these play as muted looping video. |
 | **Video** | Shown like WhatsApp: a thumbnail from the first frame, a big play button, a video icon with the length in the bottom-left corner, and the time in the bottom-right. The thumbnail keeps the video's real shape, so a portrait phone video (down to 9:16) is shown up to 400 px tall instead of being boxed into landscape. After the first play it switches to custom controls: play/pause, elapsed and total time, a seek bar, mute and full screen. A poster image is taken from the first frame. Only one video or voice note plays at a time. |
 | **Voice notes** (`PTT-`, iPhone `-AUDIO-`, `.opus`) | Card with the sender's avatar and a mic badge. Its 36-bar waveform is decoded from the audio with the Web Audio API. Tap or drag the waveform to seek, and switch speed between 1×, 1.5× and 2×. |
@@ -177,7 +178,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
 - **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
-- **Starred messages:** hover over a message on desktop, or tap it on a phone, and press the star. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
+- **Starred messages:** open a message's menu (right-click, long-press or the ⌄ button) and pick **Star**. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](../deferred.md)).
 - **Jump to date:** a date picker in the sidebar, plus the busiest days listed in Statistics, take you straight to that day.
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
 - **Keyboard shortcuts:**
@@ -301,7 +302,8 @@ The scripts are plain browser scripts with no build step. They share globals and
 
 `js/components/message-menu.js`, like WhatsApp's long-press menu.
 
-- **Opening it:** long-press a message on a phone or tablet (the tap that ends it doesn't open the photo), right-click it on a computer, press the ⌄ button that appears on a message on hover (on phones, after tapping the message), or press Shift+F10 or the menu key on a focused message. Right-clicking a text selection keeps the browser's own menu, for copying part of a message.
+- **Opening it:** long-press a message on a phone or tablet (the tap that ends it doesn't open the photo), right-click it on a computer, press the ⌄ button that appears on a message on hover (the only button shown on hover, as in WhatsApp Web) (on phones, after tapping the message), or press Shift+F10 or the menu key on a focused message. Right-clicking a text selection keeps the browser's own menu, for copying part of a message.
+- **Where it opens:** under the message, lined up with its bubble (the right edge for sent messages, the left for received), and only as wide as its options. If it doesn't fit below, the chat scrolls up to make room; at the very end of the chat it opens above the message instead.
 - **The header** names the sender and the time.
 - **Actions, by message:**
   - **Star / Unstar:** every message.

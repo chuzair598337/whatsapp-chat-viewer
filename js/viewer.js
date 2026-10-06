@@ -300,7 +300,7 @@ class Fenwick {
 }
 const scroller = $('scroller'), layer = $('layer'), spacer = $('spacer');
 // Room under the last message, so it never sits flush with the bottom edge (WhatsApp leaves a gap above its composer).
-const END_PAD = 16;
+const END_PAD = 28;
 const VL = {
   items: [], h: null, fw: null, nodes: new Map(), raf: 0, target: null, width: 0,
   set(items, target) {
@@ -821,7 +821,7 @@ function attHTML(a, m) {
     if (a.type === 'gif' && vid) return videoHTML(e, true);
     if (a.type === 'image' || a.type === 'gif') {
       const d = Media.dims.get(e.name), r = d ? clampR(d.w / d.h) : 4 / 3;
-      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="' + t('media.open_photo') + '"><img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
+      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="' + t('media.open_photo') + '"><img src="' + (e.view || e.url) + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
     }
     if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="' + t('type.sticker') + '" loading="lazy" data-bad="' + esc(e.name) + '">';
     if (a.type === 'video') return videoHTML(e, false);
@@ -910,12 +910,55 @@ layer.addEventListener('error', e => {
   const el = e.target, n = el.dataset && el.dataset.bad;
   if (!n || !el.getAttribute('src') || Media.cantShow(n)) return;
   const f = Media.get(n); if (!f || el.getAttribute('src') !== f.url) return; // a late error from a closed chat
+  const redraw = () => { const row = el.closest('[data-i]'); if (row) rerenderRow(+row.dataset.i); };
+  if (isHeic(f.name)) { Heic.view(f).then(redraw, () => { Media.bad.add(Media.key(n)); redraw(); }); return; }
   Media.bad.add(Media.key(n));
-  const row = el.closest('[data-i]');
-  if (row) rerenderRow(+row.dataset.i);
+  redraw();
 }, true);
 // An animated sticker that couldn't be played (see Was) is redrawn the same way.
 layer.addEventListener('media-bad', e => { const row = e.target.closest('[data-i]'); if (row) rerenderRow(+row.dataset.i); });
+
+/* ---------- HEIC and HEIF photos ----------
+   iPhones save photos as HEIC, which only Safari can show. When a HEIC photo fails to load, it is decoded
+   with the bundled libheif (js/vendor/libheif, WebAssembly, loaded only then) and drawn as a JPEG kept in
+   e.view; the original file is still what downloads and shares. If it can't be decoded, the file card stays. */
+const isHeic = n => /^(heic|heif)$/.test(extOf(n));
+const Heic = {
+  lib: null, jobs: new Map(),
+  load() {
+    if (!this.lib) this.lib = new Promise((res, rej) => {
+      const ready = () => { try { res(window.libheif()); } catch (err) { rej(err); } };
+      if (window.libheif) return ready();
+      const s = document.createElement('script');
+      s.src = 'js/vendor/libheif/libheif-bundle.js';
+      s.onload = () => window.libheif ? ready() : rej(new Error('HEIC decoder missing'));
+      s.onerror = () => { this.lib = null; rej(new Error('HEIC decoder could not load')); };
+      document.head.appendChild(s);
+    });
+    return this.lib;
+  },
+  // Resolves when e.view holds a displayable copy of the photo.
+  view(e) {
+    if (e.view) return Promise.resolve(e.view);
+    const k = Media.key(e.name);
+    if (!this.jobs.has(k)) this.jobs.set(k, (async () => {
+      const [lib, buf] = await Promise.all([this.load(), e.blob.arrayBuffer()]);
+      const imgs = new lib.HeifDecoder().decode(new Uint8Array(buf));
+      if (!imgs || !imgs.length) throw new Error('not a HEIC picture');
+      const im = imgs[0], w = im.get_width(), h = im.get_height();
+      const px = await new Promise((res, rej) => im.display({ data: new Uint8ClampedArray(w * h * 4), width: w, height: h }, d => d ? res(d.data) : rej(new Error('decode failed'))));
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      cv.getContext('2d').putImageData(new ImageData(px, w, h), 0, 0);
+      const jpg = await new Promise(res => cv.toBlob(res, 'image/jpeg', 0.9));
+      if (!jpg) throw new Error('could not convert');
+      if (Media.get(e.name) !== e) throw new Error('chat closed');
+      e.viewBlob = jpg; e.view = URL.createObjectURL(jpg);
+      Media.dims.set(e.name, { w, h });
+      return e.view;
+    })());
+    return this.jobs.get(k);
+  }
+};
 
 /* ---------- iPhone animated stickers (.was) ----------
    A .was file is a ZIP holding a Lottie animation (JSON). It is played with the bundled lottie-web
@@ -1059,7 +1102,6 @@ function makeRow(it, idx) {
     else body += '<div class="mline"></div>';
   }
   if (stk) el.className += ' stk';
-  const starBtn = '<button class="starbtn" data-star="' + it.i + '" aria-pressed="' + starred + '" aria-label="' + (starred ? t('msg.unstar') : t('msg.star')) + '" title="' + (starred ? t('msg.unstar_short') : t('msg.star_short')) + '">' + ICON.star + '</button>';
   let rx = '';
   if (reacts) {
     const g = new Map();
@@ -1069,7 +1111,7 @@ function makeRow(it, idx) {
   }
   const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
   const mmore = '<button class="mmore" data-mmenu="' + it.i + '" aria-haspopup="menu" aria-label="' + t('mm.more') + '" title="' + t('mm.more') + '">' + ICON.down + '</button>';
-  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + mmore + starBtn + rx + '</div>';
+  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + mmore + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   if (stk) Was.mount(el);
@@ -1205,11 +1247,11 @@ layer.addEventListener('click', e => {
   if (rm) { toggleExpand(+rm.dataset.more); return; }
   const sb = tg.closest('[data-star]');
   if (sb) { toggleStar(+sb.dataset.star); return; }
-  // Phones have no hover: tapping a bubble's plain area reveals its star button.
+  // Phones have no hover: tapping a bubble's plain area reveals its ⌄ menu button.
   if (matchMedia('(hover: none)').matches) {
     const row = tg.closest('.row'), on = row && !tg.closest('a,button,input,video,img,audio') && !row.classList.contains('tapped');
     layer.querySelectorAll('.row.tapped').forEach(r => r.classList.remove('tapped'));
-    if (on && row.querySelector('.starbtn')) row.classList.add('tapped');
+    if (on && row.querySelector('.mmore')) row.classList.add('tapped');
   }
 });
 // A row changed height (Read more / Show less, a star): update its slot in the virtual list.
@@ -1235,7 +1277,13 @@ document.addEventListener('click', async ev => {
   try { await DL.save({ filename: isWas(e.name) ? e.name + '.zip' : e.name, data: e.blob }); }
   catch (err) {
     const code = err && err.code;
-    if (code === 'rejected_extension' || code === 'extension_not_enabled') toast(t('dl.blocked', { ext: extOf(e.name) }));
+    const blocked = code === 'rejected_extension' || code === 'extension_not_enabled';
+    // A HEIC photo can still be saved here as the JPEG copy it is shown from.
+    if (blocked && isHeic(e.name)) {
+      try { await Heic.view(e); await DL.save({ filename: e.name.replace(/\.[^.]+$/, '.jpg'), data: e.viewBlob }); return; }
+      catch (err2) { if (err2 && err2.code === 'declined') return; }
+    }
+    if (blocked) toast(t('dl.blocked', { ext: extOf(e.name) }));
     else if (code && code !== 'declined') toast(t('dl.failed'));
   }
 });
@@ -1264,7 +1312,10 @@ function showLb() {
     v.loop = v.muted = gif; v.controls = !gif; v.src = e.url;
     if (AudioCtl.el) AudioCtl.el.pause();
     v.play().catch(() => {});
-  } else { v.pause(); v.removeAttribute('src'); lbImg.src = e.url; }
+  } else {
+    v.pause(); v.removeAttribute('src'); lbImg.src = e.view || e.url;
+    if (!e.view && isHeic(e.name)) Heic.view(e).then(u => { if (!$('lb').hidden && LB.list[LB.k] === x) lbImg.src = u; }, () => {});
+  }
   lbImg.alt = m.message || (TYPE_LABEL[x.type] ? typeLabel(x.type) : t('common.photo_alt'));
   $('lbWho').textContent = m.isOutgoing ? t('common.you') : m.sender;
   $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;

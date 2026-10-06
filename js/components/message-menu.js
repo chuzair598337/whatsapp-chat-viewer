@@ -51,15 +51,31 @@ const MsgMenu = {
     this.el.innerHTML = '<div class="mm-head"><b dir="auto">' + (m.isOutgoing ? esc(t('common.you')) : scriptHTML(m.sender || '')) + '</b><small>' + resTime(m) + '</small></div>' +
       acts.map(([icon, label], k) => '<button role="menuitem" data-mm="' + k + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
     this.el.hidden = false;
-    // Place it by the press (or under the ⌄ button), kept inside the window.
-    const w = this.el.offsetWidth, h = this.el.offsetHeight, vw = innerWidth, vh = innerHeight;
-    if (anchor) { const r = anchor.getBoundingClientRect(); x = r.right - w; y = r.bottom + 4; if (y + h > vh - 8) y = r.top - h - 4; }
-    this.el.style.left = Math.max(8, Math.min(x, vw - w - 8)) + 'px';
-    this.el.style.top = Math.max(8, Math.min(y, vh - h - 8)) + 'px';
     const row = layer.querySelector('.row[data-i="' + S.m2i[i] + '"]');
+    this.place(row, x, y);
     layer.querySelectorAll('.row.mm-on').forEach(r => r.classList.remove('mm-on'));
     if (row) row.classList.add('mm-on');
     const f = this.el.querySelector('[role="menuitem"]'); if (f) f.focus({ preventScroll: true });
+  },
+  // Under the message, lined up with its bubble, as in WhatsApp. Near the bottom the chat scrolls up to make room;
+  // only when it can't (the end of the chat) does the menu go above the message.
+  place(row, x, y) {
+    const el = this.el, w = el.offsetWidth, h = el.offsetHeight, vw = innerWidth, vh = innerHeight;
+    const bub = row && row.querySelector('.bubble');
+    if (bub) {
+      const sc = scroller.getBoundingClientRect(), room = Math.min(vh, sc.bottom) - 8;
+      let r = bub.getBoundingClientRect();
+      const need = r.bottom + 4 + h - room;
+      if (need > 0) {
+        const can = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
+        if (can > 0) { this.moving = true; scroller.scrollTop += Math.min(need, can, Math.max(0, r.top - sc.top - 8)); VL.update(); r = bub.getBoundingClientRect(); requestAnimationFrame(() => requestAnimationFrame(() => { this.moving = false; })); }
+      }
+      x = row.classList.contains('out') ? r.right - w : r.left;
+      y = r.bottom + 4;
+      if (y + h > room) y = r.top - h - 4 >= sc.top + 8 ? r.top - h - 4 : room - h;
+    }
+    el.style.left = Math.max(8, Math.min(x, vw - w - 8)) + 'px';
+    el.style.top = Math.max(8, Math.min(y, vh - h - 8)) + 'px';
   },
   close(focusBack) {
     if (this.el.hidden) return;
@@ -104,7 +120,7 @@ $('msgMenu').addEventListener('keydown', e => {
 });
 // Anything else closes it: a press outside, scrolling the chat, resizing the window.
 document.addEventListener('pointerdown', e => { if (MsgMenu.isOpen() && !MsgMenu.el.contains(e.target)) MsgMenu.close(false); }, true);
-scroller.addEventListener('scroll', () => MsgMenu.close(false), { passive: true });
+scroller.addEventListener('scroll', () => { if (!MsgMenu.moving) MsgMenu.close(false); }, { passive: true });
 window.addEventListener('resize', () => MsgMenu.close(false));
 
 // Right-click (and Android's long-press, which fires contextmenu). A text selection keeps the browser's own menu, for copying part of a message.

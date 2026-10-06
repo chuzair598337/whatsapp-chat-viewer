@@ -158,7 +158,7 @@ function tileHTML(it, k) {
     inner = '<video src="' + e.url + '" muted playsinline preload="metadata" data-vid="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
       '<span class="gdur">' + ICON.play + '<span>' + (Gallery.durs.has(e.name) ? fmtDur(Gallery.durs.get(e.name)) : '') + '</span></span>';
   } else if (isWas(e.name)) inner = '<span class="lottie" data-was="' + esc(e.name) + '"></span>';
-  else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
+  else inner = '<img src="' + (e.view || e.url) + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
   return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc(t('media_gallery.open_item', { label })) + '">' + inner + '</button>';
 }
 const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="' + t('media_gallery.show_in_chat') + '" title="' + t('media_gallery.show_in_chat') + '">' + galSm('chat') + '</button>';
@@ -200,9 +200,10 @@ galBody.addEventListener('error', e => {
   const el = e.target, n = el.dataset && el.dataset.bad, tile = el.closest && el.closest('[data-gk]');
   if (!n || !tile || Media.cantShow(n)) return;
   const f = Media.get(n); if (!f || el.getAttribute('src') !== f.url) return; // a late error from a closed chat
+  const k = +tile.dataset.gk, redraw = () => { const t2 = galBody.querySelector('[data-gk="' + k + '"]'), it = Gallery.list[k]; if (t2 && it) t2.outerHTML = tileHTML(it, k); };
+  if (isHeic(f.name)) { Heic.view(f).then(redraw, () => { Media.bad.add(Media.key(n)); redraw(); }); return; }
   Media.bad.add(Media.key(n));
-  const it = Gallery.list[+tile.dataset.gk];
-  if (it) tile.outerHTML = tileHTML(it, +tile.dataset.gk);
+  redraw();
 }, true);
 galBody.addEventListener('media-bad', e => {
   const tile = e.target.closest('[data-gk]'), it = tile && Gallery.list[+tile.dataset.gk];

@@ -148,4 +148,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), libheif (the HEIC decoder, from libheif-js) under the GNU LGPL 3.0 (`js/vendor/libheif/LICENSE`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).
