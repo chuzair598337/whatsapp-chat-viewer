@@ -130,15 +130,19 @@ function galWhen(m) { return t('media_gallery.when', { who: m.isOutgoing ? t('co
 
 function tileHTML(it, k) {
   const m = S.msgs[it.i], e = it.e, label = typeLabel(it.a.type) + ', ' + galWhen(m);
+  if (Media.cantShow(e.name)) { // a download link instead of a broken picture
+    const ext = (extOf(e.name) || 'file').toUpperCase().slice(0, 4);
+    return '<a class="gtile gbad" href="' + e.url + '" download="' + esc(e.name) + '" title="' + esc(t('att.cant_show')) + '" aria-label="' + esc(t('doc.download_name', { name: e.name })) + '"><span class="dext dx-other">' + esc(ext) + '</span><small>' + esc(t('att.cant_show')) + '</small></a>';
+  }
   const vid = VIDEO_EXT.test(extOf(e.name));
   let inner;
   if (it.a.type === 'gif' && vid) inner = '<video src="' + e.url + '" muted loop' + (reducedMotion() ? '' : ' autoplay') + ' playsinline preload="metadata"></video><span class="gbadge">GIF</span>';
   else if (vid) {
     const poster = Media.posters.get(e.name);
     if (poster === undefined) Posters.request(e.name);
-    inner = '<video src="' + e.url + '" muted playsinline preload="metadata" data-vid="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
+    inner = '<video src="' + e.url + '" muted playsinline preload="metadata" data-vid="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
       '<span class="gdur">' + ICON.play + '<span>' + (Gallery.durs.has(e.name) ? fmtDur(Gallery.durs.get(e.name)) : '') + '</span></span>';
-  } else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
+  } else inner = '<img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
   return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc(t('media_gallery.open_item', { label })) + '">' + inner + '</button>';
 }
 const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="' + t('media_gallery.show_in_chat') + '" title="' + t('media_gallery.show_in_chat') + '">' + galSm('chat') + '</button>';
@@ -175,6 +179,15 @@ $('galChips').addEventListener('keydown', e => { // arrow keys move between chip
   const n = cs[(i + ((e.key === 'ArrowRight') !== I18N.rtl() ? 1 : cs.length - 1)) % cs.length]; // reversed in right-to-left
   Gallery.show(n.dataset.cat); $('galChips').querySelector('.on').focus();
 });
+// A tile the browser can't decode turns into a download link (see the chat's own listener in viewer.js).
+galBody.addEventListener('error', e => {
+  const el = e.target, n = el.dataset && el.dataset.bad, tile = el.closest && el.closest('[data-gk]');
+  if (!n || !tile || Media.cantShow(n)) return;
+  const f = Media.get(n); if (!f || el.getAttribute('src') !== f.url) return; // a late error from a closed chat
+  Media.bad.add(Media.key(n));
+  const it = Gallery.list[+tile.dataset.gk];
+  if (it) tile.outerHTML = tileHTML(it, +tile.dataset.gk);
+}, true);
 galBody.addEventListener('click', e => {
   const tg = e.target;
   const j = tg.closest('[data-jump]'); if (j) { Gallery.jump(+j.dataset.jump); return; }

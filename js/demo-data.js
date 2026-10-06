@@ -64,6 +64,25 @@ const SAMPLE = [
   `[02/04/2026, 7:45:30${N}PM] Sara Malik: Scouting photo for April's trail. Route details: https://www.alltrails.com/trail/ridge-loop`,
   `[02/04/2026, 7:46:02${N}PM] Sara Malik: Parking for the ridge loop is behind the tea stall`,
   `Bring coins for the meter ${L}<attached: 00000034-PHOTO-2026-04-02-19-46-02.jpg>`,
+  // April: ten more members join, so "Which one is you?" gets its name filter (more than 12 people).
+  `[03/04/2026, 8:00:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added Hamza Iqbal, Zainab Raza, Usman Tariq, Mariam Siddiqui, Faisal Qureshi, Hina Aslam, Kamran Shah, Nida Hussain, Imran Javed and Sana Mirza`,
+  // An iPhone admin event is "sent" by the admin; the chat's name must still come from the group, not from Ayesha.
+  `[03/04/2026, 8:00:30${N}AM] ~ Ayesha Khan: ${L}~ Ayesha Khan changed this group's icon`,
+  // Arabic spellings (ك ي) and vowel marks: search for کیا or السلام finds this.
+  `[03/04/2026, 8:01:10${N}AM] Hamza Iqbal: السَّلامُ عَلَيْكُم سب کو! كيا حال ہے؟`,
+  // An English line, then Urdu ones: each line reads in its own direction.
+  `[03/04/2026, 8:02:00${N}AM] Zainab Raza: Trail rules, page 2`, `اپنا کچرا ساتھ واپس لے جائیں۔`, `راستے سے باہر نہ جائیں۔`,
+  `[03/04/2026, 8:03:00${N}AM] Usman Tariq: In ✋`,
+  `[03/04/2026, 8:04:00${N}AM] Mariam Siddiqui: Count me in`,
+  `[03/04/2026, 8:05:00${N}AM] Faisal Qureshi: Me too, first hike!`,
+  `[03/04/2026, 8:06:00${N}AM] Hina Aslam: In, can someone give me a lift?`,
+  `[03/04/2026, 8:07:00${N}AM] Kamran Shah: In 👍`,
+  `[03/04/2026, 8:08:00${N}AM] Nida Hussain: Maybe, will confirm Friday`,
+  `[03/04/2026, 8:09:00${N}AM] Imran Javed: In`,
+  `[03/04/2026, 8:10:00${N}AM] Sana Mirza: Bringing my cousin too, if that's okay`,
+  // An iPhone animated sticker (.was) and a HEIC photo this browser can't decode both show as file cards.
+  `[03/04/2026, 8:12:00${N}AM] Omar Farooq: ${L}<attached: 00000035-STICKER-2026-04-03-08-12-00.was>`,
+  `[03/04/2026, 8:13:00${N}AM] Hamza Iqbal: ${L}<attached: 00000036-PHOTO-2026-04-03-08-13-00.heic>`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 const canvasBlob = (c, type, q) => new Promise(r => c.toBlob(b => r(b), type, q));
@@ -145,6 +164,9 @@ async function makeSampleMedia() {
   g.fillStyle = '#1565c0'; g.fillRect(80, 120, 150, 150); g.fillStyle = '#fff'; g.font = 'bold 120px sans-serif'; g.fillText('P', 115, 238);
   g.fillStyle = 'rgba(255,255,255,.92)'; g.font = 'bold 40px sans-serif'; g.fillText('Ridge loop parking', 270, 210);
   staged.set('park', ['00000034-PHOTO-2026-04-02-19-46-02.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
+  // Stand-ins a browser can't draw: a Lottie sticker archive and a HEIC photo (neither holds a real picture).
+  staged.set('was', ['00000035-STICKER-2026-04-03-08-12-00.was', new Blob(['PK\u0003\u0004 animated sticker stand-in'], { type: 'application/zip' })]);
+  staged.set('heic', ['00000036-PHOTO-2026-04-03-08-13-00.heic', new Blob(['not a real HEIC picture'], { type: 'image/heic' })]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();
   for (const [, [name, blob]] of staged) if (blob) Media.stage(out, name, blob);

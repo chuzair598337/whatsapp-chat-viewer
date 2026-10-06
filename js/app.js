@@ -211,7 +211,9 @@ function applyResult(res, keepMe) {
   const names = res.participants.map(p => p.name);
   const hint = S.source.hint;
   S.isGroup = names.length > 2 || !!res.subject || (!!res.chatName && names.length > 0 && !names.includes(res.chatName));
-  if (!(keepMe && (S.me === null || names.includes(S.me)))) S.me = S.source.sample ? 'Bilal Ahmed' : guessMe(res, hint);
+  // In a group the export can't tell who saved it, so nobody is "You" until you pick yourself; the guess is only suggested.
+  S.meGuess = S.source.sample ? 'Bilal Ahmed' : guessMe(res, hint);
+  if (!(keepMe && (S.me === null || names.includes(S.me)))) S.me = S.source.sample || !S.isGroup || S.meGuess === 'You' ? S.meGuess : null;
   setMe(S.me, true);
   buildItems();
   VL.set(S.items, { i: 0, off: 0 });
@@ -309,7 +311,7 @@ function buildItems() {
 }
 
 /* ---------- Chrome: header, sidebar ---------- */
-function fmtSize(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
+function fmtSize(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(1) + ' KB' : b < 1073741824 ? (b / 1048576).toFixed(1) + ' MB' : (b / 1073741824).toFixed(2) + ' GB'; }
 function renderChrome() {
   const res = S.res, msgs = S.msgs;
   const real = msgs.length - msgs.filter(m => m.isSystem).length;
@@ -419,14 +421,12 @@ function onSearchInput(e) {
   clearTimeout(searchTimer); searchTimer = setTimeout(() => runSearch(v), 140);
 }
 function runSearch(q) {
-  S.q = q; const ql = q.trim().toLowerCase();
-  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.re = null;
+  S.q = q; const ql = fold(q.trim());
+  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.fq = '';
   if (ql) {
-    if (!S.lc) S.lc = S.msgs.map(m => (m.message + (m.sender ? '\u0002' + m.sender : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')).toLowerCase());
+    if (!S.lc) S.lc = S.msgs.map(m => fold(m.message + (m.sender ? '\u0002' + m.sender : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')));
     for (let i = 0; i < S.lc.length; i++) if (S.m2i[i] >= 0 && S.lc[i].includes(ql)) S.matches.push(i);
-    S.matchSet = new Set(S.matches);
-    const qe = esc(q.trim()).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    S.re = new RegExp('(' + qe + ')|&[#a-zA-Z0-9]+;', 'gi');
+    S.matchSet = new Set(S.matches); S.fq = ql;
     if (S.matches.length) {
       // start from the first match at or below the top of the screen
       const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
@@ -462,11 +462,10 @@ function jumpToMatch(k) {
   rs.forEach(r => r.classList.toggle('cur', +r.dataset.k === k));
 }
 function snippet(m) {
-  const tx = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '', ql = S.q.trim().toLowerCase();
-  const p = tx.toLowerCase().indexOf(ql);
-  const s = Math.max(0, p - 30);
+  const tx = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '';
+  const hit = foldFind(tx, S.fq)[0], s = Math.max(0, (hit ? hit[0] : 0) - 30);
   const raw = (s > 0 ? '…' : '') + tx.slice(s, s + 140).replace(/\s+/g, ' ');
-  return esc(raw).replace(S.re, (all, g1) => g1 ? '<mark>' + g1 + '</mark>' : all);
+  return markHTML(esc(raw), S.fq);
 }
 function renderResults() {
   const box = $('results');
@@ -559,13 +558,30 @@ function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if
 for (const m of document.querySelectorAll('.modal')) {
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
 }
+// Everyone who wrote is listed. Big groups get a name filter; the choice in progress survives a redraw (a language change).
 function openMeModal() {
-  const ps = S.res.participants.slice(0, 40);
-  $('meList').innerHTML = ps.map((p, k) =>
-    '<label class="meopt"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === S.me ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><span>' + esc(p.name) + '<small>' + t('me.n_messages', { n: nf(p.count) }) + (p.name === S.me ? ' · ' + t('me.best_guess') : '') + '</small></span></label>').join('') +
-    '<label class="meopt"><input type="radio" name="me" value=""' + (!S.me ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
+  const r = open && document.querySelector('input[name="me"]:checked'), sel = r ? r.value : S.me || '';
+  const sug = !S.me && S.meGuess && S.meGuess !== 'You' ? S.meGuess : null;
+  $('meList').innerHTML = ps.map(p =>
+    '<label class="meopt' + (p.name === sug ? ' sug' : '') + '" data-f="' + esc(fold(p.name)) + '"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><span dir="auto">' + esc(p.name) + '<small>' + t('me.n_messages', { n: nf(p.count) }) +
+    (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : p.name === S.me && p.name === S.meGuess ? ' · ' + t('me.best_guess') : '') + '</small></span></label>').join('') +
+    '<label class="meopt"><input type="radio" name="me" value=""' + (!sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  $('meFilterW').hidden = !many;
+  if (!many) $('meFilter').value = '';
+  if (!open) $('meFilter').value = '';
+  filterMe();
   openModal('meModal');
+  if (many && !open) $('meFilter').focus();
 }
+function filterMe() {
+  const q = fold($('meFilter').value.trim());
+  let n = 0;
+  for (const l of $('meList').querySelectorAll('.meopt[data-f]')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
+  $('meNone').hidden = !q || n > 0;
+}
+$('meFilter').addEventListener('input', filterMe);
+$('meFilterIcon').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('meDone').onclick = () => { const r = document.querySelector('input[name="me"]:checked'); closeModal('meModal'); setMe(r ? r.value : null); };
 
 /* ---------- Date order, jump to date, doodles (the controls are in Settings) ---------- */

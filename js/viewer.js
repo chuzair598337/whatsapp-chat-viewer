@@ -6,6 +6,51 @@ const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nf = n => n.toLocaleString(I18N.locale());
+/* Search folding: the index, the query and the highlights all go through fold(), so spelling variants
+   match. NFKC and lower case, then Arabic vowel marks (harakat), the superscript alef, the tatweel and
+   zero-width joiners are dropped, and Arabic letters map to the Urdu ones (ي ى → ی, ك → ک, ه ة → ہ). */
+const FOLD_DROP = /[\u064B-\u065F\u0670\u0640\u200C\u200D]/g, FOLD_SWAP = /[\u064A\u0649\u0643\u0647\u0629]/g;
+const FOLD_TO = { '\u064A': '\u06CC', '\u0649': '\u06CC', '\u0643': '\u06A9', '\u0647': '\u06C1', '\u0629': '\u06C1' };
+const fold = s => s.normalize('NFKC').toLowerCase().replace(FOLD_DROP, '').replace(FOLD_SWAP, c => FOLD_TO[c]);
+// fold() with a map back to the original: at[j] is where folded character j came from in s, and
+// at[f.length] is s.length. A letter and the marks after it fold as one piece.
+const RE_CLUSTER = /\P{M}\p{M}*|\p{M}+/gsu;
+function foldMap(s) {
+  let f = '', m; const at = [];
+  RE_CLUSTER.lastIndex = 0;
+  while ((m = RE_CLUSTER.exec(s))) { const o = fold(m[0]); for (let k = 0; k < o.length; k++) at.push(m.index); f += o; }
+  at.push(s.length);
+  return { f, at };
+}
+// Original [start, end) ranges of each place the folded query fq appears in s.
+function foldFind(s, fq) {
+  const out = []; if (!fq || !s) return out;
+  const { f, at } = foldMap(s);
+  for (let p = f.indexOf(fq); p >= 0; p = f.indexOf(fq, p + fq.length)) out.push([at[p], at[p + fq.length]]);
+  return out;
+}
+// Marks the folded query in escaped HTML. Tags are left alone; entities count as the character they stand for.
+const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00A0' };
+function markHTML(html, fq, cls) {
+  if (!fq) return html;
+  const open = '<mark' + (cls ? ' class="' + cls + '"' : '') + '>';
+  return html.split(/(<[^>]+>)/).map((part, k) => {
+    if (k % 2 || !part) return part;
+    let raw = ''; const pos = []; const re = /&(#x[0-9a-f]+|#\d+|[a-z0-9]+);/gi; let last = 0, e;
+    const plain = to => { for (let j = last; j < to; j++) { raw += part[j]; pos.push(j); } };
+    while ((e = re.exec(part))) {
+      plain(e.index);
+      const n = e[1], ch = n[0] === '#' ? String.fromCodePoint(parseInt(n[1] === 'x' || n[1] === 'X' ? n.slice(2) : n.slice(1), n[1] === 'x' || n[1] === 'X' ? 16 : 10) || 0xFFFD) : ENT[n.toLowerCase()] || '\uFFFC';
+      for (let j = 0; j < ch.length; j++) { raw += ch[j]; pos.push(e.index); }
+      last = e.index + e[0].length;
+    }
+    plain(part.length); pos.push(part.length);
+    const hits = foldFind(raw, fq); if (!hits.length) return part;
+    let out = '', p = 0;
+    for (const [a, b] of hits) { const x = pos[a], y = pos[b]; if (y <= x) continue; out += part.slice(p, x) + open + part.slice(x, y) + '</mark>'; p = y; }
+    return out + part.slice(p);
+  }).join('');
+}
 /* Dialogs: while one is open, everything else on the page is inert, so Tab, the screen reader and
    clicks stay inside it. They stack: a contact card opened from the gallery sits on top of it. */
 const Dialogs = {
@@ -149,6 +194,13 @@ function formatText(raw) {
 // sits where the text ends, so it doesn't cover the last line (css: .bubble.tltr / .trtl).
 const RE_STRONG = /[A-Za-z\u00C0-\u02AF\u0370-\u03FF\u0400-\u052F]|[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFC]/;
 function textDir(s) { const m = RE_STRONG.exec(s); return m && m[0] >= '\u0590' ? 'rtl' : 'ltr'; }
+// Each line of a message takes its own direction (css: .txt uses unicode-bidi: plaintext), so an English
+// line followed by Urdu ones reads right. The time goes by the last line that has letters.
+function endDir(s) {
+  const ls = s.split('\n');
+  for (let k = ls.length - 1; k >= 0; k--) if (RE_STRONG.test(ls[k])) return textDir(ls[k]);
+  return 'ltr';
+}
 const RE_JUMBO = /^(?:\p{Extended_Pictographic}|\p{Emoji_Modifier}|‍|️|\p{Regional_Indicator}|\s)+$/u;
 function isJumbo(t) {
   if (t.length > 24 || !RE_JUMBO.test(t)) return false;
@@ -318,9 +370,8 @@ function estimate(it, W) {
 
 /* ---------- Row rendering ---------- */
 function hl(html, i) {
-  if (!S.re || !S.matchSet.has(i)) return html;
-  const cur = S.matches[S.cur] === i;
-  return html.split(/(<[^>]+>)/).map((part, k) => k % 2 ? part : part.replace(S.re, (all, g1) => g1 ? '<mark' + (cur ? ' class="cur"' : '') + '>' + g1 + '</mark>' : all)).join('');
+  if (!S.fq || !S.matchSet.has(i)) return html;
+  return markHTML(html, S.fq, S.matches[S.cur] === i ? 'cur' : '');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -430,10 +481,10 @@ const clampV = r => Math.min(1.9, Math.max(0.5625, r));
 const vBox = r => 'aspect-ratio:' + r + ';width:' + Math.min(330, Math.round(400 * r)) + 'px';
 function videoHTML(e, gif) {
   const d = Media.dims.get(e.name), r = d ? (gif ? clampR(d.w / d.h) : clampV(d.w / d.h)) : 16 / 9;
-  if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '"' + (reducedMotion() ? '' : ' autoplay') + ' muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
+  if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '"' + (reducedMotion() ? '' : ' autoplay') + ' muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
   const poster = Media.posters.get(e.name);
   if (poster === undefined) Posters.request(e.name);
-  return '<div class="mvid" data-r="' + r + '" style="' + vBox(r) + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
+  return '<div class="mvid" data-r="' + r + '" style="' + vBox(r) + '"><video src="' + e.url + '" preload="metadata" playsinline data-vid="' + esc(e.name) + '" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"' + (poster ? ' poster="' + poster + '"' : '') + '></video>' +
     '<button class="vbig" aria-label="' + t('video.play') + '">' + ICON.play + '</button>' +
     '<span class="vbadge">' + ICON.video + '<span class="vdur">' + fmtSize(e.size) + '</span></span>' +
     '<div class="vctl"><button class="vpp" aria-label="' + t('video.play') + '">' + ICON.play + '</button><input class="vseek" type="range" min="0" max="1000" value="0" aria-label="' + t('video.seek') + '"><span class="vtime">–:––</span>' +
@@ -711,16 +762,26 @@ function closePdf() {
   PV.gen++; if (PV.obs) PV.obs.disconnect();
   $('pdfv').hidden = true; Dialogs.close($('pdfv')); $('pdfPages').innerHTML = '';
 }
+// A file card for media the browser can't show: what it is, its size and a download button.
+function cantShowHTML(e, type) {
+  const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4);
+  const kind = ext === 'was' ? t('type.animated_sticker') : TYPE_LABEL[type] ? typeLabel(type) : t('common.file');
+  return '<div class="mdoc nosee"><a class="mdoc-main" href="' + e.url + '" download="' + esc(e.name) + '"><span class="dext dx-other">' + esc(label) + '</span>' +
+    '<span class="attt"><b dir="auto" title="' + esc(e.name) + '">' + esc(kind) + '</b><small class="dinfo">' + esc(label) + ' · ' + fmtSize(e.size) + '</small>' +
+    '<small class="alert" dir="auto">' + ICON.warn + esc(t('att.cant_show')) + '</small></span></a>' +
+    '<a class="dl" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: e.name })) + '" title="' + t('doc.download') + '">' + ICON.download.replace('width="22" height="22"', 'width="20" height="20"') + '</a></div>';
+}
 function attHTML(a, m) {
   const e = a.url ? Media.get(a.name) : null;
+  if (e && Media.cantShow(e.name) && /^(image|gif|sticker|video)$/.test(a.type)) return cantShowHTML(e, a.type);
   if (e) {
     const vid = VIDEO_EXT.test(extOf(e.name));
     if (a.type === 'gif' && vid) return videoHTML(e, true);
     if (a.type === 'image' || a.type === 'gif') {
       const d = Media.dims.get(e.name), r = d ? clampR(d.w / d.h) : 4 / 3;
-      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="' + t('media.open_photo') + '"><img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
+      return '<button class="mimg" data-lb="' + esc(e.name) + '" data-r="' + r + '" style="aspect-ratio:' + r + '" aria-label="' + t('media.open_photo') + '"><img src="' + e.url + '" alt="" loading="lazy" decoding="async" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '">' + (a.type === 'gif' ? '<span class="gifbadge">GIF</span>' : '') + '</button>';
     }
-    if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="' + t('type.sticker') + '" loading="lazy">';
+    if (a.type === 'sticker') return '<img class="sticker" src="' + e.url + '" alt="' + t('type.sticker') + '" loading="lazy" data-bad="' + esc(e.name) + '">';
     if (a.type === 'video') return videoHTML(e, false);
     if (a.type === 'audio') return audioHTML(e, m);
     return docHTML(e, a.type, a);
@@ -797,12 +858,20 @@ function shownText(it) {
   const tr = m.trunc;
   if (!tr.truncated) return { text: m.message, state: '' };
   if (m.isExpanded) return { text: m.message, state: 'expanded' };
-  if (S.re && S.matchSet.has(it.i) && S.q) {
-    const ql = S.q.trim().toLowerCase(), at = ql ? m.message.toLowerCase().indexOf(ql, Math.max(0, tr.cut - ql.length + 1)) : -1;
-    if (at >= 0) return { text: m.message, state: 'search' };
-  }
+  // A match that runs past the cut shows the whole message.
+  if (S.fq && S.matchSet.has(it.i) && foldFind(m.message, S.fq).some(([, b]) => b > tr.cut)) return { text: m.message, state: 'search' };
   return { text: tr.preview, state: 'collapsed' };
 }
+// A photo, sticker or video the browser can't decode is remembered and its row redrawn with a file card.
+// error doesn't bubble, so one listener in the capture phase covers every row.
+layer.addEventListener('error', e => {
+  const el = e.target, n = el.dataset && el.dataset.bad;
+  if (!n || !el.getAttribute('src') || Media.cantShow(n)) return;
+  const f = Media.get(n); if (!f || el.getAttribute('src') !== f.url) return; // a late error from a closed chat
+  Media.bad.add(Media.key(n));
+  const row = el.closest('[data-i]');
+  if (row) rerenderRow(+row.dataset.i);
+}, true);
 // Re-renders one visible row in place and lets the virtual list re-measure it.
 function rerenderRow(k) {
   const old = VL.nodes.get(k);
@@ -864,7 +933,7 @@ function makeRow(it, idx) {
     case 'media': {
       body += m.attachments.map(a => attHTML(a, m)).join('');
       const a0 = m.attachments[0];
-      if (a0 && a0.url) {
+      if (a0 && a0.url && !Media.cantShow(a0.name)) {
         if (a0.type === 'sticker' && !m.message) { stk = true; tailText = false; }
         else if (a0.type === 'image' || a0.type === 'gif') { visual = true; if (!m.message) { overlay = true; tailText = false; } }
         else if (a0.type === 'video') { visual = true; if (!m.message) { overlay = true; tailText = false; } }
@@ -872,9 +941,10 @@ function makeRow(it, idx) {
       break;
     }
   }
+  let endTxt = m.message;
   if (tailText) {
     if (m.message && m.kind !== 'poll' && m.kind !== 'call') {
-      const sv = shownText(it), btn = (label, open) => '<button class="read-more-btn" data-more="' + it.i + '" aria-expanded="' + open + '">' + label + '</button>';
+      const sv = shownText(it); endTxt = sv.text; const btn = (label, open) => '<button class="read-more-btn" data-more="' + it.i + '" aria-expanded="' + open + '">' + label + '</button>';
       const more = sv.state === 'collapsed' ? '<span class="rm-tail">…' + btn(t('message.read_more'), false) + '</span>' : sv.state === 'expanded' ? '<div class="rm-less">' + btn(t('message.show_less'), true) + '</div>' : '';
       body += '<div dir="auto" class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
     }
@@ -890,7 +960,7 @@ function makeRow(it, idx) {
     rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="' + esc(t('msg.reactions', { list: tip })) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
   }
   const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
-  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + textDir(m.message) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
+  el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + starBtn + rx + '</div>';
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   return el;
@@ -1058,7 +1128,7 @@ document.addEventListener('click', async ev => {
 const LB = { k: -1, start: -1, list: [] };
 function openLightbox(name, list) {
   const chat = !list;
-  list = list || (S.images || []).filter(x => S.m2i[x.i] >= 0); // the chat's photos, without ones a filter hides
+  list = (list || (S.images || []).filter(x => S.m2i[x.i] >= 0)).filter(x => !Media.cantShow(x.name)); // the chat's photos, without ones a filter hides or the browser can't show
   const k = list.findIndex(x => x.name === name);
   if (k < 0) return;
   LB.list = list; LB.chat = chat;

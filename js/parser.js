@@ -149,7 +149,7 @@ function parserModule() {
     // --- build messages ---
     const out = new Array(recs.length);
     const counts = new Map(), sysSenders = new Map();
-    let subject = null;
+    let subject = null, e2eName = null;
     for (let i = 0; i < recs.length; i++) {
       const r = recs[i];
       let y, mo, d;
@@ -165,7 +165,13 @@ function parserModule() {
       const c = text.trim() ? classify(text) : { kind: 'unsupported', text: '', att: [], edited: false };
       const isSystem = r.sys || (r.lrm && c.kind === 'text');
       if (isSystem) {
-        if (r.sender) sysSenders.set(r.sender, (sysSenders.get(r.sender) || 0) + 1);
+        // On iPhone a system line's sender is the chat's name, except admin events, which the admin "sends":
+        // "~ Ali: ~ Ali changed this group's icon". Those are skipped, and the encryption notice settles it.
+        if (r.sender) {
+          const bare = s => s.replace(/^[\s\u200E\u200F\u202A-\u202E\u2066-\u2069~]+/, '');
+          if (/end-to-end encrypted/i.test(c.text)) e2eName = r.sender;
+          else if (!bare(c.text).startsWith(bare(r.sender))) sysSenders.set(r.sender, (sysSenders.get(r.sender) || 0) + 1);
+        }
         const sm = /(?:created group|changed the subject (?:from .* )?to|changed the group name (?:from .* )?to|changed this group's name (?:from .* )?to)\s+["“](.+?)["”]\s*$/.exec(c.text);
         if (sm) subject = sm[1];
       } else counts.set(r.sender, (counts.get(r.sender) || 0) + 1);
@@ -181,6 +187,7 @@ function parserModule() {
     }
     let chatName = null, best = 0;
     for (const [k, v] of sysSenders) if (v > best) { best = v; chatName = k; }
+    if (e2eName) chatName = e2eName;
     const participants = [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count);
     return { messages: out, participants, twelve, order, detected, ambiguous, rejected, chatName, subject, format: iosN >= andN ? 'ios' : 'android', lines, skipped };
   }

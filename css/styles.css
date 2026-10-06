@@ -151,7 +151,7 @@ mark.cur { background: var(--hl-cur); }
 .name { font-size: 12.8px; font-weight: 500; line-height: 22px; margin-top: -3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .nc0 { color: var(--n0); } .nc1 { color: var(--n1); } .nc2 { color: var(--n2); } .nc3 { color: var(--n3); } .nc4 { color: var(--n4); }
 .nc5 { color: var(--n5); } .nc6 { color: var(--n6); } .nc7 { color: var(--n7); } .nc8 { color: var(--n8); } .nc9 { color: var(--n9); }
-.txt { white-space: pre-wrap; line-height: 19px; font-size: 14.2px; }
+.txt { white-space: pre-wrap; line-height: 19px; font-size: 14.2px; unicode-bidi: plaintext; }
 .txt.jumbo { font-size: 38px; line-height: 46px; }
 .txt.del { color: var(--ink-3); font-style: italic; display: flex; gap: 5px; align-items: center; }
 .txt.del svg { width: 16px; height: 16px; flex: none; }
@@ -397,6 +397,12 @@ mark.cur { background: var(--hl-cur); }
 .meopt input { accent-color: var(--accent); width: 18px; height: 18px; margin: 0; }
 .meopt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meopt small { display: block; color: var(--ink-3); font-size: 12.5px; }
+.meopt[hidden] { display: none; }
+/* In a group the viewer only suggests who you might be (the most active member): nothing is picked for you. */
+.meopt.sug { background: var(--accent-soft); }
+.meopt.sug small b { color: var(--accent-ink); font-weight: 600; }
+.mefilter { flex: none; }
+.menone { margin: 4px 0; color: var(--ink-3); font-size: 13px; }
 .lead { margin: 0; color: var(--ink-2); }
 
 /* ---------- Responsive ---------- */
@@ -661,6 +667,9 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gtile img, .gtile video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 .gtile.stk { background: var(--panel-2); }
 .gtile.stk img { object-fit: contain; padding: 10%; }
+.gtile.gbad { display: grid; place-content: center; justify-items: center; gap: 6px; padding: 8px; text-align: center; color: var(--ink-3); text-decoration: none; font-size: 11.5px; line-height: 1.3; }
+.mdoc.nosee .alert { display: flex; align-items: center; gap: 4px; color: var(--ink-3); font-size: 12px; }
+.mdoc.nosee .alert svg { width: 14px; height: 14px; flex: none; }
 .gtile:hover img, .gtile:hover video { filter: brightness(.9); }
 .gtile:focus-visible { outline: 3px solid var(--accent); outline-offset: -3px; }
 .gdur { position: absolute; inset-inline-start: 0; inset-inline-end: 0; bottom: 0; display: flex; align-items: center; gap: 3px; padding: 14px 6px 5px; color: #fff; font-size: 12px; font-weight: 500; background: linear-gradient(transparent, rgba(0, 0, 0, .55)); }

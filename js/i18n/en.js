@@ -160,7 +160,10 @@ I18N.add('en-US', {
     "n_messages": "{n} messages",
     "best_guess": "best guess",
     "none_of_these": "None of these",
-    "everyone_left": "Show everyone on the left"
+    "everyone_left": "Show everyone on the left",
+    "filter_names": "Search names",
+    "no_names_match": "No one in this chat matches that name.",
+    "suggested": "suggested"
   },
   "viewer": {
     "photo_viewer": "Photo viewer",
@@ -275,7 +278,8 @@ I18N.add('en-US', {
     "media": "Media",
     "voice": "Voice message",
     "video_note": "Video note",
-    "view_once": "view once"
+    "view_once": "view once",
+    "animated_sticker": "Animated sticker"
   },
   "audio": {
     "cant_play": "This browser can't play .{ext} audio.",
@@ -331,7 +335,8 @@ I18N.add('en-US', {
     "not_in_zip": "Not in this ZIP",
     "text_only": "Not included: opened as text only",
     "omitted": "Left out when the chat was exported",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "cant_show": "Can't show this file here"
   },
   "loc": {
     "live": "Live location",

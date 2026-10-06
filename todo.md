@@ -195,6 +195,13 @@ All confirmed findings in `/mnt/project-files/audit/i18n-audit.md`, fixed on `de
 Findings from the audit of a large real group export (many members, mixed languages, 1,214 media files), fixed on `development` as they come in:
 
 - [x] iPhone attachments after a caption over several lines (49 files were lost). Covered by `tests/parser.test.js` and a sample-chat photo. *New (Phase 15).*
+- [x] "Which one is you?" stopped at 40 people. It lists everyone, with a name filter above 12. *New (Phase 15).*
+- [x] Closing the picker made the most active member "You" in groups. Groups now start with nobody, and the guess is only suggested. *New (Phase 15).*
+- [x] Search missed Arabic spellings and vowel marks in Urdu and Arabic text. One fold for the index, the query and the highlights. *New (Phase 15).*
+- [x] Media the browser can't decode (iPhone `.was` stickers, HEIC, HEVC) showed a broken image. File card with a download button. *New (Phase 15).*
+- [x] An English first line made the Urdu lines after it read left to right. Each line takes its own direction. *New (Phase 15).*
+- [x] iPhone admin events made the admin the chat's name. Covered by two `tests/parser.test.js` cases. *New (Phase 15).*
+- [x] Sizes over 1 GB showed in MB. *New (Phase 15).*
 
 ## Verification done for this list
 

@@ -48,6 +48,22 @@ const tests = {
     const a = r.messages[0].attachments[0];
     assert.strictEqual(a.title, 'Report.pdf'); assert.strictEqual(a.detail, '2 pages'); assert.strictEqual(r.messages[0].message, '');
   },
+  'iPhone group: admin events do not make the admin the chat name': async () => {
+    const L = '‎';
+    const r = await parse(['[1/2/2024, 9:00:00 AM] Crew: ' + L + 'Ali added Sara',
+      '[1/2/2024, 9:01:00 AM] ~ Ali: ' + L + "~ Ali changed this group's icon",
+      '[1/2/2024, 9:02:00 AM] ~ Ali: ' + L + '~ Ali changed the group description',
+      '[1/2/2024, 9:03:00 AM] ~ Ali: ' + L + '~ Ali turned on admin approval',
+      '[1/2/2024, 9:04:00 AM] ~ Ali: hello', '[1/2/2024, 9:05:00 AM] Sara: hi'].join('\n'));
+    assert.strictEqual(r.chatName, 'Crew');
+  },
+  'iPhone: the encryption notice names the chat': async () => {
+    const L = '‎';
+    const r = await parse(['[1/2/2024, 9:00:00 AM] Crew: ' + L + 'Messages and calls are end-to-end encrypted. No one outside of this chat can read them.',
+      '[1/2/2024, 9:01:00 AM] Bob: ' + L + 'Bob joined using this group\'s invite link',
+      '[1/2/2024, 9:02:00 AM] Zed: ' + L + 'Zed left', '[1/2/2024, 9:03:00 AM] Zed: ' + L + 'Zed joined', '[1/2/2024, 9:04:00 AM] Bob: hi'].join('\n'));
+    assert.strictEqual(r.chatName, 'Crew');
+  },
   'A forced date order that fits is used': async () => {
     const r = await parse('03/01/2021, 10:00 - A: x', { order: 'mdy' });
     assert.strictEqual(r.order, 'mdy'); assert.strictEqual(r.rejected, false);

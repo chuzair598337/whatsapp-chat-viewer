@@ -61,7 +61,8 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 - **Day/month detection:** a 4-digit first field means year first. Otherwise any value over 12 settles the order. If every date is ambiguous, the order that keeps the messages most chronological wins. You can override it in the sidebar settings.
 - **Invisible characters:** removes the direction marks and zero-width characters WhatsApp inserts (U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+FEFF), and normalises narrow and no-break spaces.
 - **Message kinds:**
-  - Incoming and outgoing messages, based on the "which one is you" picker, which is pre-filled with a best guess.
+  - Incoming and outgoing messages, based on the "which one is you" picker. It lists everyone who wrote, with a name search box when there are more than 12 people. In a one-to-one chat it is pre-filled with a best guess; in a group nobody is "You" until you pick yourself, and the most active member is marked as suggested.
+  - The chat's name on iPhone comes from the sender of its system lines (the encryption notice first). Admin events, which the admin "sends" ("~ Ali: ~ Ali changed this group's icon"), are left out.
   - Multi-line continuations.
   - System lines, shown as centred pills the way WhatsApp groups them:
     - the encryption and business-account notices on yellow;
@@ -114,7 +115,8 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 | Type | How it is shown |
 |---|---|
 | **Photos** | Loaded lazily (`loading="lazy"`), with the space reserved from the image's aspect ratio. Clicking opens a full-screen viewer (details below). |
-| **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. |
+| **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. iPhone animated stickers (`.was`, a Lottie archive no browser draws) show as an "Animated sticker" file card with a download button. |
+| **Files the browser can't show** | A photo, sticker or video the browser can't decode (HEIC outside Safari, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
 | **GIFs** | Marked with a GIF badge and loop automatically. iPhone exports store GIFs as `-GIF-….mp4`, so these play as muted looping video. |
 | **Video** | Shown like WhatsApp: a thumbnail from the first frame, a big play button, a video icon with the length in the bottom-left corner, and the time in the bottom-right. The thumbnail keeps the video's real shape, so a portrait phone video (down to 9:16) is shown up to 400 px tall instead of being boxed into landscape. After the first play it switches to custom controls: play/pause, elapsed and total time, a seek bar, mute and full screen. A poster image is taken from the first frame. Only one video or voice note plays at a time. |
 | **Voice notes** (`PTT-`, iPhone `-AUDIO-`, `.opus`) | Card with the sender's avatar and a mic badge. Its 36-bar waveform is decoded from the audio with the Web Audio API. Tap or drag the waveform to seek, and switch speed between 1×, 1.5× and 2×. |
@@ -167,7 +169,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 ## 7. Search and navigation
 
-- **Search:** results update as you type and ignore case. Message text, sender names and poll options are all searched. Matches are highlighted in the chat with an "n of N" counter.
+- **Search:** results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
 - **Results list:** each result shows the sender, date and a snippet, and clicking one jumps to that message.
 - **Sticky date header:** shows the current day while you scroll.
@@ -269,7 +271,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **What is never translated:** the chat itself. Messages, sender and contact names, file names, captions, WhatsApp's own system notices, call logs, deleted-message placeholders, omitted-media lines and the date rows between days are shown exactly as they are in the export, so they look the same in both languages.
 - **Right to left.** In Urdu the page is `dir="rtl"`. The layout uses logical CSS properties, so the side panel, menus and dialogs mirror on their own. A few rules handle the rest: the slide-in drawer, arrow icons, and the arrow keys and swipes in the photo viewer, the gallery chips and the tour, which follow the reading direction.
 - **The chat doesn't mirror.** The message list (`#layer`) is `dir="ltr"`, so sent messages are always on the right and received ones, with their avatars, on the left, as in WhatsApp. The app's own labels inside bubbles (poll footer, location and file cards, "Read more") take their direction from their text, so Urdu labels still read right to left.
-- **Mixed text.** Each message, name and system notice gets `dir="auto"`, so an English message reads left to right in the Urdu interface and an Urdu message reads right to left in the English one. The time sits where the text ends. Dates in the date fields and file extensions such as `.zip` stay left to right.
+- **Mixed text.** Each message, name and system notice gets `dir="auto"`, so an English message reads left to right in the Urdu interface and an Urdu message reads right to left in the English one. Inside a message each line takes its own direction (`unicode-bidi: plaintext`), so an English first line followed by Urdu ones reads right. The time sits where the last line ends. Dates in the date fields and file extensions such as `.zip` stay left to right.
 - **Font.** Urdu text uses Jameel Noori Nastaleeq when it is installed on the device. Its licence doesn't allow shipping it, so the app bundles **Noto Nastaliq Urdu** (SIL Open Font Licence, `fonts/`) as the fallback. It is limited to Arabic-script characters, so Latin text and numbers keep the normal font, and chat bubbles keep the normal font so messages look the same in both languages. Nothing is downloaded.
 - **For developers.** Text lives in `js/i18n/en.js` and `js/i18n/ur.js`. These are scripts rather than JSON files, because a page opened from disk (`file://`) can't fetch JSON. Call `t('section.key', { name: value })`; `{name}` is filled in (wrapped in invisible isolate marks so a Latin name or a number keeps its place in an Urdu sentence), a `key_one` entry is used when `n` is 1, and a missing Urdu entry falls back to English. Static HTML uses `data-i18n`, `data-i18n-html` and `data-i18n-attr`. Switching fires a `langchange` event, and `app.js` redraws the open chat, panels and dialogs.
 

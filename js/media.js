@@ -82,6 +82,8 @@ const Media = {
   // pending: files of the open ZIP not extracted yet; loading: { done, total } while they are.
   pending: new Set(), loading: null,
   map: new Map(), dims: new Map(), posters: new Map(), waves: new Map(), cards: new Map(), thumbs: new Map(),
+  // bad: keys of photos, stickers and videos this browser couldn't decode (HEIC outside Safari, HEVC in Firefox).
+  bad: new Set(),
   // Lookup key: the chat text has WhatsApp's invisible direction marks stripped, but file names in the
   // ZIP can still contain them (e.g. "00000020-\u200eName.vcf"), so both sides drop them before matching.
   key: n => baseName(n).replace(/[\u200B-\u200F\u202A-\u202E\u2066-\u2069\uFEFF]/g, '').normalize('NFC').toLowerCase(),
@@ -94,8 +96,10 @@ const Media = {
   discard(map) { for (const e of map.values()) URL.revokeObjectURL(e.url); },
   adopt(map) { this.reset(); this.map = map; },
   get(name) { return name ? this.map.get(this.key(name)) || null : null; },
+  // iPhone animated stickers (.was) are Lottie files in a ZIP, which a browser can't draw.
+  cantShow(name) { return !!name && (extOf(name) === 'was' || this.bad.has(this.key(name))); },
   reset() {
-    AudioCtl.stop(); closeLightbox(true); this.discard(this.map); this.map = new Map(); this.dims.clear(); this.waves.clear();
+    AudioCtl.stop(); closeLightbox(true); this.discard(this.map); this.map = new Map(); this.dims.clear(); this.waves.clear(); this.bad.clear();
     for (const u of this.posters.values()) if (u) URL.revokeObjectURL(u);
     for (const u of this.thumbs.values()) if (u) URL.revokeObjectURL(u);
     this.posters.clear(); this.thumbs.clear(); this.cards.clear();
