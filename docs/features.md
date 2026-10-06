@@ -20,6 +20,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
 14. [Settings](#14-settings)
 15. [Message menu](#15-message-menu)
 16. [Notifications](#16-notifications)
+17. [Selecting messages](#17-selecting-messages)
 
 ---
 
@@ -83,10 +84,11 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 ## 4. Responsive layout
 
-- **Desktop (over 1024 px):** a two-pane layout. The side panel shows the chat card (messages, media, first and last date, file name, size and iPhone or Android format, with **Statistics** and **Open chat** buttons), the chat list when there are several, search with a results list, the filters, the media tiles, jump to date, the participants with their message counts (the first 80, then "and N more") and the privacy note. The chat pane fills the rest. The ☰ button in the chat header hides the sidebar so the chat takes the full width, and shows it again (not remembered between visits).
+- **Desktop (over 1024 px):** a two-pane layout. The side panel shows the chat card (messages, media, first and last date, file name, size and iPhone or Android format, with **Statistics** and **Open chat** buttons), the chat list when there are several, the filters, the media tiles, jump to date, the participants with their message counts (the first 80, then "and N more") and the privacy note. The chat pane fills the rest. Dragging the grip at the middle of the panel's inner edge makes it wider or narrower (280 px up to half the window, at most 640 px); the arrow keys do the same on the focused grip, Home and End jump to the limits, and a double-click resets it. The width lasts until the page is closed. The ☰ button in the chat header hides the sidebar so the chat takes the full width, and shows it again (not remembered between visits).
 - **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button.
-- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel), the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Chat statistics**, **Open another chat**, **Settings** and **Help and guided tour**; the arrow keys, Home and End move through it, and Esc or Tab closes it.
+- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel), the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Select messages**, **Chat statistics**, **Open another chat**, **Settings** and **Help and guided tour**; the arrow keys, Home and End move through it, and Esc or Tab closes it.
 - **Search** from the header's search button (or `/`, `Ctrl/Cmd+F`) opens as a bar under the chat header on every screen size, with ↑ ↓ and a ✕ close button at the end.
+- **Not selectable:** the side panel, the header, banners, menus, buttons and date pills can't be selected by dragging or clicking, as in WhatsApp. Message text, search and date fields stay selectable.
 - **Phone polish:** no horizontal scrolling at phone widths, and safe-area insets for notched phones.
 - **Group chats:** each sender's name has its own colour, and each run of their messages starts with an avatar showing their initials in that colour.
 - **Accessibility:** keyboard focus is managed in modals and returned afterwards, every button and field has an accessible name, toggles such as the start screen's language buttons expose `aria-pressed`, sortable table headers expose `aria-sort`, and animations are switched off for `prefers-reduced-motion`.
@@ -177,7 +179,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 ## 7. Search and navigation
 
-- **Search:** in the bar under the chat header, or in the side panel's own search box, which stays in step with it and lists up to 200 results (sender, date and a snippet; click one to jump to it, and on phones the drawer then closes). Results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
+- **Search:** in the bar under the chat header. Results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
 - **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
@@ -255,7 +257,7 @@ The statistics window shows:
 
 ## 12. Code layout
 
-The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/settings`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
+The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
 
 | File | Responsibility |
 |---|---|
@@ -276,6 +278,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, date format, statistics, help and About, and the pick sheet for choices |
 | `js/components/media-gallery.js` | The media, links and docs gallery: its index of attachments and links, the filter chips, sorting, grid and list layouts, and paging |
 | `js/components/message-menu.js` | The message menu: long-press, right-click, the ⌄ button and Shift+F10, and its actions |
+| `js/components/select-messages.js` | Selecting messages: the selection bar, Star, Copy and Share for several messages |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
@@ -324,6 +327,7 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Copy link:** the first link in the message.
   - **View photo**, **Open document** (PDFs) and **View contact**, for those attachments, plus **Copy contact details** (name, organisation, numbers, emails, web addresses) for a contact card.
   - **Download:** one entry per attached file (photo, video, voice note, sticker, document, contact card), named by file when there are several.
+  - **Select:** starts selecting messages with this one picked (see below).
   - **Share:** the device's share sheet with the files, or the text. It is offered only where the page may open the share sheet (not in browsers without one, nor inside a frame that blocks it, such as the dev preview); if sharing is refused anyway, the message is copied instead. It stands in for Forward. Reply, Forward, Delete and React need a live chat, so they aren't offered.
 - **Keyboard:** ↑ ↓, Home and End move; Enter runs; Esc closes and returns focus to the message. Scrolling, resizing, switching language or a press outside closes it.
 
@@ -337,9 +341,21 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Information** (blue i): a star removed.
   - **Warning** (amber !): some files couldn't be extracted, a date order that doesn't fit the chat, a file type the dev preview can't save.
   - **Error** (red ✕): a file that can't be read, a download or share that failed.
-- **Stacking:** several notifications stack under each other, newest at the bottom. The same message twice in a row replaces the first instead of stacking.
+- **Stacking:** several notifications stack under each other, newest at the bottom. Each one stays until its own time runs out or its ✕ is pressed, even when the same message appears again.
 - **Closing:** each has a ✕ button (labelled for screen readers). They also close on their own: success after 3 s, information after 4.5 s, warnings after 6 s and errors after 8 s.
 - **Screen readers:** each one is announced with its kind ("Error: …") through a live region; errors interrupt, the rest wait their turn.
 - **Languages:** the kind names and the close label are translated; the text keeps its own direction, so an English file name reads correctly in the Urdu or Arabic interface.
 - **Safety:** the text is always escaped, since it can include file names from an export.
 - **For developers:** call `toast(text)` for information, `toast(text, 'success' | 'error' | 'warning' | 'info')`, or `toast.success(text)`, `toast.error(text)`, `toast.warning(text)` and `toast.info(text)`. Don't show messages any other way.
+
+## 17. Selecting messages
+
+`js/components/select-messages.js`, like WhatsApp's Select.
+
+- **Starting:** **Select messages** in the header's ⋮ menu, or **Select** in a message's menu (which starts with that message picked).
+- **Picking:** each tap or click on a message picks the whole message, and another tap unpicks it. Scroll and pick as many as you like. A ✓ circle at the start of each message shows its state, and picked messages are tinted. Dates and system notices can't be picked. While selecting, taps don't open photos, links or players, and right-click or long-press picks the message too. On a keyboard, Space or Enter on a message's circle picks it.
+- **The bar:** the header becomes a bar with ✕, the number picked and the actions, which are off until something is picked:
+  - **Star** or **Unstar** (when every picked message is already starred) for all of them at once;
+  - **Copy** the picked messages as text, oldest first, one per message: `[Mar 14, 2026, 8:03 AM] Ayesha Khan: …`, with attachments as `<file name>`;
+  - **Share** them through the device's share sheet, as that text plus their files where the device can share files. As with a single message, Share is only offered where the page may open the share sheet; if it's refused, the text is copied instead.
+- **Ending:** ✕, `Esc`, or sharing them. Opening another chat ends it too. Nothing about a selection is stored.

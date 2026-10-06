@@ -8,7 +8,7 @@
      toast(text, 'success')       also 'error', 'warning', 'info'
      toast.success(text) / .error / .warning / .info
 
-   They appear at the top right, stack (newest at the bottom), close on their own
+   They appear at the top right, stack (newest at the bottom; every one stays until its own time runs out or its ✕ is pressed), close on their own
    (errors stay longer) and have a ✕ to close them sooner. Screen readers
    hear them through our own live region (Notyf's would read its HTML). The text is always escaped, since
    it can carry file names from an export.
@@ -39,10 +39,7 @@ const Toast = {
     const n = this.lib();
     const msg = '<span class="tst-ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + this.icons[type] + '</svg></span>' +
       '<span class="sr-only">' + this.esc(t('toast.' + type)) + ': </span><span class="tst-tx" dir="auto">' + this.esc(String(text == null ? '' : text)) + '</span>';
-    // The same text twice in a row (a double click) replaces the first one instead of stacking.
-    if (this.last && this.last.text === text && this.last.type === type) n.dismiss(this.last.ref);
     const ref = n.open({ type: 'cv', className: 'tst tst-' + type, message: msg, duration: this.ms[type], icon: false, background: 'transparent' });
-    this.last = { text, type, ref };
     // Errors interrupt; the rest wait their turn. Cleared first so the same words are read again.
     const live = this.live, said = t('toast.' + type) + ': ' + text;
     live.setAttribute('aria-live', type === 'error' ? 'assertive' : 'polite'); live.textContent = '';

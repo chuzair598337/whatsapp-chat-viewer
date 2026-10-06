@@ -71,16 +71,6 @@
           <button class="btn primary" id="cardOpen"></button>
         </div>
       </section>
-      <section class="sb-sec" id="searchSec">
-        <h3><label for="q1" data-i18n="sidebar.search_messages">Search messages</label><span id="count1" class="count"></span></h3>
-        <div class="searchbox">
-          <span id="sIcon1"></span>
-          <input id="q1" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" data-i18n-attr="placeholder:common.search_this_chat">
-          <button class="ibtn sm" id="prev1" aria-label="Previous match (older)" title="Previous match (Shift+Enter)" data-i18n-attr="aria-label:common.previous_match_older;title:sidebar.previous_match_shift_enter"></button>
-          <button class="ibtn sm" id="next1" aria-label="Next match (newer)" title="Next match (Enter)" data-i18n-attr="aria-label:common.next_match_newer;title:sidebar.next_match_enter"></button>
-        </div>
-        <div class="results" id="results"></div>
-      </section>
       <section class="sb-sec" id="filterSec">
         <h3><span data-i18n="sidebar.filter_messages">Filter messages</span> <button class="linkbtn" id="fClear" hidden data-i18n="sidebar.clear">Clear</button></h3>
         <div class="field"><label for="fFrom" data-i18n="sidebar.from_date">From date</label><input type="date" id="fFrom"></div>
@@ -102,6 +92,7 @@
       </section>
       <p class="privacy"><span id="lockIc"></span><span data-i18n="sidebar.your_chat_is_read_inside">Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</span></p>
     </div>
+    <div id="sbResize" class="sb-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="Resize side panel" title="Drag to resize the side panel. Double-click to reset." data-i18n-attr="aria-label:sidebar.resize;title:sidebar.resize_hint"><span class="sb-grip"></span></div>
   </aside>
   <div id="scrim" class="scrim" hidden></div>
   <main class="main">
@@ -116,11 +107,19 @@
       <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden data-i18n-attr="aria-label:menu.chat_menu">
         <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml" data-i18n="common.media_links_and_docs">Media, links and docs</span></button>
         <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml" data-i18n="common.starred_messages">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
+        <button role="menuitem" id="selectBtn"><span class="mi" id="miSelect"></span><span class="ml" data-i18n="sel.select_messages">Select messages</span></button>
         <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml" data-i18n="common.chat_statistics">Chat statistics</span></button>
         <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml" data-i18n="menu.open_another_chat">Open another chat</span></button>
         <div class="msep" role="separator"></div>
         <button role="menuitem" id="setBtn"><span class="mi" id="miSet"></span><span class="ml" data-i18n="menu.settings">Settings</span></button>
         <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml" data-i18n="menu.help_and_guided_tour">Help and guided tour</span></button>
+      </div>
+      <div id="selbar" class="selbar" hidden role="toolbar" aria-label="Selected messages" data-i18n-attr="aria-label:sel.toolbar">
+        <button class="ibtn" id="selClose" aria-label="Cancel selection" title="Cancel selection" data-i18n-attr="aria-label:sel.cancel;title:sel.cancel"></button>
+        <span id="selCount" class="selcount" aria-live="polite"></span>
+        <button class="ibtn" id="selStar"></button>
+        <button class="ibtn" id="selCopy" aria-label="Copy" title="Copy" data-i18n-attr="aria-label:sel.copy;title:sel.copy"></button>
+        <button class="ibtn" id="selShare" aria-label="Share" title="Share" data-i18n-attr="aria-label:sel.share;title:sel.share"></button>
       </div>
     </header>
     <div id="sstrip" class="sstrip" hidden>
@@ -251,6 +250,7 @@
 <script src="js/app.js"></script>
 <script src="js/components/media-gallery.js"></script>
 <script src="js/components/message-menu.js"></script>
+<script src="js/components/select-messages.js"></script>
 <script src="js/components/settings.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>

@@ -111,6 +111,7 @@ const ICON = {
   pause: ic('<path d="M8.5 5.5v13M15.5 5.5v13" stroke-width="3.2"/>'),
   mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="2"/><path d="M4 7l8 6 8-6"/>'),
   link: ic('<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>'),
+  tick: ic('<path d="M6.5 12.5l3.5 3.5 7.5-8"/>'),
   check: ic('<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8"/>'),
   star: ic('<path d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/>'),
   starFill: '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><path fill="currentColor" d="M12 3.8l2.5 5.1 5.6.8-4 3.9.9 5.6-5-2.6-5 2.6.9-5.6-4-3.9 5.6-.8z"/></svg>',
@@ -1115,6 +1116,11 @@ function makeRow(it, idx) {
   const ap = el.querySelector('.aplayer');
   if (ap) { AudioCtl.paintNode(ap); AudioCtl.probe(ap.dataset.audio); if (ap.classList.contains('voice')) Waves.request(ap.dataset.audio); }
   if (stk) Was.mount(el);
+  if (S.selecting) { // selection mode (js/components/select-messages.js): a tick circle at the start of the row
+    const on = S.sel.has(it.i);
+    el.classList.add('selable'); if (on) el.classList.add('sel');
+    el.insertAdjacentHTML('afterbegin', '<span class="selbox" role="checkbox" tabindex="0" aria-checked="' + on + '" aria-label="' + esc(t('sel.select_message')) + '">' + ICON.tick + '</span>');
+  }
   return el;
 }
 

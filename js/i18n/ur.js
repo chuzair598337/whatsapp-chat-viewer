@@ -50,9 +50,6 @@ I18N.add('ur', {
     "open_a_chat_export": "چیٹ ایکسپورٹ کھولیں",
     "close_panel": "پینل بند کریں",
     "chats_in_these_files": "ان فائلوں میں موجود چیٹس",
-    "search_messages": "پیغامات تلاش کریں",
-    "previous_match_shift_enter": "پچھلا نتیجہ (Shift+Enter)",
-    "next_match_enter": "اگلا نتیجہ (Enter)",
     "filter_messages": "پیغامات فلٹر کریں",
     "clear": "صاف کریں",
     "from_date": "تاریخ سے",
@@ -72,7 +69,9 @@ I18N.add('ur', {
     "statistics": "اعداد و شمار",
     "open_chat": "چیٹ کھولیں",
     "jump_to_date": "تاریخ پر جائیں",
-    "first_message_on_or_after": "اس دن یا اس کے بعد کا پہلا پیغام"
+    "first_message_on_or_after": "اس دن یا اس کے بعد کا پہلا پیغام",
+    "resize": "سائیڈ پینل کا سائز بدلیں",
+    "resize_hint": "سائیڈ پینل کا سائز بدلنے کے لیے گھسیٹیں۔ پہلے جیسا کرنے کے لیے دو بار کلک کریں۔"
   },
   "chat": {
     "show_chat_details": "چیٹ کی تفصیلات دکھائیں",
@@ -573,5 +572,24 @@ I18N.add('ur', {
     "error": "خرابی",
     "warning": "انتباہ",
     "info": "نوٹ"
+  },
+  "sel": {
+    "select": "منتخب کریں",
+    "select_messages": "پیغامات منتخب کریں",
+    "select_message": "پیغام منتخب کریں",
+    "toolbar": "منتخب پیغامات",
+    "n_selected": "{count} منتخب",
+    "n_selected_one": "1 منتخب",
+    "cancel": "انتخاب ختم کریں",
+    "copy": "کاپی کریں",
+    "share": "شیئر کریں",
+    "star": "ستارہ",
+    "unstar": "ستارہ ہٹائیں",
+    "starred_n": "{count} پیغامات پر ستارہ لگ گیا",
+    "starred_n_one": "1 پیغام پر ستارہ لگ گیا",
+    "unstarred_n": "{count} پیغامات سے ستارہ ہٹ گیا",
+    "unstarred_n_one": "1 پیغام سے ستارہ ہٹ گیا",
+    "messages_n": "{count} پیغامات",
+    "messages_n_one": "1 پیغام"
   }
 });

@@ -204,6 +204,7 @@ function foldReactions(msgs) {
 function applyResult(res, keepMe) {
   if (!res.folded) { res.messages = foldReactions(res.messages); res.folded = true; }
   if (!keepMe) { S.starred = new Set(); S.filter = { from: '', to: '', sender: '' }; }
+  if (typeof Sel !== 'undefined') Sel.stop(true); // a selection belongs to the chat it was made in
   S.res = res; S.msgs = res.messages; S.lc = null; S.stats = null;
   setScriptDefault(S.msgs);
   linkMedia();
@@ -412,11 +413,10 @@ $('starList').addEventListener('click', e => { const b = e.target.closest('.res'
 /* =====================================================================
    Search
    ===================================================================== */
-const q1 = $('q1'), q2 = $('q2');
+const q2 = $('q2');
 let searchTimer = 0;
 function onSearchInput(e) {
   const v = e.target.value;
-  if (e.target === q1) q2.value = v; else q1.value = v;
   clearTimeout(searchTimer); searchTimer = setTimeout(() => runSearch(v), 140);
 }
 function runSearch(q) {
@@ -433,16 +433,15 @@ function runSearch(q) {
       S.cur = k < 0 ? S.matches.length - 1 : k;
     }
   }
-  renderResults();
   VL.refresh();
   if (S.cur >= 0) jumpToMatch(S.cur);
   updateCounts();
 }
-function clearSearch() { q1.value = ''; q2.value = ''; runSearch(''); }
+function clearSearch() { q2.value = ''; runSearch(''); }
 function updateCounts() {
   const n = S.matches.length, txt = !S.q.trim() ? '' : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
-  $('count1').textContent = txt; $('count2').textContent = txt;
-  for (const id of ['prev1', 'next1', 'prev2', 'next2']) $(id).disabled = n === 0;
+  $('count2').textContent = txt;
+  for (const id of ['prev2', 'next2']) $(id).disabled = n === 0;
 }
 function step(d) {
   if (!S.matches.length) return;
@@ -457,37 +456,16 @@ function jumpToMatch(k) {
   const el = VL.nodes.get(S.m2i[i]);
   if (el) el.classList.add('flash');
   updateCounts();
-  const rs = document.querySelectorAll('.res');
-  rs.forEach(r => r.classList.toggle('cur', +r.dataset.k === k));
 }
-function snippet(m) {
-  const tx = m.message || (m.extra && m.extra.q) || (m.attachments[0] && m.attachments[0].name) || '';
-  const hit = foldFind(tx, S.fq)[0], s = Math.max(0, (hit ? hit[0] : 0) - 30);
-  const raw = (s > 0 ? '…' : '') + tx.slice(s, s + 140).replace(/\s+/g, ' ');
-  return markHTML(scriptHTML(raw), S.fq);
-}
-function renderResults() {
-  const box = $('results');
-  if (!S.q.trim() || !S.matches.length) { box.innerHTML = ''; return; }
-  const LIM = 200;
-  box.innerHTML = S.matches.slice(0, LIM).map((i, k) => {
-    const m = S.msgs[i];
-    return '<button class="res" data-k="' + k + '"><span class="rh"><b dir="auto">' + esc(m.isSystem ? t('search.system') : m.isOutgoing ? t('common.you') : m.sender) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + snippet(m) + '</span></button>';
-  }).join('') + (S.matches.length > LIM ? '<div class="res-more">' + t('search.first_only', { lim: nf(LIM), n: nf(S.matches.length) }) + '</div>' : '');
-}
-$('results').addEventListener('click', e => { const b = e.target.closest('.res'); if (b) { jumpToMatch(+b.dataset.k); if (isNarrow()) closeDrawer(); } });
-for (const q of [q1, q2]) {
-  q.addEventListener('input', onSearchInput);
-  q.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q.value) runSearch(q.value); else step(e.shiftKey ? -1 : 1); }
-    if (e.key === 'Escape') { if (q.value) clearSearch(); else closeSearch(); }
-  });
-}
-$('prev1').onclick = $('prev2').onclick = () => step(-1);
-$('next1').onclick = $('next2').onclick = () => step(1);
+q2.addEventListener('input', onSearchInput);
+q2.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); }
+  if (e.key === 'Escape') { if (q2.value) clearSearch(); else closeSearch(); }
+});
+$('prev2').onclick = () => step(-1);
+$('next2').onclick = () => step(1);
 const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
-// The header's search opens a bar under the header on every screen size, like WhatsApp; the side
-// panel keeps its own search box and the list of results.
+// Search is a bar under the chat header on every screen size, like WhatsApp.
 function openSearch() { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
 function closeSearch() { $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
 $('searchBtn').onclick = openSearch;
@@ -660,7 +638,7 @@ document.addEventListener('langchange', () => {
   markLang(); makeFormats(); Tour.boot();
   if (!S.msgs.length) return;
   renderLibrary(); renderChrome(); renderMediaSummary(); renderFilterUI(); renderFilterBar();
-  if (S.q.trim()) { updateCounts(); renderResults(); }
+  if (S.q.trim()) updateCounts();
   if (!$('starPanel').hidden) renderStars();
   if (!$('statsModal').hidden) renderStats();
   if (!$('galModal').hidden) Gallery.show(Gallery.cat);
@@ -710,6 +688,37 @@ function toggleSide() {
   syncMenuBtn();
   if (hide && $('sidebar') && $('sidebar').contains(document.activeElement)) $('menuBtn').focus();
 }
+// Dragging the side panel's edge (its grip sits at the middle) sets its width, from 280 px up to half the
+// window (at most 640 px). Arrow keys on the grip move it 16 px at a time, Home and End go to the limits,
+// and a double-click puts it back. The width lasts until the page is closed; it isn't stored.
+const sbHandle = $('sbResize'), SBW = { min: 280, def: 380, max: () => Math.max(280, Math.min(640, Math.round(innerWidth * 0.5))) };
+function sideWidth() { return $('sidebar').getBoundingClientRect().width; }
+function setSideW(w) {
+  if (w == null) document.documentElement.style.removeProperty('--sb-w');
+  else document.documentElement.style.setProperty('--sb-w', Math.round(Math.max(SBW.min, Math.min(SBW.max(), w))) + 'px');
+  sideAria();
+}
+function sideAria() {
+  sbHandle.setAttribute('aria-valuemin', SBW.min); sbHandle.setAttribute('aria-valuemax', SBW.max()); sbHandle.setAttribute('aria-valuenow', Math.round(sideWidth()));
+}
+sbHandle.addEventListener('pointerdown', e => {
+  if (e.button !== 0 || isNarrow()) return;
+  e.preventDefault();
+  const x0 = e.clientX, w0 = sideWidth(), dir = I18N.rtl() ? -1 : 1; // in right-to-left the panel is on the right
+  sbHandle.setPointerCapture(e.pointerId); document.body.classList.add('sb-resizing');
+  const move = ev => setSideW(w0 + (ev.clientX - x0) * dir);
+  const up = () => { sbHandle.removeEventListener('pointermove', move); sbHandle.removeEventListener('pointerup', up); sbHandle.removeEventListener('pointercancel', up); document.body.classList.remove('sb-resizing'); };
+  sbHandle.addEventListener('pointermove', move); sbHandle.addEventListener('pointerup', up); sbHandle.addEventListener('pointercancel', up);
+});
+sbHandle.addEventListener('dblclick', () => setSideW(null));
+sbHandle.addEventListener('keydown', e => {
+  const grow = I18N.rtl() ? 'ArrowLeft' : 'ArrowRight', shrink = I18N.rtl() ? 'ArrowRight' : 'ArrowLeft';
+  const w = sideWidth(), to = e.key === grow ? w + 16 : e.key === shrink ? w - 16 : e.key === 'Home' ? SBW.min : e.key === 'End' ? SBW.max() : e.key === 'Enter' ? null : undefined;
+  if (to === undefined) return;
+  e.preventDefault(); setSideW(to);
+});
+window.addEventListener('resize', () => { if (document.documentElement.style.getPropertyValue('--sb-w')) setSideW(sideWidth()); });
+sbHandle.addEventListener('focus', sideAria);
 function syncMenuBtn() {
   const wide = !isNarrow(), open = wide ? !document.body.classList.contains('side-hidden') : document.body.classList.contains('drawer-open');
   $('menuBtn').setAttribute('aria-expanded', open);
@@ -774,8 +783,7 @@ $('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').inn
 for (const [id, ic] of [['startT1', 'lock'], ['startT2', 'ban'], ['startT3', 'check']]) $(id).insertAdjacentHTML('afterbegin', ICON[ic]); $('sbOpen').innerHTML = ICON.open; $('sbClose').innerHTML = ICON.close;
 $('menuBtn').innerHTML = ICON.menu; $('searchBtn').innerHTML = ICON.search; $('moreBtn').innerHTML = ICON.more;
 for (const [id, ic] of [['miStar', 'star'], ['miStats', 'stats'], ['miOpen', 'open'], ['miHelp', 'help']]) $(id).innerHTML = ICON[ic];
-$('sClose').innerHTML = ICON.close; $('prev1').innerHTML = $('prev2').innerHTML = ICON.up; $('next1').innerHTML = $('next2').innerHTML = ICON.down
-$('sIcon1').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
+$('sClose').innerHTML = ICON.close; $('prev2').innerHTML = ICON.up; $('next2').innerHTML = ICON.down
 $('fab').innerHTML = ICON.down; $('fabTop').innerHTML = ICON.up; $('lockIc').innerHTML = ICON.lock.replace('width="22" height="22"', 'width="16" height="16"');
 $('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.statistics">' + t('sidebar.statistics') + '</span>';
 $('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.open_chat">' + t('sidebar.open_chat') + '</span>';

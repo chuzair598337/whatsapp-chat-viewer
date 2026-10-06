@@ -50,9 +50,6 @@ I18N.add('ar', {
     "open_a_chat_export": "فتح ملف تصدير دردشة",
     "close_panel": "إغلاق اللوحة",
     "chats_in_these_files": "الدردشات في هذه الملفات",
-    "search_messages": "البحث في الرسائل",
-    "previous_match_shift_enter": "النتيجة السابقة (Shift+Enter)",
-    "next_match_enter": "النتيجة التالية (Enter)",
     "filter_messages": "تصفية الرسائل",
     "clear": "مسح",
     "from_date": "من تاريخ",
@@ -72,7 +69,9 @@ I18N.add('ar', {
     "statistics": "الإحصائيات",
     "open_chat": "فتح الدردشة",
     "jump_to_date": "الانتقال إلى تاريخ",
-    "first_message_on_or_after": "أول رسالة في أو بعد"
+    "first_message_on_or_after": "أول رسالة في أو بعد",
+    "resize": "تغيير حجم اللوحة الجانبية",
+    "resize_hint": "اسحب لتغيير حجم اللوحة الجانبية. انقر مرتين لإعادة الحجم الأصلي."
   },
   "chat": {
     "show_chat_details": "عرض تفاصيل الدردشة",
@@ -573,5 +572,24 @@ I18N.add('ar', {
     "error": "خطأ",
     "warning": "تحذير",
     "info": "ملاحظة"
+  },
+  "sel": {
+    "select": "تحديد",
+    "select_messages": "تحديد الرسائل",
+    "select_message": "تحديد الرسالة",
+    "toolbar": "الرسائل المحددة",
+    "n_selected": "تم تحديد {count}",
+    "n_selected_one": "تم تحديد 1",
+    "cancel": "إلغاء التحديد",
+    "copy": "نسخ",
+    "share": "مشاركة",
+    "star": "تمييز بنجمة",
+    "unstar": "إلغاء التمييز بنجمة",
+    "starred_n": "تم تمييز {count} رسائل بنجمة",
+    "starred_n_one": "تم تمييز رسالة واحدة بنجمة",
+    "unstarred_n": "أُزيلت النجمة من {count} رسائل",
+    "unstarred_n_one": "أُزيلت النجمة من رسالة واحدة",
+    "messages_n": "{count} رسائل",
+    "messages_n_one": "رسالة واحدة"
   }
 });

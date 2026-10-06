@@ -76,7 +76,7 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # toast.js (notifications), media-gallery.js, message-menu.js, settings.js
+│   ├── components/                       # toast.js, media-gallery.js, message-menu.js, select-messages.js, settings.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
@@ -130,7 +130,7 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/settings` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/select-messages` → `components/settings` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 

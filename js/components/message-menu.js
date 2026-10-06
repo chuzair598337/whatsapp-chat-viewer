@@ -41,10 +41,12 @@ const MsgMenu = {
       out.push(['download', m.attachments.length > 1 ? t('doc.download_name', { name: a.title || e.name }) : t('doc.download'), () => saveFile(e)]);
     }
     if (canShare()) out.push(['share', t('mm.share'), () => shareMsg(m)]);
+    out.push(['check', t('sel.select'), () => Sel.start(i)]);
     return out;
   },
   open(i, x, y, anchor) {
     if (i < 0 || !S.msgs[i] || S.msgs[i].isSystem) return;
+    if (S.selecting) { Sel.toggle(i); return; } // while selecting, a right-click or long-press picks the message
     this.i = i; this.ret = document.activeElement;
     const acts = this.actions(i);
     this.run = acts.map(a => a[2]);

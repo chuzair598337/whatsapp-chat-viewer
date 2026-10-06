@@ -50,9 +50,6 @@ I18N.add('en-US', {
     "open_a_chat_export": "Open a chat export",
     "close_panel": "Close panel",
     "chats_in_these_files": "Chats in these files",
-    "search_messages": "Search messages",
-    "previous_match_shift_enter": "Previous match (Shift+Enter)",
-    "next_match_enter": "Next match (Enter)",
     "filter_messages": "Filter messages",
     "clear": "Clear",
     "from_date": "From date",
@@ -72,7 +69,9 @@ I18N.add('en-US', {
     "statistics": "Statistics",
     "open_chat": "Open chat",
     "jump_to_date": "Jump to date",
-    "first_message_on_or_after": "First message on or after"
+    "first_message_on_or_after": "First message on or after",
+    "resize": "Resize side panel",
+    "resize_hint": "Drag to resize the side panel. Double-click to reset."
   },
   "chat": {
     "show_chat_details": "Show chat details",
@@ -573,5 +572,24 @@ I18N.add('en-US', {
     "error": "Error",
     "warning": "Warning",
     "info": "Note"
+  },
+  "sel": {
+    "select": "Select",
+    "select_messages": "Select messages",
+    "select_message": "Select message",
+    "toolbar": "Selected messages",
+    "n_selected": "{count} selected",
+    "n_selected_one": "1 selected",
+    "cancel": "Cancel selection",
+    "copy": "Copy",
+    "share": "Share",
+    "star": "Star",
+    "unstar": "Unstar",
+    "starred_n": "{count} messages starred",
+    "starred_n_one": "1 message starred",
+    "unstarred_n": "Stars removed from {count} messages",
+    "unstarred_n_one": "Star removed from 1 message",
+    "messages_n": "{count} messages",
+    "messages_n_one": "1 message"
   }
 });
