@@ -55,7 +55,7 @@ function markHTML(html, fq, cls) {
    clicks stay inside it. They stack: a contact card opened from the gallery sits on top of it. */
 const Dialogs = {
   stack: [],
-  SKIP: new Set(['toast', 'loading', 'drop', 'tour', 'tourWelcome']),
+  SKIP: new Set(['toasts', 'toastLive', 'loading', 'drop', 'tour', 'tourWelcome']),
   open(el) { if (!this.stack.includes(el)) this.stack.push(el); this.apply(); },
   close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); },
   any() { return this.stack.length > 0; },
@@ -1198,14 +1198,14 @@ function toggleFullscreen(box) {
 }
 async function copyText(text, what) {
   what = what || t('copy.link');
-  try { await navigator.clipboard.writeText(text); toast(t('copy.copied', { what })); return; } catch (e) { /* fall back */ }
+  try { await navigator.clipboard.writeText(text); toast.success(t('copy.copied', { what })); return; } catch (e) { /* fall back */ }
   const ta = document.createElement('textarea');
   ta.value = text; ta.setAttribute('readonly', ''); ta.style.cssText = 'position:fixed;opacity:0;left:0;top:0';
   document.body.appendChild(ta); ta.select();
   let ok = false;
   try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
   ta.remove();
-  toast(ok ? t('copy.copied', { what }) : t('copy.failed'));
+  if (ok) toast.success(t('copy.copied', { what })); else toast.error(t('copy.failed'));
 }
 let waveDrag = null;
 layer.addEventListener('pointerdown', e => {
@@ -1283,8 +1283,8 @@ document.addEventListener('click', async ev => {
       try { await Heic.view(e); await DL.save({ filename: e.name.replace(/\.[^.]+$/, '.jpg'), data: e.viewBlob }); return; }
       catch (err2) { if (err2 && err2.code === 'declined') return; }
     }
-    if (blocked) toast(t('dl.blocked', { ext: extOf(e.name) }));
-    else if (code && code !== 'declined') toast(t('dl.failed'));
+    if (blocked) toast.warning(t('dl.blocked', { ext: extOf(e.name) }));
+    else if (code && code !== 'declined') toast.error(t('dl.failed'));
   }
 });
 

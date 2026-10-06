@@ -40,16 +40,15 @@ const MsgMenu = {
       }
       out.push(['download', m.attachments.length > 1 ? t('doc.download_name', { name: a.title || e.name }) : t('doc.download'), () => saveFile(e)]);
     }
-    if (navigator.share) out.push(['share', t('mm.share'), () => shareMsg(m)]);
+    if (canShare()) out.push(['share', t('mm.share'), () => shareMsg(m)]);
     return out;
   },
   open(i, x, y, anchor) {
     if (i < 0 || !S.msgs[i] || S.msgs[i].isSystem) return;
     this.i = i; this.ret = document.activeElement;
-    const m = S.msgs[i], acts = this.actions(i);
+    const acts = this.actions(i);
     this.run = acts.map(a => a[2]);
-    this.el.innerHTML = '<div class="mm-head"><b dir="auto">' + (m.isOutgoing ? esc(t('common.you')) : scriptHTML(m.sender || '')) + '</b><small>' + resTime(m) + '</small></div>' +
-      acts.map(([icon, label], k) => '<button role="menuitem" data-mm="' + k + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
+    this.el.innerHTML = acts.map(([icon, label], k) => '<button role="menuitem" data-mm="' + k + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
     this.el.hidden = false;
     const row = layer.querySelector('.row[data-i="' + S.m2i[i] + '"]');
     this.place(row, x, y);
@@ -70,7 +69,7 @@ const MsgMenu = {
         const can = scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop;
         if (can > 0) { this.moving = true; scroller.scrollTop += Math.min(need, can, Math.max(0, r.top - sc.top - 8)); VL.update(); r = bub.getBoundingClientRect(); requestAnimationFrame(() => requestAnimationFrame(() => { this.moving = false; })); }
       }
-      x = row.classList.contains('out') ? r.right - w : r.left;
+      x = r.right - w; // right-aligned with the bubble, for sent and received messages alike
       y = r.bottom + 4;
       if (y + h > room) y = r.top - h - 4 >= sc.top + 8 ? r.top - h - 4 : room - h;
     }
@@ -99,10 +98,24 @@ function saveFile(e) {
   a.href = e.url; a.download = e.name; a.hidden = true;
   document.body.appendChild(a); a.click(); a.remove();
 }
+// The share sheet only works where the page may use it: not inside a frame that doesn't allow it
+// (such as the dev preview), and not in browsers without it. Elsewhere Share isn't offered.
+function canShare() {
+  if (!navigator.share || !window.isSecureContext) return false;
+  const fp = document.permissionsPolicy || document.featurePolicy;
+  if (fp && fp.allowsFeature) return fp.allowsFeature('web-share');
+  try { return window.top === window; } catch (e) { return false; }
+}
 async function shareMsg(m) {
   const files = m.attachments.map(a => a.url && Media.get(a.name)).filter(Boolean).map(e => new File([e.blob], e.name, { type: e.mime }));
   const data = files.length && navigator.canShare && navigator.canShare({ files }) ? { files, text: m.message || undefined } : { text: copyable(m) || files.map(f => f.name).join(', ') };
-  try { await navigator.share(data); } catch (err) { if (err && err.name !== 'AbortError') toast(t('mm.share_failed')); }
+  try { await navigator.share(data); }
+  catch (err) {
+    if (err && err.name === 'AbortError') return;
+    // Blocked after all: copy the message instead, so the press still does something useful.
+    const text = copyable(m);
+    if (text) copyText(text, t(m.kind === 'poll' ? 'mm.poll' : 'mm.message')); else toast.error(t('mm.share_failed'));
+  }
 }
 const rowMsg = el => { const row = el && el.closest && el.closest('.row:not(.daterow):not(.sysrow)'); if (!row) return -1; const it = S.items[+row.dataset.i]; return it && it.type !== 'date' ? it.i : -1; };
 

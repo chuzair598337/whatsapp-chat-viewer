@@ -443,7 +443,7 @@ I18N.add('en-US', {
     },
     "search": {
       "title": "Search",
-      "text": "Search for any word, sender name or poll option. Every match is highlighted in the chat, with an \"n of N\" counter, a list of results to jump to, and Enter or Shift+Enter to step through them. Press / to search from anywhere.",
+      "text": "Search for any word, sender name or poll option. Every match is highlighted in the chat, with an \"n of N\" counter, and Enter or Shift+Enter steps through them. Press / to search from anywhere.",
       "textNarrow": "Tap here to search for any word, sender name or poll option. Every match is highlighted in the chat, and the arrows step through them."
     },
     "date_and_sender": {
@@ -566,5 +566,12 @@ I18N.add('en-US', {
     "open_document": "Open document",
     "share": "Share",
     "share_failed": "Sharing isn't available here."
+  },
+  "toast": {
+    "dismiss": "Dismiss notification",
+    "success": "Done",
+    "error": "Error",
+    "warning": "Warning",
+    "info": "Note"
   }
 });

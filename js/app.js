@@ -15,8 +15,6 @@ function hintFrom(name) {
 const isChatName = n => /WhatsApp|واتساب/i.test(baseName(n)) && !!hintFrom(n);
 function showLoading(title) { $('loadTitle').textContent = title; $('loadNote').textContent = t('load.working'); setProgress(0); $('loading').hidden = false; }
 function setProgress(p) { const bar = $('progBar'); bar.parentNode.classList.toggle('indet', p < 0); bar.style.width = p < 0 ? '' : Math.round(p * 100) + '%'; }
-let toastTimer = 0;
-function toast(msg) { const el = $('toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 5000); }
 
 const setNote = t => { $('loadNote').textContent = t; };
 async function detectKind(file) {
@@ -68,7 +66,7 @@ async function openFiles(list) {
       } else lib.push({ file, kind, path: null, label: hintFrom(file.name) || file.name.replace(/\.zip$/i, '') });
       if (arc.close) arc.close();
     }
-  } catch (e) { if (isStale(e)) return; toast(e && e.message ? e.message : t('load.read_failed_many')); $('loading').hidden = true; return; }
+  } catch (e) { if (isStale(e)) return; toast.error(e && e.message ? e.message : t('load.read_failed_many')); $('loading').hidden = true; return; }
   $('loading').hidden = true;
   if (!lib.length) return;
   // The first file that opens is shown; ones that fail (each with its own message) are skipped.
@@ -94,7 +92,7 @@ async function loadMedia(arc, list, my) {
   if (my !== loadSeq) return;
   Media.pending.clear(); Media.loading = null;
   refreshMedia();
-  if (failed) toast(t('load.extract_failed', { n: failed, count: nf(failed) }));
+  if (failed) toast.warning(t('load.extract_failed', { n: failed, count: nf(failed) }));
 }
 async function openFile(file) { return openFiles([file]); }
 async function openEntry(entry, my) {
@@ -153,7 +151,7 @@ async function openEntry(entry, my) {
     return true;
   } catch (e) {
     Media.discard(staged);
-    if (!isStale(e)) toast(e && /NotReadable|NotFound/.test(e.name) ? t('load.folder') : e && e.message ? e.message : t('load.read_failed')); // a dropped folder can't be read
+    if (!isStale(e)) toast.error(e && /NotReadable|NotFound/.test(e.name) ? t('load.folder') : e && e.message ? e.message : t('load.read_failed')); // a dropped folder can't be read
     return false;
   } finally { if (arc && arc.close) arc.close(); if (my === loadSeq) $('loading').hidden = true; }
 }
@@ -382,7 +380,7 @@ function toggleStar(i) {
   if (S.starred.has(i)) S.starred.delete(i); else S.starred.add(i);
   rerenderRow(S.m2i[i]);
   renderStars();
-  toast(S.starred.has(i) ? t('stars.starred') : t('stars.removed'));
+  if (S.starred.has(i)) toast.success(t('stars.starred')); else toast.info(t('stars.removed'));
 }
 // Date and time of a search or starred result, each isolated so they keep their order in Urdu.
 function resTime(m) { return '<time><bdi>' + esc(shortFmt.format(dkToT(m.dateKey))) + '</bdi>' + t('common.list_sep') + '<bdi dir="ltr">' + m.formattedTime + '</bdi></time>'; }
@@ -611,8 +609,8 @@ async function setOrder(v) {
   const my = ++loadSeq; // a file opened meanwhile takes over, and its progress screen stays up
   try {
     await parseAndShow(true, my);
-    if (S.res.rejected) { S.order = 'auto'; toast(t('load.order_rejected')); if (Settings.isOpen()) Settings.render(); }
-  } catch (err) { if (!isStale(err)) toast(err.message); } finally { if (my === loadSeq) $('loading').hidden = true; }
+    if (S.res.rejected) { S.order = 'auto'; toast.warning(t('load.order_rejected')); if (Settings.isOpen()) Settings.render(); }
+  } catch (err) { if (!isStale(err)) toast.error(err.message); } finally { if (my === loadSeq) $('loading').hidden = true; }
 };
 function jumpToDate(dk) {
   let k = S.msgs.findIndex((m, i) => m.dateKey >= dk && S.m2i[i] >= 0);
@@ -804,7 +802,7 @@ async function loadSample() {
   Media.adopt(staged);
   S.library = []; renderLibrary();
   S.source = { blob: new Blob([SAMPLE], { type: 'text/plain' }), name: 'Sample chat', size: SAMPLE.length, hint: 'Weekend Hiking Crew', sample: true, zip: true };
-  try { await parseAndShow(false, my); } catch (e) { if (!isStale(e)) toast(e.message); return false; }
+  try { await parseAndShow(false, my); } catch (e) { if (!isStale(e)) toast.error(e.message); return false; }
   finally { if (my === loadSeq) $('loading').hidden = true; }
   if (!sampleVideo) recordSampleVideo(); // in the background: the chat is already usable
   return true;

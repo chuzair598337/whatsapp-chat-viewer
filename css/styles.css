@@ -359,7 +359,26 @@ mark.cur { background: var(--hl-cur); }
 .prog i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .15s; }
 .prog.indet i { width: 35% !important; animation: indet 1.1s linear infinite; }
 @keyframes indet { from { transform: translateX(-100%); } to { transform: translateX(300%); } }
-.toast { position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); z-index: 95; background: var(--ink); color: var(--panel); padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: calc(100% - 32px); box-shadow: 0 4px 16px var(--shadow); }
+/* Notifications (js/components/toast.js on Notyf): cards at the top right with a coloured edge and icon per kind. */
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+#toasts.notyf { z-index: 120; padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 16px; justify-content: flex-start !important; align-items: flex-end !important; color: var(--ink); }
+.notyf .tst { --tc: var(--accent); width: 360px; max-width: calc(100vw - 32px); padding: 0; border-radius: 10px; background: var(--panel) !important; color: var(--ink); box-shadow: 0 2px 6px rgba(0, 0, 0, .18), 0 12px 32px rgba(0, 0, 0, .18); border-inline-start: 4px solid var(--tc); font: inherit; }
+.notyf .tst.notyf__toast--upper { margin-bottom: 10px; }
+.notyf .tst-success { --tc: #1fa855; } .notyf .tst-error { --tc: #e5484d; } .notyf .tst-warning { --tc: #e2a400; } .notyf .tst-info { --tc: #2f88ff; }
+.notyf .tst .notyf__wrapper { padding: 12px 44px 12px 12px; align-items: flex-start; }
+.notyf .tst .notyf__message { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; overflow-wrap: anywhere; }
+.notyf .tst-ic { flex: none; display: grid; color: var(--tc); margin-top: 1px; }
+.notyf .tst-tx { flex: 1; min-width: 0; text-align: start; }
+.notyf .tst .notyf__dismiss { width: 36px; margin-right: 0; }
+.notyf .tst .notyf__dismiss-btn { background: transparent; opacity: .55; border-radius: 0 10px 10px 0; }
+.notyf .tst .notyf__dismiss-btn::before, .notyf .tst .notyf__dismiss-btn::after { background: var(--ink); }
+.notyf .tst .notyf__dismiss-btn:hover, .notyf .tst .notyf__dismiss-btn:focus-visible { opacity: 1; background: var(--panel-2); outline: none; }
+:root[lang="ur"] .notyf .tst-tx, :root[lang="ar"] .notyf .tst-tx { line-height: 1.8; }
+@media (max-width: 480px) {
+  #toasts.notyf { padding: calc(8px + env(safe-area-inset-top, 0px)) 8px 8px; }
+  .notyf .tst { width: 100%; max-width: none; border-radius: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .notyf__toast, .notyf__toast *, .notyf__message, .notyf__dismiss { animation-duration: .01s !important; animation-delay: 0s !important; } }
 .modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--overlay); padding: 16px; }
 .sheet { background: var(--panel); border-radius: 12px; width: min(860px, 100%); max-height: min(88vh, 900px); max-height: min(88dvh, 900px); display: flex; flex-direction: column; box-shadow: 0 12px 40px var(--shadow); overflow: hidden; }
 .sheet.narrow { width: min(440px, 100%); }
@@ -539,9 +558,6 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 @media (hover: none) { .bubble { -webkit-user-select: none; user-select: none; } }
 /* .menu.ctxmenu outranks the header .menu rules further down (absolute, pinned to the right), which stretched it across the window. */
 .menu.ctxmenu { position: fixed; top: 0; left: 0; right: auto; inset-inline-end: auto; z-index: 90; width: max-content; min-width: 200px; max-width: min(300px, calc(100vw - 16px)); max-height: calc(100dvh - 16px); overflow-y: auto; transform-origin: top left; }
-.ctxmenu .mm-head { display: grid; gap: 1px; padding: 4px 18px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--line); }
-.ctxmenu .mm-head b { font-size: 13.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ctxmenu .mm-head small { color: var(--ink-3); font-size: 12px; }
 .stard { display: inline-flex; color: var(--ink-3); }
 .stard svg { width: 12px; height: 12px; }
 .meta.ov .stard { color: #fff; }
