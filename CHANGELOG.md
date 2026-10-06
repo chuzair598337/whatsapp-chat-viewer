@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.6.0 (2026-10-06)
 
 - **Fixes from the group-chat audit:**
   - **iPhone photos with a caption over several lines** now show the photo. The caption used to keep the raw `<attached: …>` tag and the file was lost (49 of 1,214 files in the audited export).

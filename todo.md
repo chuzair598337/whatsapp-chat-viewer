@@ -4,7 +4,7 @@ Work items in priority order. Tick an item (`[x]`) only once it's built, tested 
 
 Labels:
 - *Existed* means the feature was already in a released version when this list was written. It was checked against the code.
-- *New* means it was built for this list. Phases 1 to 4 were released in 1.3.0, Phases 5 to 9 in 1.4.0, and Phases 10 to 14 in 1.5.0.
+- *New* means it was built for this list. Phases 1 to 4 were released in 1.3.0, Phases 5 to 9 in 1.4.0, and Phases 10 to 14 in 1.5.0, and Phase 15 in 1.6.0.
 - *New (Phase 4)* means it is on `development` and not yet released.
 
 Out-of-scope ideas live in [deferred.md](deferred.md).
