@@ -47,6 +47,7 @@ Never show a broken image or empty space. Never throw.
 
 - **One playback at a time.**
   - Voice notes use the single `AudioCtl` element, so playback survives row recycling.
+  - iPhone Safari can accept `play()` on a Blob URL and never start. `AudioCtl.start()` arms a 2.5 s watchdog; with no progress (or a format error) `fallback()` decodes the file and plays it through Web Audio (`waPlay`/`waStart`), and `waOnly` sends later notes straight there. Pause audio with `AudioCtl.pause()`, never `AudioCtl.el.pause()`, so both paths stop. Unlock the AudioContext inside the tap (`unlock()`).
   - Videos pause audio (`pauseVideos` and `AudioCtl`).
 - **Voice notes:**
   - 36-bar waveform decoded on demand with the Web Audio API, then cached.

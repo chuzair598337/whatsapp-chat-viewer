@@ -452,6 +452,7 @@ const Waves = {
         const max = Math.max(...peaks) || 1;
         if (Media.get(name) !== e) continue; // a different chat was opened meanwhile
         Media.waves.set(name, peaks.map(p => 0.12 + 0.88 * p / max));
+        if (!isFinite(AudioCtl.dur.get(name))) AudioCtl.dur.set(name, ab.duration); // iPhone Safari never preloads the length
         document.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"] .atrack .wave').forEach(svg => { svg.outerHTML = waveSVG(name); });
         AudioCtl.paintFor(name);
       } catch (err) { /* keep the pseudo-waveform */ }
@@ -751,7 +752,7 @@ const PV = { name: '', z: 1, obs: null, gen: 0 };
 async function openPdf(name, title) {
   const e = Media.get(name);
   if (!e) return;
-  pauseVideos(); if (AudioCtl.el && !AudioCtl.el.paused) AudioCtl.el.pause();
+  pauseVideos(); AudioCtl.pause();
   PV.name = name; PV.z = 1; PV.gen++;
   $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
@@ -1161,7 +1162,7 @@ for (const t of ['timeupdate', 'play', 'pause', 'loadedmetadata', 'durationchang
   layer.addEventListener(t, e => {
     const v = e.target;
     if (v.tagName !== 'VIDEO') return;
-    if (t === 'play' && !v.closest('.gifv')) { pauseVideos(v); if (AudioCtl.el) AudioCtl.el.pause(); }
+    if (t === 'play' && !v.closest('.gifv')) { pauseVideos(v); AudioCtl.pause(); }
     if (t === 'loadedmetadata' && v.duration === Infinity && !v.dataset.fixdur) {
       // Recorder-made WebM files report no duration until the end is seeked once.
       v.dataset.fixdur = '1';
@@ -1290,7 +1291,7 @@ function showLb() {
   if (vid) {
     lbImg.removeAttribute('src');
     v.loop = v.muted = gif; v.controls = !gif; v.src = e.url;
-    if (AudioCtl.el) AudioCtl.el.pause();
+    AudioCtl.pause();
     v.play().catch(() => {});
   } else {
     v.pause(); v.removeAttribute('src'); lbImg.src = e.view || e.url;
