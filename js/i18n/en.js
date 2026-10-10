@@ -104,7 +104,15 @@ I18N.add('en-US', {
     "system": "System",
     "n_of_m": "{i} of {n}",
     "no_matches": "No matches",
-    "first_only": "Showing the first {lim} of {n}. Use the arrows to step through all of them."
+    "first_only": "Showing the first {lim} of {n}. Use the arrows to step through all of them.",
+    "options": "Search options",
+    "match_case": "Match case",
+    "match_case_tip": "Match case (Alt+C)",
+    "whole_word": "Whole word",
+    "whole_word_tip": "Whole word (Alt+W)",
+    "regex": "Regex",
+    "regex_tip": "Regular expression (Alt+R)",
+    "invalid_pattern": "Invalid pattern"
   },
   "banner": {
     "this_is_a_made_up": "This is a made-up sample chat. Its photos, video, GIF, sticker, audio and files are generated on this device.",

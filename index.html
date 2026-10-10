@@ -126,7 +126,12 @@
     <div id="sstrip" class="sstrip" hidden>
       <div class="searchbox">
         <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat" data-i18n-attr="aria-label:common.search_this_chat;placeholder:common.search_this_chat">
-        <span id="count2" class="count"></span>
+        <span id="count2" class="count" aria-live="polite"></span>
+      </div>
+      <div class="sopts" id="sopts" role="group" aria-label="Search options" data-i18n-attr="aria-label:search.options">
+        <button class="sopt" id="sCase" aria-pressed="false" title="Match case (Alt+C)" data-i18n-attr="title:search.match_case_tip"><span class="sg" aria-hidden="true">Aa</span><span class="sl" data-i18n="search.match_case">Match case</span></button>
+        <button class="sopt" id="sWord" aria-pressed="false" title="Whole word (Alt+W)" data-i18n-attr="title:search.whole_word_tip"><span class="sg sw" aria-hidden="true">ab</span><span class="sl" data-i18n="search.whole_word">Whole word</span></button>
+        <button class="sopt" id="sRegex" aria-pressed="false" title="Regular expression (Alt+R)" data-i18n-attr="title:search.regex_tip"><span class="sg" aria-hidden="true">.*</span><span class="sl" data-i18n="search.regex">Regex</span></button>
       </div>
       <div id="shist" class="shist" hidden>
         <div class="shh"><span id="shistHead" data-i18n="shist.title">Recent searches</span><button class="linkbtn shclr" id="shistClear" data-i18n="shist.clear_all">Clear all</button></div>

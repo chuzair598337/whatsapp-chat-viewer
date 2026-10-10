@@ -103,6 +103,11 @@ const SAMPLE = [
   `[03/04/2026, 8:20:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added +1 555 0142`,
   `[03/04/2026, 8:21:00${N}AM] +1 555 0142: Hi all, Zain here 👋 Ayesha's cousin. Save my number!`,
   `[03/04/2026, 8:21:30${N}AM] Sara Malik: Welcome Zain! See you at the trailhead`,
+  // Search toggles: try develop with Whole word ([ab]) on and off, Develop with Match case (Aa), the
+  // regular expression (.*) TRL-\d+ for both booking codes, and سب with Whole word (it skips سبزہ).
+  `[03/04/2026, 8:24:00${N}AM] Faisal Qureshi: Develop idea: I'm a developer, so I'll develop a tiny app for our hike logs. Development starts next week and two developers from work want to help.`,
+  `[03/04/2026, 8:25:00${N}AM] Ayesha Khan: Parking is booked, codes TRL-2041 and TRL-2042. Keep them handy`,
+  `[03/04/2026, 8:26:00${N}AM] Bilal Ahmed: اوپر سبزہ بہت ہے، سب کو مزہ آئے گا`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 // A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.

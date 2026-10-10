@@ -12,27 +12,62 @@ const nf = n => n.toLocaleString(I18N.locale());
 const FOLD_DROP = /[\u064B-\u065F\u0670\u0640\u200C\u200D]/g, FOLD_SWAP = /[\u064A\u0649\u0643\u0647\u0629]/g;
 const FOLD_TO = { '\u064A': '\u06CC', '\u0649': '\u06CC', '\u0643': '\u06A9', '\u0647': '\u06C1', '\u0629': '\u06C1' };
 const fold = s => s.normalize('NFKC').toLowerCase().replace(FOLD_DROP, '').replace(FOLD_SWAP, c => FOLD_TO[c]);
-// fold() with a map back to the original: at[j] is where folded character j came from in s, and
+// fold() without the lower case, for Match case and for regular expressions.
+const foldKeep = s => s.normalize('NFKC').replace(FOLD_DROP, '').replace(FOLD_SWAP, c => FOLD_TO[c]);
+// fold (or fn) with a map back to the original: at[j] is where folded character j came from in s, and
 // at[f.length] is s.length. A letter and the marks after it fold as one piece.
 const RE_CLUSTER = /\P{M}\p{M}*|\p{M}+/gsu;
-function foldMap(s) {
+function foldMap(s, fn) {
   let f = '', m; const at = [];
+  fn = fn || fold;
   RE_CLUSTER.lastIndex = 0;
-  while ((m = RE_CLUSTER.exec(s))) { const o = fold(m[0]); for (let k = 0; k < o.length; k++) at.push(m.index); f += o; }
+  while ((m = RE_CLUSTER.exec(s))) { const o = fn(m[0]); for (let k = 0; k < o.length; k++) at.push(m.index); f += o; }
   at.push(s.length);
   return { f, at };
 }
-// Original [start, end) ranges of each place the folded query fq appears in s.
-function foldFind(s, fq) {
-  const out = []; if (!fq || !s) return out;
-  const { f, at } = foldMap(s);
-  for (let p = f.indexOf(fq); p >= 0; p = f.indexOf(fq, p + fq.length)) out.push([at[p], at[p + fq.length]]);
+/* Search options, like a code editor's: cs = Match case (Aa), word = Whole word ([ab]), re = Regular
+   expression (.*). makeSearch() turns the query into one matcher that the index, the highlights and
+   Read more all use, so they always agree. Plain text is escaped and searched as a pattern too.
+   Returns null for an empty query and { error } for a pattern that doesn't compile. */
+const RE_SPECIAL = /[.*+?^${}()|[\]\\]/g;
+function makeSearch(q, o) {
+  q = q.trim(); if (!q) return null;
+  const fn = o.cs ? foldKeep : fold;
+  // A pattern keeps its case, so \W, \S and \D still mean what they say; the i flag handles case.
+  const src = o.re ? foldKeep(q) : fn(q).replace(RE_SPECIAL, '\\$&');
+  if (!src) return null;
+  try { return { re: new RegExp(src, 'gmu' + (o.cs ? '' : 'i')), fn, key: o.cs ? 'keep' : 'fold', word: !!o.word }; }
+  catch (e) { return { error: String(e.message || e) }; }
+}
+// Whole word looks at the letters on each side instead of \b, which only knows a-z, so Urdu and
+// Arabic words (and their marks) count as words too.
+const WORD_BEFORE = /[\p{L}\p{N}\p{M}_]$/u, WORD_AFTER = /^[\p{L}\p{N}\p{M}_]/u;
+// [start, end) ranges in the folded text f where sq matches; empty matches are skipped. Stops after max.
+function searchRanges(sq, f, max) {
+  const out = [], re = sq.re; let m;
+  re.lastIndex = 0;
+  while ((m = re.exec(f))) {
+    const a = m.index, b = a + m[0].length;
+    if (b === a || (sq.word && (WORD_BEFORE.test(f.slice(Math.max(0, a - 2), a)) || WORD_AFTER.test(f.slice(b, b + 2))))) {
+      re.lastIndex = a + (f.codePointAt(a) > 0xFFFF ? 2 : 1);
+      if (re.lastIndex > f.length) break;
+      continue;
+    }
+    out.push([a, b]);
+    if (max && out.length >= max) break;
+  }
   return out;
 }
-// Marks the folded query in escaped HTML. Tags are left alone; entities count as the character they stand for.
+// Original [start, end) ranges of each place sq matches in s.
+function searchFind(s, sq) {
+  if (!sq || !s) return [];
+  const { f, at } = foldMap(s, sq.fn);
+  return searchRanges(sq, f).map(([a, b]) => [at[a], at[b]]);
+}
+// Marks the matches of sq in escaped HTML. Tags are left alone; entities count as the character they stand for.
 const ENT = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00A0' };
-function markHTML(html, fq, cls) {
-  if (!fq) return html;
+function markHTML(html, sq, cls) {
+  if (!sq) return html;
   const open = '<mark' + (cls ? ' class="' + cls + '"' : '') + '>';
   return html.split(/(<[^>]+>)/).map((part, k) => {
     if (k % 2 || !part) return part;
@@ -45,7 +80,7 @@ function markHTML(html, fq, cls) {
       last = e.index + e[0].length;
     }
     plain(part.length); pos.push(part.length);
-    const hits = foldFind(raw, fq); if (!hits.length) return part;
+    const hits = searchFind(raw, sq); if (!hits.length) return part;
     let out = '', p = 0;
     for (const [a, b] of hits) { const x = pos[a], y = pos[b]; if (y <= x) continue; out += part.slice(p, x) + open + part.slice(x, y) + '</mark>'; p = y; }
     return out + part.slice(p);
@@ -254,7 +289,7 @@ function isJumbo(t) {
 const S = {
   source: null, res: null, msgs: [], items: [], m2i: null, dateIdx: null,
   me: null, title: '', isGroup: false, order: 'auto',
-  q: '', re: null, matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
+  q: '', sq: null, sqErr: '', matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
 };
 // Date labels follow the interface language (js/i18n/i18n.js); makeFormats() runs again when it changes.
 // The date rows in the chat are chat content, so they use streamFmt, which is always English.
@@ -412,8 +447,8 @@ function estimate(it, W) {
 
 /* ---------- Row rendering ---------- */
 function hl(html, i) {
-  if (!S.fq || !S.matchSet.has(i)) return html;
-  return markHTML(html, S.fq, S.matches[S.cur] === i ? 'cur' : '');
+  if (!S.sq || !S.matchSet.has(i)) return html;
+  return markHTML(html, S.sq, S.matches[S.cur] === i ? 'cur' : '');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -879,7 +914,7 @@ function shownText(it) {
   if (!tr.truncated) return { text: m.message, state: '' };
   if (m.isExpanded) return { text: m.message, state: 'expanded' };
   // A match that runs past the cut shows the whole message.
-  if (S.fq && S.matchSet.has(it.i) && foldFind(m.message, S.fq).some(([, b]) => b > tr.cut)) return { text: m.message, state: 'search' };
+  if (S.sq && S.matchSet.has(it.i) && searchFind(m.message, S.sq).some(([, b]) => b > tr.cut)) return { text: m.message, state: 'search' };
   return { text: tr.preview, state: 'collapsed' };
 }
 // A photo, sticker or video the browser can't decode is remembered and its row redrawn with a file card.

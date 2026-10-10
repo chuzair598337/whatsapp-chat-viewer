@@ -18,7 +18,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
 - Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
 - Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
-- Search with highlighting, match navigation and your recent searches (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
+- Search with highlighting, match navigation, Match case, Whole word and Regex options, and your recent searches (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
 - Star messages to collect them in a side panel while you read (never saved).
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.

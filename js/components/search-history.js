@@ -59,6 +59,7 @@ const SHist = {
     q2.value = q; clearTimeout(searchTimer);
     this.add(q); runSearch(q);
     this.mute = true; q2.focus(); this.mute = false;
+    selectSearch();
   },
   drop(k) {
     const q = this.shown[k]; if (q === undefined) return;

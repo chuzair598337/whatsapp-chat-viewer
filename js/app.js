@@ -424,13 +424,21 @@ function onSearchInput(e) {
   const v = e.target.value;
   clearTimeout(searchTimer); searchTimer = setTimeout(() => runSearch(v), 140);
 }
+// Match case, Whole word and Regular expression (the toggles in the search bar). Kept in memory for
+// this visit only, like the filters.
+const SOPT = { cs: false, word: false, re: false };
+// The text search looks through for each message: the message, sender (and nickname), poll and file names.
+function searchIndex(key) {
+  const lc = S.lc || (S.lc = {}), fn = key === 'keep' ? foldKeep : fold;
+  return lc[key] || (lc[key] = S.msgs.map(m => fn(m.message + (m.sender ? '\u0002' + m.sender + (Nick.has(m.sender) ? '\u0002' + nick(m.sender) : '') : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join(''))));
+}
 function runSearch(q) {
-  S.q = q; const ql = fold(q.trim());
-  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.fq = '';
-  if (ql) {
-    if (!S.lc) S.lc = S.msgs.map(m => fold(m.message + (m.sender ? '\u0002' + m.sender + (Nick.has(m.sender) ? '\u0002' + nick(m.sender) : '') : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')));
-    for (let i = 0; i < S.lc.length; i++) if (S.m2i[i] >= 0 && S.lc[i].includes(ql)) S.matches.push(i);
-    S.matchSet = new Set(S.matches); S.fq = ql;
+  S.q = q; const sq = makeSearch(q, SOPT);
+  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.sq = null; S.sqErr = sq && sq.error || '';
+  if (sq && sq.re) {
+    const lc = searchIndex(sq.key);
+    for (let i = 0; i < lc.length; i++) if (S.m2i[i] >= 0 && searchRanges(sq, lc[i], 1).length) S.matches.push(i);
+    S.matchSet = new Set(S.matches); S.sq = sq;
     if (S.matches.length) {
       // start from the first match at or below the top of the screen
       const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
@@ -444,8 +452,11 @@ function runSearch(q) {
 }
 function clearSearch() { q2.value = ''; runSearch(''); }
 function updateCounts() {
-  const n = S.matches.length, txt = !S.q.trim() ? '' : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
-  $('count2').textContent = txt;
+  const n = S.matches.length, bad = !!S.sqErr && !!S.q.trim();
+  const txt = !S.q.trim() ? '' : bad ? t('search.invalid_pattern') : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
+  const c = $('count2'); c.textContent = txt; c.classList.toggle('bad', bad);
+  if (bad) c.title = S.sqErr; else c.removeAttribute('title');
+  if (bad) q2.setAttribute('aria-invalid', 'true'); else q2.removeAttribute('aria-invalid');
   for (const id of ['prev2', 'next2']) $(id).disabled = n === 0;
 }
 function step(d) {
@@ -463,10 +474,34 @@ function jumpToMatch(k) {
   updateCounts();
 }
 q2.addEventListener('input', onSearchInput);
+// The toggles: a click, or Alt+C, Alt+W, Alt+R while the search bar has focus (as in VS Code), turns one
+// on or off and searches again.
+const SOPT_BTN = { cs: 'sCase', word: 'sWord', re: 'sRegex' }, SOPT_KEY = { KeyC: 'cs', KeyW: 'word', KeyR: 're' };
+function toggleSearchOpt(k) {
+  SOPT[k] = !SOPT[k];
+  $(SOPT_BTN[k]).setAttribute('aria-pressed', String(SOPT[k]));
+  clearTimeout(searchTimer);
+  if (q2.value.trim() || S.q.trim()) runSearch(q2.value);
+}
+for (const k in SOPT_BTN) $(SOPT_BTN[k]).onclick = () => toggleSearchOpt(k);
+$('sstrip').addEventListener('keydown', e => {
+  const k = SOPT_KEY[e.code];
+  if (!k || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+  e.preventDefault(); toggleSearchOpt(k);
+});
 q2.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); }
+  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); selectSearch(); }
   if (e.key === 'Escape') { e.stopPropagation(); if (SHist.isOpen()) SHist.close(); else if (q2.value) clearSearch(); else closeSearch(); }
 });
+// A finished search keeps its text selected, found or not, so typing again replaces it, as in a browser's
+// find bar: after Enter, after picking a recent search, and whenever the field gets focus back. Not while
+// typing, so the next letter never wipes what is being typed.
+function selectSearch() { if (q2.value) q2.setSelectionRange(0, q2.value.length); }
+let q2Tap = false;
+q2.addEventListener('pointerdown', () => { q2Tap = document.activeElement !== q2; });
+q2.addEventListener('focus', () => { if (q2.value && q2.value === S.q) selectSearch(); });
+// The click that focused the field would put the caret where it landed and drop the selection.
+q2.addEventListener('mouseup', e => { if (q2Tap && q2.value && q2.value === S.q) e.preventDefault(); q2Tap = false; });
 $('prev2').onclick = () => step(-1);
 $('next2').onclick = () => step(1);
 const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
