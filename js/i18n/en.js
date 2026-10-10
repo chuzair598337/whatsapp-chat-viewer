@@ -16,7 +16,7 @@ I18N.add('en-US', {
     "choose_attach_media_include_media": "Choose <b>Attach Media</b> / <b>Include media</b> for photos and voice notes, or <b>Without media</b> for text only.",
     "save_the_file_to_your": "Save the file to your device or send it to your computer, then open it here. No need to unzip it.",
     "nothing_is_uploaded_the_chat": "Nothing is uploaded: the chat is read in this browser",
-    "nothing_is_saved_close_the": "Nothing is saved: close the tab and it's gone",
+    "nothing_is_saved_close_the": "The chat isn't saved: close the tab and it's gone",
     "works_offline": "Works offline"
   },
   "common": {
@@ -43,7 +43,8 @@ I18N.add('en-US', {
     "next": "Next",
     "back": "Back",
     "language": "Language",
-    "list_sep": ", "
+    "list_sep": ", ",
+    "cancel": "Cancel"
   },
   "sidebar": {
     "chat_viewer_for_whatsapp_exports": "Chat Viewer<small>for WhatsApp exports, offline</small>",
@@ -157,6 +158,7 @@ I18N.add('en-US', {
     "whatsapp_exports_don_t_say": "WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in Settings.",
     "show_chat": "Show chat",
     "n_messages": "{n} messages",
+    "n_messages_one": "1 message",
     "best_guess": "best guess",
     "none_of_these": "None of these",
     "everyone_left": "Show everyone on the left",
@@ -527,7 +529,7 @@ I18N.add('en-US', {
     },
     "all_set": {
       "title": "You're all set",
-      "html": "<ul><li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li><li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li><li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li><li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li><li><b>Nothing is saved.</b> Close the tab and the chat is gone.</li><li><b>Shortcuts:</b> / to search, Esc to close, and + − 0 R and the arrow keys in the photo viewer.</li></ul><p class=\"tour-note\">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can't be shown here.</p>"
+      "html": "<ul><li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li><li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li><li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li><li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li><li><b>The chat isn't saved.</b> Close the tab and it's gone. Only your settings, nicknames and recent searches are remembered.</li><li><b>Shortcuts:</b> / to search, Esc to close, and + − 0 R and the arrow keys in the photo viewer.</li></ul><p class=\"tour-note\">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can't be shown here.</p>"
     },
     "settings": {
       "title": "Settings",
@@ -551,7 +553,7 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only."
+    "saved_note": "The theme, language, background pattern, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only."
   },
   "mm": {
     "menu": "Message options",
@@ -591,5 +593,34 @@ I18N.add('en-US', {
     "unstarred_n_one": "Star removed from 1 message",
     "messages_n": "{count} messages",
     "messages_n_one": "1 message"
+  },
+  "nick": {
+    "title": "Participants and nicknames",
+    "sub": "Give anyone in this chat a nickname",
+    "n_renamed": "{count} nicknames set",
+    "n_renamed_one": "1 nickname set",
+    "lead": "Give anyone a nickname to show instead of their name everywhere in this chat. Reset brings back the name from the export. Nicknames are remembered on this device for this chat.",
+    "placeholder": "Add a nickname",
+    "reset": "Reset",
+    "reset_label": "Reset {name} to the original name",
+    "saved": "{name} now shows as {nick}",
+    "restored": "{name} is back to the original name",
+    "set": "Set nickname",
+    "edit": "Edit nickname",
+    "set_label": "Set a nickname for {name}",
+    "edit_label": "Edit the nickname for {name}",
+    "field_label": "Nickname for {name}",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "shist": {
+    "title": "Recent searches",
+    "remove": "Remove {q} from recent searches",
+    "remove_short": "Remove",
+    "clear_all": "Clear all",
+    "clear_title": "Clear all recent searches?",
+    "clear_text": "Every saved search is removed from this device. This can't be undone.",
+    "clear": "Clear",
+    "cleared": "Recent searches cleared"
   }
 });

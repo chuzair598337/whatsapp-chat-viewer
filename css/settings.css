@@ -50,3 +50,22 @@
   .sheet.pick .body { padding: 6px 8px 12px; }
   .pickopt { padding: 14px 12px; font-size: 16px; }
 }
+
+/* Participants and nicknames (js/components/nicknames.js): one row per person, with the exported name
+   above a nickname field and a Reset button when a nickname is set. */
+.sheet.nicks .body { gap: 14px; }
+.nicklist { display: grid; gap: 2px; margin: 0 -8px; }
+.nickrow { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 8px; }
+.nickrow[hidden] { display: none; }
+.nickrow .nk { display: grid; gap: 4px; flex: 1; min-width: 0; }
+.nickrow label { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 14px; color: var(--ink); }
+.nickrow label bdi { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.nickrow label em { font-style: normal; font-size: 12px; color: var(--accent-ink); flex: none; }
+.nickrow label small { margin-inline-start: auto; flex: none; color: var(--ink-3); font-size: 12px; }
+.nickrow input { flex: 1; width: 100%; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--input); color: var(--ink); font: inherit; font-size: 14.5px; text-align: start; }
+.nickrow input::placeholder { color: var(--ink-3); }
+.nickrow input:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.nickrow .nkline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.nickrow .nkreset { flex: none; height: 34px; padding: 0 12px; }
+.nickrow .nkreset[hidden] { display: none; }
+:root[lang="ur"] .nickrow label, :root[lang="ur"] .nickrow .nkreset { line-height: 1.8; }

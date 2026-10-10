@@ -141,7 +141,7 @@ function monthLabel(mk) {
   if (y === now.getFullYear() && mo === now.getMonth() + 1) return t('media_gallery.this_month');
   return new Date(Date.UTC(y, mo - 1, 1)).toLocaleDateString(I18N.locale(), { month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
-function galWhen(m) { return t('media_gallery.when', { who: m.isOutgoing ? t('common.you') : m.sender, date: dateLabel(m.dateKey), time: m.formattedTime }); }
+function galWhen(m) { return t('media_gallery.when', { who: m.isOutgoing ? t('common.you') : nick(m.sender), date: dateLabel(m.dateKey), time: m.formattedTime }); }
 
 function tileHTML(it, k) {
   const m = S.msgs[it.i], e = it.e, label = typeLabel(it.a.type) + ', ' + galWhen(m);

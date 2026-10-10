@@ -18,11 +18,11 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
 - Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
 - Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
-- Search with highlighting and match navigation (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
+- Search with highlighting, match navigation and your recent searches (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
 - Star messages to collect them in a side panel while you read (never saved).
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
-- A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern and the date format, and a responsive layout for desktop and phone.
+- A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern, the date format and nicknames for anyone in the chat, and a responsive layout for desktop and phone.
 - English, Urdu and Arabic interface, with a right-to-left layout for Urdu and Arabic. Urdu text in the chat is drawn in a Nastaliq font and Arabic in Noto Naskh Arabic, in every interface language, even when a message mixes them with English. Chat text is never translated, and sent messages stay on the right.
 - A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. Sorting in Media, links and docs, and a side panel you can hide on large screens.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
@@ -76,7 +76,7 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # toast.js, media-gallery.js, message-menu.js, select-messages.js, settings.js
+│   ├── components/                       # toast.js, media-gallery.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
@@ -130,7 +130,7 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/select-messages` → `components/settings` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/select-messages` → `components/settings` → `components/nicknames` → `components/search-history` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
