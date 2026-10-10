@@ -43,7 +43,8 @@ I18N.add('ur', {
     "next": "اگلا",
     "back": "پیچھے",
     "language": "زبان",
-    "list_sep": "، "
+    "list_sep": "، ",
+    "cancel": "منسوخ کریں"
   },
   "sidebar": {
     "chat_viewer_for_whatsapp_exports": "چیٹ ویور<small>WhatsApp ایکسپورٹس کے لیے، آف لائن</small>",
@@ -607,6 +608,11 @@ I18N.add('ur', {
   "shist": {
     "title": "حالیہ تلاشیں",
     "remove": "{q} کو حالیہ تلاشوں سے ہٹائیں",
-    "remove_short": "ہٹائیں"
+    "remove_short": "ہٹائیں",
+    "clear_all": "سب صاف کریں",
+    "clear_title": "تمام حالیہ تلاشیں صاف کریں؟",
+    "clear_text": "محفوظ کی گئی ہر تلاش اس ڈیوائس سے ہٹ جائے گی۔ یہ واپس نہیں ہو سکتا۔",
+    "clear": "صاف کریں",
+    "cleared": "حالیہ تلاشیں صاف ہو گئیں"
   }
 });

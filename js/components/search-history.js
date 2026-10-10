@@ -9,6 +9,8 @@
      instead of adding a copy.
    - Picking one fills the search bar and runs it. Its ✕ (or Delete on a
      focused search) removes only that one.
+   - Clear all (in the list's heading) removes every search, after a
+     confirmation dialog so a stray tap can't wipe them.
    - Esc, a click outside or leaving the field closes the list. ↓ from the
      field moves into the list, ↑ ↓ move through it.
    - Kept in localStorage as chat_search_history (a JSON array), shared by
@@ -67,6 +69,13 @@ const SHist = {
     const btns = $('shistList').querySelectorAll('.shq');
     if (this.isOpen() && btns.length) btns[Math.min(k, btns.length - 1)].focus(); else { this.mute = true; q2.focus(); this.mute = false; }
   },
+  clearAll() {
+    this.close();
+    confirmDialog(t('shist.clear_title'), t('shist.clear_text'), t('shist.clear'), () => {
+      this.write([]);
+      toast.success(t('shist.cleared'));
+    });
+  },
   move(from, d) {
     const btns = [...$('shistList').querySelectorAll('.shq')], k = btns.indexOf(from) + d;
     if (k < 0) q2.focus(); else if (k < btns.length) btns[k].focus();
@@ -86,6 +95,7 @@ for (const id of ['prev2', 'next2']) $(id).addEventListener('click', () => SHist
 // Mouse and touch: keep focus in the field while the list is used, so it doesn't close underneath the click.
 $('shist').addEventListener('mousedown', e => e.preventDefault());
 $('shist').addEventListener('click', e => {
+  if (e.target.closest('#shistClear')) { SHist.clearAll(); return; }
   const x = e.target.closest('[data-x]'); if (x) { SHist.drop(+x.dataset.x); return; }
   const b = e.target.closest('[data-k]'); if (b) SHist.pick(+b.dataset.k);
 });

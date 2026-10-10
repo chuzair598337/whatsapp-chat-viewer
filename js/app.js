@@ -554,6 +554,17 @@ function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if
 for (const m of document.querySelectorAll('.modal')) {
   m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
 }
+// Asks before something that can't be undone. Cancel has focus first, so Enter or a stray tap does nothing harmful;
+// Cancel, Esc or a tap outside closes it without a change.
+let cfDone = null;
+function confirmDialog(title, text, ok, done) {
+  cfDone = done;
+  $('cfTitle').textContent = title; $('cfText').textContent = text; $('cfOk').textContent = ok;
+  openModal('cfModal');
+  $('cfCancel').focus();
+}
+$('cfCancel').onclick = () => { cfDone = null; closeModal('cfModal'); };
+$('cfOk').onclick = () => { const d = cfDone; cfDone = null; if (d) d(); closeModal('cfModal'); }; // done first: focus goes back to a page that already shows the result
 // Everyone who wrote is listed. Big groups get a name filter; the choice in progress survives a redraw (a language change).
 function openMeModal() {
   const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
@@ -770,7 +781,7 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
-    const ids = ['vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'nickModal', 'setModal'];
+    const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'nickModal', 'setModal'];
     const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
     if (top) { closeModal(top.id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }

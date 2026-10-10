@@ -43,7 +43,8 @@ I18N.add('en-US', {
     "next": "Next",
     "back": "Back",
     "language": "Language",
-    "list_sep": ", "
+    "list_sep": ", ",
+    "cancel": "Cancel"
   },
   "sidebar": {
     "chat_viewer_for_whatsapp_exports": "Chat Viewer<small>for WhatsApp exports, offline</small>",
@@ -607,6 +608,11 @@ I18N.add('en-US', {
   "shist": {
     "title": "Recent searches",
     "remove": "Remove {q} from recent searches",
-    "remove_short": "Remove"
+    "remove_short": "Remove",
+    "clear_all": "Clear all",
+    "clear_title": "Clear all recent searches?",
+    "clear_text": "Every saved search is removed from this device. This can't be undone.",
+    "clear": "Clear",
+    "cleared": "Recent searches cleared"
   }
 });

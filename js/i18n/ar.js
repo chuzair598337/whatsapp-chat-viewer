@@ -43,7 +43,8 @@ I18N.add('ar', {
     "next": "التالي",
     "back": "رجوع",
     "language": "اللغة",
-    "list_sep": "، "
+    "list_sep": "، ",
+    "cancel": "إلغاء"
   },
   "sidebar": {
     "chat_viewer_for_whatsapp_exports": "عارض الدردشة<small>لملفات تصدير WhatsApp، دون اتصال</small>",
@@ -607,6 +608,11 @@ I18N.add('ar', {
   "shist": {
     "title": "عمليات البحث الأخيرة",
     "remove": "إزالة {q} من عمليات البحث الأخيرة",
-    "remove_short": "إزالة"
+    "remove_short": "إزالة",
+    "clear_all": "مسح الكل",
+    "clear_title": "مسح كل عمليات البحث الأخيرة؟",
+    "clear_text": "ستُحذف كل عمليات البحث المحفوظة من هذا الجهاز. لا يمكن التراجع عن ذلك.",
+    "clear": "مسح",
+    "cleared": "تم مسح عمليات البحث الأخيرة"
   }
 });
