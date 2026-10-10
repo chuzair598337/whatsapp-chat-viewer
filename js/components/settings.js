@@ -7,7 +7,9 @@
 
    - Theme, language and background pattern are kept in localStorage
      (cv-theme, app_language, cv-doodle). Who you are and the date format
-     belong to the open chat and are not stored: a name is chat data.
+     belong to the open chat and are not stored.
+   - Participants and nicknames opens its own sheet
+     (js/components/nicknames.js); nicknames are kept per chat.
    - A row with choices opens the pick sheet (#pickModal), a list of radio
      buttons like WhatsApp's own dialogs.
    - The screen is drawn from JavaScript, so render() redraws it in the
@@ -52,8 +54,8 @@ const Settings = {
       : esc(orderVal) + ' · <bdi>' + esc(t('sidebar.reading_dates_as', { format: orderName })) + '</bdi>' + (res.ambiguous && S.order === 'auto' ? ' <span class="chip">' + t('sidebar.guessed') + '</span>' : '');
     $('setBody').innerHTML =
       '<button class="set-prof" data-set="me" aria-label="' + esc(t('settings.change_you')) + '">' +
-        (me ? '<span class="av c' + colorIdx(me) + '">' + esc(initials(me)) + '</span>' : '<span class="av none">–</span>') +
-        '<span class="st"><small>' + t('settings.you_are') + '</small><b dir="auto">' + esc(me || t('settings.nobody_chosen')) + '</b><small>' + t(me ? 'settings.your_messages_right' : 'settings.everyone_left') + '</small></span>' + chev + '</button>' +
+        (me ? '<span class="av c' + colorIdx(me) + '">' + esc(initials(nick(me))) + '</span>' : '<span class="av none">–</span>') +
+        '<span class="st"><small>' + t('settings.you_are') + '</small><b dir="auto">' + esc(me ? nick(me) : t('settings.nobody_chosen')) + '</b><small>' + t(me ? 'settings.your_messages_right' : 'settings.everyone_left') + '</small></span>' + chev + '</button>' +
       '<section class="set-grp" aria-labelledby="setG1"><h3 id="setG1">' + t('settings.chats') + '</h3>' +
         row('theme', 'palette', t('menu.theme'), esc(themeName)) +
         row('lang', 'globe', t('common.language'), '<bdi>' + esc(I18N.info().name) + '</bdi>') +
@@ -61,6 +63,7 @@ const Settings = {
         row('order', 'calendar', t('sidebar.date_format'), orderSub, res.order === 'ymd' ? ' disabled' : '') +
       '</section>' +
       '<section class="set-grp" aria-labelledby="setG2"><h3 id="setG2">' + t('settings.this_chat') + '</h3>' +
+        row('nick', 'group', t('nick.title'), Nick.count() ? esc(t('nick.n_renamed', { n: Nick.count(), count: nf(Nick.count()) })) : t('nick.sub')) +
         row('stats', 'stats', t('common.chat_statistics'), t('settings.stats_sub')) +
       '</section>' +
       '<section class="set-grp" aria-labelledby="setG3"><h3 id="setG3">' + t('settings.help') + '</h3>' +
@@ -75,6 +78,7 @@ const Settings = {
     else if (a === 'theme') pickSheet(t('menu.theme'), [['light', t('menu.light')], ['dark', t('menu.dark')], ['system', t('menu.match_system')]], theme, v => { setTheme(v); this.render(); });
     else if (a === 'lang') pickSheet(t('common.language'), LANGS.map(l => [l.code, '<span lang="' + l.code + '">' + esc(l.name) + '</span>']), I18N.lang, v => I18N.set(v));
     else if (a === 'order') pickSheet(t('sidebar.date_format'), [['auto', t('sidebar.automatic')], ['dmy', t('sidebar.day_month') + ' <bdi dir="ltr">(DD/MM/YYYY)</bdi>'], ['mdy', t('sidebar.month_day') + ' <bdi dir="ltr">(MM/DD/YYYY)</bdi>']], S.order, v => setOrder(v));
+    else if (a === 'nick') NickUI.open(); // js/components/nicknames.js
     else if (a === 'stats') openStats();
     else if (a === 'tour') { this.close(true); Tour.welcome(); }
   }

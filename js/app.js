@@ -207,6 +207,7 @@ function applyResult(res, keepMe) {
   if (typeof Sel !== 'undefined') Sel.stop(true); // a selection belongs to the chat it was made in
   S.res = res; S.msgs = res.messages; S.lc = null; S.stats = null;
   setScriptDefault(S.msgs);
+  Nick.load(); // js/components/nicknames.js
   linkMedia();
   const names = res.participants.map(p => p.name);
   const hint = S.source.hint;
@@ -271,8 +272,8 @@ function computeTitle() {
   const names = S.res.participants.map(p => p.name);
   const hint = S.source.hint || (S.res.chatName && S.res.chatName !== 'You' ? S.res.chatName : null);
   if (S.isGroup) return S.res.subject || hint || names.slice(0, 3).join(', ') || t('chat.group_chat');
-  if (hint) return hint;
-  return names.find(n => n !== S.me) || names[0] || t('chat.chat');
+  if (hint) return nick(hint); // a one-to-one export is named after the other person
+  return nick(names.find(n => n !== S.me) || names[0]) || t('chat.chat');
 }
 function setMe(name, silent) {
   S.me = name || null;
@@ -322,7 +323,7 @@ function renderChrome() {
   $('headTitle').innerHTML = scriptHTML(S.title); $('cardTitle').innerHTML = scriptHTML(S.title);
   const pN = res.participants.length;
   $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
-  $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: res.participants[0].name, b: res.participants[1].name }) : t('chat.chat');
+  $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: nick(res.participants[0].name), b: nick(res.participants[1].name) }) : t('chat.chat');
   const srcName = S.source.sample ? t('facts.sample_chat') : S.source.name;
   $('facts').innerHTML =
     '<div><dt>' + t('facts.messages') + '</dt><dd>' + nf(real) + '</dd></div>' +
@@ -338,7 +339,7 @@ function renderChrome() {
   const maxC = res.participants[0] ? res.participants[0].count : 1;
   $('pCount').textContent = nf(pN);
   $('people').innerHTML = res.participants.slice(0, 80).map(p =>
-    '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><div style="min-width:0"><div class="nm">' + esc(p.name) + (p.name === S.me ? '<em>' + t('common.you') + '</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
+    '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><div style="min-width:0"><div class="nm"' + (Nick.has(p.name) ? ' title="' + esc(p.name) + '"' : '') + '>' + esc(nick(p.name)) + (p.name === S.me ? '<em>' + t('common.you') + '</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
     (pN > 80 ? '<div class="res-more">' + t('sidebar.and_more', { n: nf(pN - 80) }) + '</div>' : '');
   renderMediaSummary();
   renderFilterUI(); renderStars();
@@ -350,7 +351,7 @@ function renderFilterUI() {
   const f = S.filter || (S.filter = { from: '', to: '', sender: '' }), first = S.msgs[0].dateKey, last = S.msgs[S.msgs.length - 1].dateKey;
   for (const id of ['fFrom', 'fTo']) { $(id).min = first; $(id).max = last; }
   $('fFrom').value = f.from; $('fTo').value = f.to;
-  $('fSender').innerHTML = '<option value="">' + t('filter.everyone') + '</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? t('filter.name_you', { name: p.name }) : p.name) + '</option>').join('');
+  $('fSender').innerHTML = '<option value="">' + t('filter.everyone') + '</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? t('filter.name_you', { name: nick(p.name) }) : nick(p.name)) + '</option>').join('');
   $('fSender').value = f.sender;
 }
 function renderFilterBar() {
@@ -358,7 +359,7 @@ function renderFilterBar() {
   $('filterbar').hidden = !on; $('fClear').hidden = !on;
   if (!on) return;
   const parts = [];
-  if (f.sender) parts.push(t('filter.from', { name: f.sender }));
+  if (f.sender) parts.push(t('filter.from', { name: nick(f.sender) }));
   if (f.from && f.to) parts.push(shortFmt.format(dkToT(f.from)) + ' – ' + shortFmt.format(dkToT(f.to)));
   else if (f.from) parts.push(t('filter.since', { date: shortFmt.format(dkToT(f.from)) }));
   else if (f.to) parts.push(t('filter.until', { date: shortFmt.format(dkToT(f.to)) }));
@@ -396,7 +397,7 @@ function renderStars() {
   $('starTitle').textContent = n ? t('stars.title_n', { n: nf(n) }) : t('common.starred_messages');
   $('starList').innerHTML = n ? list.map(i => {
     const m = S.msgs[i];
-    return '<button class="res" data-i="' + i + '"><span class="rh"><b dir="auto">' + esc(m.isOutgoing ? t('common.you') : m.sender) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + esc(msgSnippet(m)) + '</span></button>';
+    return '<button class="res" data-i="' + i + '"><span class="rh"><b dir="auto">' + esc(m.isOutgoing ? t('common.you') : nick(m.sender)) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + esc(msgSnippet(m)) + '</span></button>';
   }).join('') : '<p class="star-empty">' + ICON.star + '<span>' + t('stars.empty') + '</span></p>';
 }
 function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
@@ -423,7 +424,7 @@ function runSearch(q) {
   S.q = q; const ql = fold(q.trim());
   S.matches = []; S.matchSet = new Set(); S.cur = -1; S.fq = '';
   if (ql) {
-    if (!S.lc) S.lc = S.msgs.map(m => fold(m.message + (m.sender ? '\u0002' + m.sender : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')));
+    if (!S.lc) S.lc = S.msgs.map(m => fold(m.message + (m.sender ? '\u0002' + m.sender + (Nick.has(m.sender) ? '\u0002' + nick(m.sender) : '') : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join('')));
     for (let i = 0; i < S.lc.length; i++) if (S.m2i[i] >= 0 && S.lc[i].includes(ql)) S.matches.push(i);
     S.matchSet = new Set(S.matches); S.fq = ql;
     if (S.matches.length) {
@@ -460,14 +461,14 @@ function jumpToMatch(k) {
 q2.addEventListener('input', onSearchInput);
 q2.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); }
-  if (e.key === 'Escape') { if (q2.value) clearSearch(); else closeSearch(); }
+  if (e.key === 'Escape') { e.stopPropagation(); if (SHist.isOpen()) SHist.close(); else if (q2.value) clearSearch(); else closeSearch(); }
 });
 $('prev2').onclick = () => step(-1);
 $('next2').onclick = () => step(1);
 const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
 // Search is a bar under the chat header on every screen size, like WhatsApp.
 function openSearch() { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
-function closeSearch() { $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
+function closeSearch() { SHist.close(); $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
 $('searchBtn').onclick = openSearch;
 $('sClose').onclick = closeSearch;
 
@@ -527,13 +528,13 @@ function renderPeople() {
   const st = S.stats, tb = $('pTable'); if (!st || !tb) return;
   const maxP = st.per[0] ? st.per[0].n : 1, coll = new Intl.Collator(I18N.locale(), { sensitivity: 'base', numeric: true });
   const k = pSort.key === 'share' ? 'n' : pSort.key; // share is messages / total, so it sorts like messages
-  const byName = (a, b) => coll.compare(a.name, b.name);
+  const byName = (a, b) => coll.compare(nick(a.name), nick(b.name));
   const rows = st.per.slice().sort((a, b) => k === 'name' ? byName(a, b) * pSort.dir : (a[k] - b[k]) * pSort.dir || byName(a, b));
   tb.innerHTML = '<thead><tr>' + P_COLS.map(([key, label]) => {
     const on = pSort.key === key, sort = on ? (pSort.dir > 0 ? 'ascending' : 'descending') : 'none';
     return '<th aria-sort="' + sort + '"><button class="psort' + (on ? ' on' : '') + '" data-psort="' + key + '">' + t(label) + '<span class="parr" aria-hidden="true">' + (on ? (pSort.dir > 0 ? '▲' : '▼') : '') + '</span></button></th>';
   }).join('') + '</tr></thead><tbody>' +
-    rows.map(p => '<tr><td><span class="pn">' + scriptHTML(p.name) + (p.name === S.me ? ' <span style="color:var(--ink-3)">' + t('stats.you_paren') + '</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') + '</tbody>';
+    rows.map(p => '<tr><td><span class="pn">' + scriptHTML(nick(p.name)) + (p.name === S.me ? ' <span style="color:var(--ink-3)">' + t('stats.you_paren') + '</span>' : '') + '</span><div class="hbar" style="width:' + (p.n / maxP * 100).toFixed(1) + '%"></div></td><td>' + nf(p.n) + '</td><td>' + (p.n / Math.max(1, st.n) * 100).toFixed(1) + '%</td><td>' + nf(p.words) + '</td><td>' + nf(p.media) + '</td></tr>').join('') + '</tbody>';
 }
 $('statsBody').addEventListener('click', e => {
   const b = e.target.closest('[data-psort]'); if (!b) return;
@@ -551,32 +552,84 @@ $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(
 function openModal(id) { const m = $(id); if (m.hidden) m.ret = document.activeElement; m.hidden = false; Dialogs.open(m); const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
 function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
-  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
+  // A mandatory dialog (data-mandatory, "Which one is you?") doesn't close on a tap outside.
+  m.addEventListener('click', e => { if ((e.target === m && !m.hasAttribute('data-mandatory')) || e.target.closest('[data-close]')) closeModal(m.id); });
 }
-// Everyone who wrote is listed. Big groups get a name filter; the choice in progress survives a redraw (a language change).
+// Asks before something that can't be undone. Cancel has focus first, so Enter or a stray tap does nothing harmful;
+// Cancel, Esc or a tap outside closes it without a change.
+let cfDone = null;
+function confirmDialog(title, text, ok, done) {
+  cfDone = done;
+  $('cfTitle').textContent = title; $('cfText').textContent = text; $('cfOk').textContent = ok;
+  openModal('cfModal');
+  $('cfCancel').focus();
+}
+$('cfCancel').onclick = () => { cfDone = null; closeModal('cfModal'); };
+$('cfOk').onclick = () => { const d = cfDone; cfDone = null; if (d) d(); closeModal('cfModal'); }; // done first: focus goes back to a page that already shows the result
+/* "Which one is you?": shown when a chat opens and from Settings › You are. It is mandatory: there is no ✕, and
+   Esc or a tap outside doesn't close it; Show chat confirms the choice. Someone is always chosen: who you are,
+   else the suggested person (the most messages), else nobody ("None of these").
+   The ✎ in its header switches to editing nicknames: the radio buttons go, and each person becomes a field
+   labelled with their exported name (all optional; empty keeps that name). Save stores them all and Cancel drops
+   the edits; both go back to choosing, with the earlier choice kept. Big groups get a name filter in both modes. */
+const MeUI = { editing: false, sel: null };
 function openMeModal() {
   const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
-  const r = open && document.querySelector('input[name="me"]:checked'), sel = r ? r.value : S.me || '';
-  const sug = !S.me && S.meGuess && S.meGuess !== 'You' ? S.meGuess : null;
-  $('meList').innerHTML = ps.map(p =>
-    '<label class="meopt' + (p.name === sug ? ' sug' : '') + '" data-f="' + esc(fold(p.name)) + '"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(p.name)) + '</span><span dir="auto">' + esc(p.name) + '<small>' + t('me.n_messages', { n: nf(p.count) }) +
-    (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : p.name === S.me && p.name === S.meGuess ? ' · ' + t('me.best_guess') : '') + '</small></span></label>').join('') +
-    '<label class="meopt"><input type="radio" name="me" value=""' + (!sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  const sug = S.meGuess && S.meGuess !== 'You' && ps.some(p => p.name === S.meGuess) ? S.meGuess : null;
+  if (!open) { MeUI.editing = false; MeUI.sel = S.me || sug || ''; $('meFilter').value = ''; }
+  else if (!MeUI.editing) { const r = document.querySelector('input[name="me"]:checked'); if (r) MeUI.sel = r.value; }
+  const ed = MeUI.editing, fkey = p => esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : '')));
+  const count = p => t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) });
+  $('meTitle').textContent = t(ed ? 'nick.title' : 'me.which_one_is_you');
+  $('meLead').textContent = t(ed ? 'nick.edit_lead' : 'me.whatsapp_exports_don_t_say');
+  $('meList').classList.toggle('editing', ed);
+  $('meList').innerHTML = ed
+    ? ps.map((p, k) =>
+      '<div class="merow ed" data-f="' + fkey(p) + '"><span class="av c' + colorIdx(p.name) + '" aria-hidden="true">' + esc(initials(nick(p.name))) + '</span>' +
+      '<div class="nk"><label for="mnk' + k + '"><bdi>' + esc(p.name) + '</bdi><small>' + count(p) + '</small></label>' +
+      '<input id="mnk' + k + '" data-k="' + k + '" type="text" dir="auto" maxlength="' + NICK_MAX + '" autocomplete="off" enterkeyhint="next" placeholder="' + esc(t('nick.optional_placeholder')) + '" value="' + esc(Nick.map[p.name] || '') + '"></div></div>').join('')
+    : ps.map(p =>
+      '<label class="meopt merow' + (p.name === sug ? ' sug' : '') + '" data-f="' + fkey(p) + '"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === MeUI.sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><span dir="auto">' + esc(nick(p.name)) + '<small>' + (Nick.has(p.name) ? '<bdi>' + esc(p.name) + '</bdi> · ' : '') + count(p) +
+      (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : '') + '</small></span></label>').join('') +
+      '<label class="meopt"><input type="radio" name="me" value=""' + (!MeUI.sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  $('meEdit').hidden = ed;
+  $('meDone').hidden = ed; $('meSave').hidden = !ed; $('meCancel').hidden = !ed;
   $('meFilterW').hidden = !many;
   if (!many) $('meFilter').value = '';
-  if (!open) $('meFilter').value = '';
   filterMe();
-  openModal('meModal');
-  if (many && !open) $('meFilter').focus();
+  if (!open) openModal('meModal');
+  if (!open) { const c = many ? $('meFilter') : $('meList').querySelector('input:checked'); (c || $('meDone')).focus(); }
 }
 function filterMe() {
   const q = fold($('meFilter').value.trim());
   let n = 0;
-  for (const l of $('meList').querySelectorAll('.meopt[data-f]')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
+  for (const l of $('meList').querySelectorAll('.merow')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
   $('meNone').hidden = !q || n > 0;
+}
+function meMode(edit) {
+  if (!edit) { MeUI.editing = false; openMeModal(); $('meEdit').focus(); return; }
+  const r = document.querySelector('input[name="me"]:checked'); if (r) MeUI.sel = r.value;
+  MeUI.editing = true; openMeModal();
+  const f = $('meList').querySelector('.merow:not([hidden]) input'); if (f) f.focus();
+}
+function meSave() {
+  const ps = S.res.participants, pairs = [...$('meList').querySelectorAll('input[data-k]')].map(i => [ps[+i.dataset.k].name, i.value]);
+  const n = Nick.setAll(pairs);
+  meMode(false);
+  if (n) toast.success(t('nick.saved_n', { n, count: nf(n) }));
 }
 $('meFilter').addEventListener('input', filterMe);
 $('meFilterIcon').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
+$('meEdit').onclick = () => meMode(true);
+$('meCancel').onclick = () => meMode(false);
+$('meSave').onclick = meSave;
+// In edit mode Enter moves to the next field, and saves from the last one.
+$('meList').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.dataset.k) return;
+  e.preventDefault();
+  const all = [...$('meList').querySelectorAll('.merow:not([hidden]) input')], k = all.indexOf(e.target);
+  if (k >= 0 && k < all.length - 1) all[k + 1].focus(); else meSave();
+});
 $('meDone').onclick = () => { const r = document.querySelector('input[name="me"]:checked'); closeModal('meModal'); setMe(r ? r.value : null); };
 
 /* ---------- Date order, jump to date, doodles (the controls are in Settings) ---------- */
@@ -769,7 +822,9 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
-    const ids = ['vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'setModal'];
+    // "Which one is you?" is mandatory: Esc only leaves its nickname editing, and never closes it or what is under it.
+    if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); return; }
+    const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
     const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
     if (top) { closeModal(top.id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }

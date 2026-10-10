@@ -509,7 +509,7 @@ function audioHTML(e, m) {
     const who = m && m.sender ? m.sender : '';
     return '<div class="aplayer voice" data-audio="' + esc(e.name) + '">' + play +
       '<div class="atrack">' + waveSVG(e.name) + '<div class="arow"><span class="atime"></span><button class="aspeed" aria-label="' + t('audio.speed') + '"></button></div>' + fail + '</div>' +
-      '<span class="av vav c' + colorIdx(who) + '" title="' + esc(who) + '">' + esc(initials(who)) + '<span class="vmic">' + ICON.audio + '</span></span></div>';
+      '<span class="av vav c' + colorIdx(who) + '" title="' + esc(nick(who)) + '">' + esc(initials(nick(who))) + '<span class="vmic">' + ICON.audio + '</span></span></div>';
   }
   return '<div class="aplayer file" data-audio="' + esc(e.name) + '">' + play +
     '<div class="atrack"><span class="afname" title="' + esc(e.name) + '">' + esc(e.name) + '</span><input class="aseek" type="range" min="0" max="1000" value="0" aria-label="' + t('audio.seek') + '">' +
@@ -1057,7 +1057,7 @@ function makeRow(it, idx) {
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
   el.className = 'row ' + (m.isOutgoing ? 'out' : 'in') + (it.first ? ' first' : '') + (grp ? ' grp' : '') + (reacts ? ' hasr' : '');
   let body = '';
-  if (it.showName) body += '<div dir="auto" class="name nc' + colorIdx(m.sender) + '">' + hl(scriptHTML(m.sender), it.i) + '</div>';
+  if (it.showName) body += '<div dir="auto" class="name nc' + colorIdx(m.sender) + '">' + hl(scriptHTML(nick(m.sender)), it.i) + '</div>';
   const metaInner = (starred ? '<span class="stard" title="' + t('msg.starred') + '">' + ICON.starFill + '</span>' : '') + (m.edited ? '<span class="edtag">' + t('msg.edited') + '</span>' : '') + '<span dir="ltr">' + m.formattedTime + '</span>';
   const space = '<span class="mspace' + (m.edited ? ' e' : '') + '"></span>';
   let tailText = true, visual = false, overlay = false, stk = false;
@@ -1106,11 +1106,11 @@ function makeRow(it, idx) {
   let rx = '';
   if (reacts) {
     const g = new Map();
-    for (const r of m.reactions) g.set(r.emoji, (g.get(r.emoji) || []).concat(r.by === S.me ? t('common.you') : r.by || ''));
+    for (const r of m.reactions) g.set(r.emoji, (g.get(r.emoji) || []).concat(r.by === S.me ? t('common.you') : nick(r.by) || ''));
     const tip = [...g].map(([e, who]) => e + ' ' + who.join(', ')).join('; ');
     rx = '<span class="reacts" title="' + esc(tip) + '" aria-label="' + esc(t('msg.reactions', { list: tip })) + '">' + [...g.keys()].slice(0, 3).map(esc).join('') + (m.reactions.length > 1 ? '<b>' + m.reactions.length + '</b>' : '') + '</span>';
   }
-  const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(m.sender)) + '</span>' : '';
+  const av = grp && it.first ? '<span class="av rav c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(nick(m.sender))) + '</span>' : '';
   const mmore = '<button class="mmore" data-mmenu="' + it.i + '" aria-haspopup="menu" aria-label="' + t('mm.more') + '" title="' + t('mm.more') + '">' + ICON.down + '</button>';
   el.innerHTML = av + '<div class="bubble' + (visual ? ' mb' : '') + (m.message && m.kind !== 'poll' ? ' t' + endDir(endTxt) : '') + '">' + body + '<span class="meta' + (overlay ? ' ov' : '') + '">' + metaInner + '</span>' + mmore + rx + '</div>';
   const ap = el.querySelector('.aplayer');
@@ -1321,7 +1321,7 @@ function showLb() {
     if (!e.view && isHeic(e.name)) Heic.view(e).then(u => { if (!$('lb').hidden && LB.list[LB.k] === x) lbImg.src = u; }, () => {});
   }
   lbImg.alt = m.message || (TYPE_LABEL[x.type] ? typeLabel(x.type) : t('common.photo_alt'));
-  $('lbWho').textContent = m.isOutgoing ? t('common.you') : m.sender;
+  $('lbWho').textContent = m.isOutgoing ? t('common.you') : nick(m.sender);
   $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;
   $('lbPos').textContent = (LB.k + 1) + ' / ' + LB.list.length;
   $('lbCap').innerHTML = m.message ? formatText(m.message) : ''; $('lbCap').hidden = !m.message;
