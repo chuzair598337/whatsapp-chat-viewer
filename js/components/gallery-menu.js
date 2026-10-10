@@ -3,14 +3,14 @@
    Options for one item in Media, links and docs, like the message menu
    in the chat: long-press an item on a phone, right-click it on a
    computer, press its ⋮ button, or use Shift+F10 / the menu key on a
-   focused item.
+   focused item. On phones the rows show only the ⋮ button; larger
+   screens also keep the quick copy, open and download buttons.
 
-   The menu starts with who sent the item and when, and the file's name
-   and size. Then, depending on the item: Go to message (closes the
-   gallery and jumps to the message in the chat), View, Open, Play or
-   Pause, View contact, Open link, Star or Unstar the message, Copy
-   caption, Copy contact details, Copy link, Download and Share.
-   Loaded after media-gallery.js and message-menu.js.
+   The menu is a plain list of options with no title. Depending on the
+   item: Go to message (closes the gallery and jumps to the message in
+   the chat), View, Open, Play or Pause, View contact, Open link, Star or
+   Unstar the message, Copy caption, Copy contact details, Copy link,
+   Download and Share. Loaded after media-gallery.js and message-menu.js.
    ===================================================================== */
 const GalMenu = {
   el: $('galMenu'), k: -1, ret: null, run: [],
@@ -43,15 +43,6 @@ const GalMenu = {
     if (canShare()) out.push(['share', t('mm.share'), () => galShare(it)]);
     return out;
   },
-  // Who sent it, when and the file's size, then the file's name (or the link).
-  info(it) {
-    const m = S.msgs[it.i], what = it.cat === 'links' ? it.x.href : it.a.title || it.e.name;
-    // Each part is isolated so the date, time and size keep their order in Urdu and Arabic.
-    return '<div class="gm-info" role="presentation"><b><bdi>' + esc(m.isOutgoing ? t('common.you') : m.sender) + '</bdi></b>' +
-      '<small><bdi>' + esc(dateLabel(m.dateKey)) + '</bdi>' + t('common.list_sep') + '<bdi dir="ltr">' + esc(m.formattedTime) + '</bdi>' +
-      (it.e ? ' · <bdi dir="ltr">' + esc(fmtSize(it.e.size)) + '</bdi>' : '') + '</small>' +
-      '<small class="gm-file" title="' + esc(what) + '"><bdi>' + esc(what) + '</bdi></small></div>';
-  },
   open(k, x, y, anchor) {
     const it = Gallery.list[k];
     if (!it) return;
@@ -59,7 +50,7 @@ const GalMenu = {
     this.k = k; this.ret = document.activeElement;
     const acts = this.actions(k);
     this.run = acts.map(a => a[2]);
-    this.el.innerHTML = this.info(it) + acts.map(([icon, label], j) => '<button role="menuitem" data-gm="' + j + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
+    this.el.innerHTML = acts.map(([icon, label], j) => '<button role="menuitem" data-gm="' + j + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
     this.el.hidden = false;
     const item = galBody.querySelector('[data-gi="' + k + '"]');
     if (item) item.classList.add('gm-on');
