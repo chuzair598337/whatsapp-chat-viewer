@@ -78,7 +78,7 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. There is no build step.
   - **Every word the app shows goes through `t('section.key')`** (or `data-i18n` in `index.html`), with the text added to every dictionary: `js/i18n/en.js`, `js/i18n/ur.js` and `js/i18n/ar.js`. Never translate chat content: messages, names, file names, system notices, call logs, deleted and omitted placeholders and the date rows stay as exported.
   - **Use logical CSS properties** (`margin-inline-start`, `inset-inline-end`, `text-align: start`) instead of left and right, so the Urdu layout mirrors. The chat (`#layer`) is `dir="ltr"` and never mirrors: sent on the right, received and avatars on the left.
   - Match the surrounding style.

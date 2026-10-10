@@ -67,7 +67,7 @@ const Gallery = {
     openModal('galModal');
     this.show(cat || 'all');
   },
-  close() { if (!$('galModal').hidden) closeModal('galModal'); },
+  close() { GalMenu.close(false); if (!$('galModal').hidden) closeModal('galModal'); },
   // The chat's media changed while the gallery is open (the sample's video finished recording): redraw it.
   refresh() { // keeps the scroll position, since media arrives a few files at a time after a ZIP opens
     if ($('galModal').hidden || this.shownKey === S.media) return;
@@ -75,6 +75,7 @@ const Gallery = {
   },
   show(cat) {
     this.index();
+    if (window.GalMenu) GalMenu.close(false);
     this.cat = cat; this.shownKey = S.media;
     $('galChips').innerHTML = GAL_CATS.map(([c, label]) => '<button class="chip' + (c === cat ? ' on' : '') + '" role="tab" aria-selected="' + (c === cat) + '" data-cat="' + c + '">' +
       t(label) + ' <span class="cc">' + nf(this.counts[c]) + '</span></button>').join('');
@@ -107,7 +108,7 @@ const Gallery = {
         this.sec = { mk, grid: el.querySelector('.ggrid'), list: el.querySelector('.glist') };
       }
       const grid = GAL_GRID.has(it.cat);
-      (grid ? this.sec.grid : this.sec.list).insertAdjacentHTML('beforeend', grid ? tileHTML(it, k) : rowHTML(it, k));
+      (grid ? this.sec.grid : this.sec.list).insertAdjacentHTML('beforeend', grid ? cellHTML(it, k) : rowHTML(it, k));
     }
     this.n = end;
     Was.mount(galBody);
@@ -133,7 +134,19 @@ const Gallery = {
     const list = this.list.filter(x => x.e && GAL_GRID.has(x.cat)).map(x => ({ i: x.i, name: x.e.name, type: x.a.type }));
     openLightbox(it.e.name, list);
   },
-  jump(i) { this.close(); jumpToMsg(i); }
+  // Go to message: closes the gallery (and the photo viewer) and shows the message in the chat.
+  jump(i) { this.close(); jumpToMsg(i, true); },
+  // The message's star changed: update the star on each of its items.
+  markStar(i) {
+    const on = !!(S.starred && S.starred.has(i));
+    this.list.forEach((it, k) => {
+      if (it.i !== i) return;
+      const n = galBody.querySelector('[data-gi="' + k + '"]'); if (!n) return;
+      if (n.classList.contains('gcell')) { n.classList.toggle('starred', on); return; }
+      const w = n.querySelector('.gwhen'), s = w && w.querySelector('.gstar');
+      if (s && !on) s.remove(); else if (w && !s && on) w.insertAdjacentHTML('afterbegin', starMark());
+    });
+  }
 };
 
 function monthLabel(mk) {
@@ -161,28 +174,34 @@ function tileHTML(it, k) {
   else inner = '<img src="' + (e.view || e.url) + '" alt="" loading="lazy" decoding="async" data-bad="' + esc(e.name) + '">' + (it.a.type === 'gif' ? '<span class="gbadge">GIF</span>' : '');
   return '<button class="gtile' + (it.cat === 'stickers' ? ' stk' : '') + '" data-gk="' + k + '" aria-label="' + esc(t('media_gallery.open_item', { label })) + '">' + inner + '</button>';
 }
-const jumpBtn = i => '<button class="ibtn sm gjump" data-jump="' + i + '" aria-label="' + t('media_gallery.show_in_chat') + '" title="' + t('media_gallery.show_in_chat') + '">' + galSm('chat') + '</button>';
+// A grid tile sits in a cell with its ⋮ options button (a button can't hold another) and the star of a starred message.
+const galStarred = it => !!(S.starred && S.starred.has(it.i));
+const starMark = () => '<span class="gstar" title="' + esc(t('media_gallery.starred')) + '" aria-label="' + esc(t('media_gallery.starred')) + '" role="img">' + galSm('star').replace('<path', '<path fill="currentColor"') + '</span>';
+const optBtn = k => '<button class="ibtn sm gopt" data-gmenu="' + k + '" aria-haspopup="menu" aria-label="' + esc(t('media_gallery.options')) + '" title="' + esc(t('media_gallery.options')) + '">' + galSm('more') + '</button>';
+function cellHTML(it, k) {
+  return '<div class="gcell' + (galStarred(it) ? ' starred' : '') + '" data-gi="' + k + '">' + tileHTML(it, k) + starMark() + optBtn(k) + '</div>';
+}
 function rowHTML(it, k) {
-  const m = S.msgs[it.i], when = '<small class="gwhen">' + esc(galWhen(m)) + '</small>';
+  const m = S.msgs[it.i], when = '<small class="gwhen">' + (galStarred(it) ? starMark() : '') + esc(galWhen(m)) + '</small>';
   if (it.cat === 'links') {
     const s = siteOf(it.x), ctx = m.message.replace(RE_URL, ' ').replace(/\s+/g, ' ').trim();
-    return '<div class="grow glink"><span class="lbadge" style="background:' + s.color + '">' + esc((s.name[0] || '?').toUpperCase()) + '</span>' +
+    return '<div class="grow glink" data-gi="' + k + '"><span class="lbadge" style="background:' + s.color + '">' + esc((s.name[0] || '?').toUpperCase()) + '</span>' +
       '<span class="gtxt"><b>' + esc(s.name) + '</b><a href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(it.x.href) + '">' + esc(s.shown) + '</a>' +
       (ctx ? '<small dir="auto" class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' +
       '<span class="gacts"><button class="ibtn sm lcopy" data-url="' + esc(it.x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + galSm('copy') + '</button>' +
-      '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>' + jumpBtn(it.i) + '</span></div>';
+      '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>' + optBtn(k) + '</span></div>';
   }
   const e = it.e;
-  if (it.cat === 'audio') return '<div class="grow gaud">' + audioHTML(e, m) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
-  if (it.cat === 'contacts') return '<div class="grow gvc">' + contactHTML(e) + '<span class="gfoot">' + when + jumpBtn(it.i) + '</span></div>';
+  if (it.cat === 'audio') return '<div class="grow gaud" data-gi="' + k + '">' + audioHTML(e, m) + '<span class="gfoot">' + when + optBtn(k) + '</span></div>';
+  if (it.cat === 'contacts') return '<div class="grow gvc" data-gi="' + k + '">' + contactHTML(e) + '<span class="gfoot">' + when + optBtn(k) + '</span></div>';
   // Documents: type badge, title, size and date. PDFs open in the viewer, other files open in a new tab.
   const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4), title = it.a.title || e.name, pdf = ext === 'pdf';
   const pages = pdf ? PdfView.pages.get(e.name) : 0, detail = pages ? t('doc.pages', { n: pages }) : it.a.detail || '';
   const main = pdf ? '<button class="gmain" data-pdf="' + esc(e.name) + '" data-title="' + esc(title) + '" aria-label="' + esc(t('doc.open', { name: title })) + '">'
     : '<a class="gmain" href="' + e.url + '" target="_blank" rel="noopener" aria-label="' + esc(t('doc.open', { name: title })) + '">';
-  return '<div class="grow gdoc">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
+  return '<div class="grow gdoc" data-gi="' + k + '">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
     '<span class="gtxt"><b dir="auto" title="' + esc(title) + '">' + esc(title) + '</b><small>' + (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size) + '</small>' + when + '</span>' + (pdf ? '</button>' : '</a>') +
-    '<span class="gacts"><a class="ibtn sm" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: title })) + '" title="' + t('doc.download') + '">' + galSm('download') + '</a>' + jumpBtn(it.i) + '</span></div>';
+    '<span class="gacts"><a class="ibtn sm" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: title })) + '" title="' + t('doc.download') + '">' + galSm('download') + '</a>' + optBtn(k) + '</span></div>';
 }
 
 /* ---------- Events ---------- */
@@ -211,7 +230,7 @@ galBody.addEventListener('media-bad', e => {
 });
 galBody.addEventListener('click', e => {
   const tg = e.target;
-  const j = tg.closest('[data-jump]'); if (j) { Gallery.jump(+j.dataset.jump); return; }
+  const o = tg.closest('[data-gmenu]'); if (o) { GalMenu.toggle(+o.dataset.gmenu, o); return; }
   const g = tg.closest('[data-gk]'); if (g) { Gallery.view(+g.dataset.gk); return; }
   const lc = tg.closest('.lcopy'); if (lc) { copyText(lc.dataset.url); return; }
   const ap = tg.closest('.aplay'); if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }

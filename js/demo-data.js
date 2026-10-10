@@ -88,6 +88,9 @@ const SAMPLE = [
   // An iPhone animated sticker (.was, plays with the bundled Lottie player) and an iPhone HEIC photo.
   `[03/04/2026, 8:12:00${N}AM] Omar Farooq: ${L}<attached: 00000035-STICKER-2026-04-03-08-12-00.was>`,
   `[03/04/2026, 8:13:00${N}AM] Hamza Iqbal: ${L}<attached: 00000036-PHOTO-2026-04-03-08-13-00.heic>`,
+  // A captioned photo far from the others: in Media, links and docs, open its options (⋮, long-press or right-click)
+  // for Go to message, Star, Copy caption, Download and its details.
+  `[03/04/2026, 8:14:00${N}AM] Kamran Shah: Group photo at the gate, all 14 of us 📸 ${L}<attached: 00000037-PHOTO-2026-04-03-08-14-00.jpg>`,
   // Someone saved only as a phone number (a made-up 555 number): give them a nickname in Settings › Participants and nicknames.
   `[03/04/2026, 8:20:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added +1 555 0142`,
   `[03/04/2026, 8:21:00${N}AM] +1 555 0142: Hi all, Zain here 👋 Ayesha's cousin. Save my number!`,
@@ -194,6 +197,18 @@ async function makeSampleMedia() {
   staged.set('was', ['00000035-STICKER-2026-04-03-08-12-00.was', await new JSZip().file('animation/animation.json', JSON.stringify(sampleLottie())).generateAsync({ type: 'blob' })]);
   // An iPhone HEIC photo (a small made-up mountain picture, 7 KB). Outside Safari it is drawn with the bundled HEIC decoder.
   staged.set('heic', ['00000036-PHOTO-2026-04-03-08-13-00.heic', new Blob([Uint8Array.from(atob(SAMPLE_HEIC), ch => ch.charCodeAt(0))], { type: 'image/heic' })]);
+  // Group photo at the gate: a row of people as coloured circles under a banner
+  c = document.createElement('canvas'); c.width = 960; c.height = 640; g = c.getContext('2d');
+  g.fillStyle = '#cfe3f0'; g.fillRect(0, 0, 960, 640); g.fillStyle = '#7da35f'; g.fillRect(0, 430, 960, 210);
+  g.fillStyle = '#8a5a3c'; g.fillRect(150, 90, 16, 360); g.fillRect(794, 90, 16, 360); g.fillStyle = '#1d6b4f'; g.fillRect(130, 80, 700, 70);
+  g.fillStyle = '#fff'; g.font = 'bold 40px sans-serif'; g.textAlign = 'center'; g.fillText('Ridge Loop Trailhead', 480, 130);
+  const shirts = ['#d6452f', '#f4a259', '#5b8e7d', '#3d5a80', '#bc4b51', '#8c5383', '#f2cc8f'];
+  for (let k = 0; k < 14; k++) {
+    const x = 90 + (k % 7) * 130, y = k < 7 ? 330 : 420;
+    g.fillStyle = shirts[k % shirts.length]; g.beginPath(); g.ellipse(x, y + 70, 42, 60, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#e0ac69'; g.beginPath(); g.arc(x, y, 30, 0, Math.PI * 2); g.fill();
+  }
+  staged.set('group', ['00000037-PHOTO-2026-04-03-08-14-00.jpg', await canvasBlob(c, 'image/jpeg', 0.86)]);
   staged.set('txt', ['00000027-Gear-checklist.txt', new Blob(['Gear checklist\n- 2 L water\n- Rain jacket\n- First aid kit\n- Head torch\n- Snacks\n'], { type: 'text/plain' })]);
   const out = new Map();
   for (const [, [name, blob]] of staged) if (blob) Media.stage(out, name, blob);

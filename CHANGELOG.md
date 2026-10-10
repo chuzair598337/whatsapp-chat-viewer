@@ -7,6 +7,16 @@
 - **"Which one is you?" is mandatory.** It has no ✕ any more, and Esc or a tap outside doesn't close it; **Show chat** confirms. In a group the person with the most messages is now selected by default (it was only marked as suggested).
 - "1 messages" now reads "1 message" in **Which one is you?** and the nickname list.
 - The start screen and the tour's last card now say **the chat** isn't saved, since settings, nicknames and recent searches are remembered.
+- **Options for each item in Media, links and docs.** Long-press an item on a phone, right-click it on a computer, press its ⋮ button or use Shift+F10. The menu is a plain list of options with no title:
+  - **Go to message**, which closes the gallery, scrolls the chat to that message and flashes it (clearing a filter that hides it);
+  - **View**, **Open**, **Play/Pause**, **View contact** or **Open link**, by type;
+  - **Star / Unstar** the message, with a small star on the items of starred messages;
+  - **Copy caption**, **Copy contact details** or **Copy link**;
+  - **Download**, and **Share** where the browser supports it.
+- The rows' separate **Show in chat** button is now **Go to message** in that menu.
+- **Phones show only ⋮ on each row.** On screens 600 px wide or less, the copy, open and download buttons on links, documents, audio and contacts rows are gone, leaving more room for the text; they are all in the ⋮ list. Tablets and computers keep the quick buttons next to ⋮.
+- **Go to message in the photo viewer:** a new button in its top bar closes the viewer (and the gallery) and jumps to the photo's message.
+- Sample chat: a captioned group photo from Kamran Shah (3 April), to try the options and Copy caption.
 
 ## 1.7.0 (2026-10-07)
 
