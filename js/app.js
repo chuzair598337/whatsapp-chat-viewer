@@ -490,9 +490,18 @@ $('sstrip').addEventListener('keydown', e => {
   e.preventDefault(); toggleSearchOpt(k);
 });
 q2.addEventListener('keydown', e => {
-  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); }
+  if (e.key === 'Enter') { e.preventDefault(); clearTimeout(searchTimer); if (S.q !== q2.value) runSearch(q2.value); else step(e.shiftKey ? -1 : 1); selectSearch(); }
   if (e.key === 'Escape') { e.stopPropagation(); if (SHist.isOpen()) SHist.close(); else if (q2.value) clearSearch(); else closeSearch(); }
 });
+// A finished search keeps its text selected, found or not, so typing again replaces it, as in a browser's
+// find bar: after Enter, after picking a recent search, and whenever the field gets focus back. Not while
+// typing, so the next letter never wipes what is being typed.
+function selectSearch() { if (q2.value) q2.setSelectionRange(0, q2.value.length); }
+let q2Tap = false;
+q2.addEventListener('pointerdown', () => { q2Tap = document.activeElement !== q2; });
+q2.addEventListener('focus', () => { if (q2.value && q2.value === S.q) selectSearch(); });
+// The click that focused the field would put the caret where it landed and drop the selection.
+q2.addEventListener('mouseup', e => { if (q2Tap && q2.value && q2.value === S.q) e.preventDefault(); q2Tap = false; });
 $('prev2').onclick = () => step(-1);
 $('next2').onclick = () => step(1);
 const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;

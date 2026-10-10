@@ -188,6 +188,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 ## 7. Search and navigation
 
 - **Search:** in the bar under the chat header. Results update as you type and ignore case unless Match case is on. Message text, sender names (both the exported name and any nickname) and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
+- **Search text stays selected:** after a search runs, found or not, its text is selected, so typing again replaces it, as in a browser's find bar. That happens after `Enter`, after picking a recent search, and whenever the field gets focus back (a second click places the caret). It doesn't happen while you type.
 - **Search options:** three toggles next to the search field, as in a code editor. Each can be on or off, in any combination, and turning one on or off searches again, so the highlights, the counter and ↑ ↓ always follow them.
   - **Aa Match case:** "Develop" no longer finds "develop".
   - **ab Whole word:** "develop" finds only the word "develop", not "developer" or "development". A word is letters, digits and `_` in any script, so it works for Urdu and Arabic too: "سب" skips "سبزہ".
