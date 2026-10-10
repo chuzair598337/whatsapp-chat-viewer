@@ -452,9 +452,20 @@ mark.cur { background: var(--hl-cur); }
 .meopt span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .meopt small { display: block; color: var(--ink-3); font-size: 12.5px; }
 .meopt[hidden] { display: none; }
+/* A person in "Which one is you?": the radio row, a ✎ button for their nickname, and the field it opens. */
+.merow { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; border-radius: 8px; }
+.merow[hidden] { display: none; }
+.merow .mepen { color: var(--ink-3); margin-inline-end: 4px; }
+.merow .mepen svg { width: 18px; height: 18px; }
+.merow .mepen[aria-expanded="true"] { color: var(--accent-ink); background: var(--panel-2); }
+.meedit { grid-column: 1 / -1; display: flex; align-items: center; gap: 6px; padding: 0 8px 10px; padding-inline-start: 90px; }
+.meedit input { flex: 1; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--input); color: var(--ink); font: inherit; font-size: 14.5px; }
+.meedit input:focus-visible { outline: 2px solid var(--accent); outline-offset: -1px; border-color: transparent; }
+.meedit .btn { height: 34px; padding: 0 12px; flex: none; }
+@media (max-width: 480px) { .meedit { padding-inline-start: 8px; flex-wrap: wrap; } .meedit input { flex-basis: 100%; } }
 /* In a group the viewer only suggests who you might be (the most active member): nothing is picked for you. */
-.meopt.sug { background: var(--accent-soft); }
-.meopt.sug small b { color: var(--accent-ink); font-weight: 600; }
+.merow.sug { background: var(--accent-soft); }
+.merow.sug small b { color: var(--accent-ink); font-weight: 600; }
 .mefilter { flex: none; }
 .menone { margin: 4px 0; color: var(--ink-3); font-size: 13px; }
 .lead { margin: 0; color: var(--ink-2); }

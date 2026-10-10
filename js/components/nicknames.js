@@ -11,6 +11,9 @@
      Messages keep their exported sender, so "who you are", filters and
      avatar colours don't change when someone is renamed.
    - Search finds a message by the sender's exported name and nickname.
+   - "Which one is you?" (shown when a chat opens) has a ✎ button per
+     person that opens a nickname field under their name (MeNick below),
+     so nicknames can be set right at the start.
    - Kept in localStorage per chat, as chat_nicknames_<id>. The id is a
      hash of everyone's exported name and the first message, so the same
      export opens with the same nicknames and other chats never share them.
@@ -79,7 +82,7 @@ const NickUI = {
     const nk = Nick.map[p.name] || '', shown = nk || p.name;
     return '<div class="nickrow" data-k="' + k + '" data-f="' + esc(fold(p.name + ' ' + nk)) + '">' +
       '<span class="av c' + colorIdx(p.name) + '" aria-hidden="true">' + esc(initials(shown)) + '</span>' +
-      '<div class="nk"><label for="nk' + k + '"><bdi>' + esc(p.name) + '</bdi>' + (p.name === S.me ? ' <em>' + t('common.you') + '</em>' : '') + '<small>' + t('me.n_messages', { n: nf(p.count) }) + '</small></label>' +
+      '<div class="nk"><label for="nk' + k + '"><bdi>' + esc(p.name) + '</bdi>' + (p.name === S.me ? ' <em>' + t('common.you') + '</em>' : '') + '<small>' + t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) }) + '</small></label>' +
       '<div class="nkline"><input id="nk' + k + '" type="text" dir="auto" maxlength="' + NICK_MAX + '" autocomplete="off" enterkeyhint="done" placeholder="' + esc(t('nick.placeholder')) + '" value="' + esc(nk) + '">' +
       '<button class="btn nkreset" data-reset="' + k + '"' + (nk ? '' : ' hidden') + ' aria-label="' + esc(t('nick.reset_label', { name: p.name })) + '">' + t('nick.reset') + '</button></div></div></div>';
   },
@@ -118,3 +121,63 @@ $('nickList').addEventListener('click', e => { const b = e.target.closest('[data
 $('nickFilter').addEventListener('input', () => NickUI.filter());
 $('nickFilterIcon').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 document.addEventListener('langchange', () => { if (S.res && NickUI.isOpen()) NickUI.render(); });
+
+/* ---------- Nicknames inside "Which one is you?" ----------
+   ✎ opens a field under that person's name. Enter, Save or leaving the field saves; Esc or Cancel
+   closes it without a change; Reset brings back the exported name. Choosing who you are is untouched. */
+Object.assign(ICON, { pencil: ic('<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="M14 6l4 4"/>') });
+const MeNick = {
+  open(k) {
+    this.close(true);
+    const row = $('meList').querySelector('.merow[data-k="' + k + '"]'), p = S.res.participants[k]; if (!row || !p) return;
+    const nk = Nick.map[p.name] || '';
+    row.querySelector('.mepen').setAttribute('aria-expanded', 'true');
+    row.insertAdjacentHTML('beforeend', '<div class="meedit">' +
+      '<input id="meNk" type="text" dir="auto" maxlength="' + NICK_MAX + '" autocomplete="off" enterkeyhint="done" placeholder="' + esc(t('nick.placeholder')) + '" aria-label="' + esc(t('nick.field_label', { name: p.name })) + '" value="' + esc(nk) + '">' +
+      '<button class="btn primary" data-nk="save">' + t('nick.save') + '</button>' +
+      (nk ? '<button class="btn" data-nk="reset" aria-label="' + esc(t('nick.reset_label', { name: p.name })) + '">' + t('nick.reset') + '</button>' : '') +
+      '<button class="ibtn sm" data-nk="cancel" aria-label="' + esc(t('nick.cancel')) + '" title="' + esc(t('nick.cancel')) + '">' + ICON.close + '</button></div>');
+    this.k = k;
+    const f = $('meNk'); f.focus(); f.select();
+  },
+  // Closes the open field; quiet: without moving focus (another field is opening, or the list is redrawn).
+  close(quiet) {
+    const ed = $('meList').querySelector('.meedit'); if (!ed) return;
+    const row = ed.parentNode; this.k = null; ed.remove(); // k first: removing the focused field fires focusout, which must not save
+    const pen = row.querySelector('.mepen'); pen.setAttribute('aria-expanded', 'false');
+    if (!quiet) pen.focus();
+  },
+  // later: focus left the list (say, for Show chat), so the redraw waits until that click has landed.
+  save(value, later) {
+    const k = this.k, p = S.res.participants[k]; if (!p) return;
+    const changed = Nick.set(p.name, value);
+    this.k = null;
+    // Redraws the list with the new name, keeping the choice in progress and the name search.
+    const redraw = () => { if ($('meModal').hidden) return; openMeModal(); const pen = $('meList').querySelector('.mepen[data-pen="' + k + '"]'); if (pen && !later) pen.focus(); };
+    if (later) setTimeout(redraw, 300); else redraw();
+    if (!changed) return;
+    if (Nick.has(p.name)) toast.success(t('nick.saved', { name: p.name, nick: Nick.map[p.name] }));
+    else toast.info(t('nick.restored', { name: p.name }));
+  }
+};
+$('meList').addEventListener('click', e => {
+  const pen = e.target.closest('.mepen');
+  if (pen) { e.preventDefault(); if (pen.getAttribute('aria-expanded') === 'true') MeNick.close(); else MeNick.open(+pen.dataset.pen); return; }
+  const b = e.target.closest('[data-nk]'); if (!b) return;
+  e.preventDefault();
+  if (b.dataset.nk === 'save') MeNick.save($('meNk').value);
+  else if (b.dataset.nk === 'reset') MeNick.save('');
+  else MeNick.close();
+});
+$('meList').addEventListener('keydown', e => {
+  if (e.target.id !== 'meNk') return;
+  if (e.key === 'Enter') { e.preventDefault(); MeNick.save(e.target.value); }
+  else if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); MeNick.close(); } // only the field closes, not the dialog
+});
+// Leaving the field for somewhere outside its own buttons saves what was typed.
+$('meList').addEventListener('focusout', e => {
+  if (e.target.id !== 'meNk' || MeNick.k == null) return;
+  const to = e.relatedTarget, ed = e.target.parentNode;
+  if (to && ed.contains(to)) return;
+  if (!$('meModal').hidden && fold(e.target.value.trim()) !== fold(Nick.map[S.res.participants[MeNick.k].name] || '')) MeNick.save(e.target.value, true);
+});

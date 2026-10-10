@@ -158,6 +158,7 @@ I18N.add('en-US', {
     "whatsapp_exports_don_t_say": "WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in Settings.",
     "show_chat": "Show chat",
     "n_messages": "{n} messages",
+    "n_messages_one": "1 message",
     "best_guess": "best guess",
     "none_of_these": "None of these",
     "everyone_left": "Show everyone on the left",
@@ -603,7 +604,14 @@ I18N.add('en-US', {
     "reset": "Reset",
     "reset_label": "Reset {name} to the original name",
     "saved": "{name} now shows as {nick}",
-    "restored": "{name} is back to the original name"
+    "restored": "{name} is back to the original name",
+    "set": "Set nickname",
+    "edit": "Edit nickname",
+    "set_label": "Set a nickname for {name}",
+    "edit_label": "Edit the nickname for {name}",
+    "field_label": "Nickname for {name}",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "shist": {
     "title": "Recent searches",

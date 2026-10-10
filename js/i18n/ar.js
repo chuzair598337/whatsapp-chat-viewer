@@ -158,6 +158,7 @@ I18N.add('ar', {
     "whatsapp_exports_don_t_say": "لا توضح ملفات تصدير WhatsApp من حفظ الدردشة. اختر نفسك لتظهر رسائلك على اليمين. يمكنك تغيير ذلك لاحقًا من الإعدادات.",
     "show_chat": "عرض الدردشة",
     "n_messages": "{n} رسالة",
+    "n_messages_one": "رسالة واحدة",
     "best_guess": "التخمين الأرجح",
     "none_of_these": "لا أحد من هؤلاء",
     "everyone_left": "عرض الجميع على اليسار",
@@ -603,7 +604,14 @@ I18N.add('ar', {
     "reset": "إعادة تعيين",
     "reset_label": "إعادة {name} إلى الاسم الأصلي",
     "saved": "يظهر {name} الآن باسم {nick}",
-    "restored": "عاد {name} إلى الاسم الأصلي"
+    "restored": "عاد {name} إلى الاسم الأصلي",
+    "set": "تعيين لقب",
+    "edit": "تعديل اللقب",
+    "set_label": "تعيين لقب لـ {name}",
+    "edit_label": "تعديل لقب {name}",
+    "field_label": "لقب {name}",
+    "save": "حفظ",
+    "cancel": "إلغاء"
   },
   "shist": {
     "title": "عمليات البحث الأخيرة",

@@ -570,9 +570,12 @@ function openMeModal() {
   const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
   const r = open && document.querySelector('input[name="me"]:checked'), sel = r ? r.value : S.me || '';
   const sug = !S.me && S.meGuess && S.meGuess !== 'You' ? S.meGuess : null;
-  $('meList').innerHTML = ps.map(p =>
-    '<label class="meopt' + (p.name === sug ? ' sug' : '') + '" data-f="' + esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : ''))) + '"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><span dir="auto">' + esc(nick(p.name)) + '<small>' + (Nick.has(p.name) ? '<bdi>' + esc(p.name) + '</bdi> · ' : '') + t('me.n_messages', { n: nf(p.count) }) +
-    (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : p.name === S.me && p.name === S.meGuess ? ' · ' + t('me.best_guess') : '') + '</small></span></label>').join('') +
+  // Each person has a ✎ button that opens a nickname field under their name (MeNick in js/components/nicknames.js).
+  $('meList').innerHTML = ps.map((p, k) =>
+    '<div class="merow' + (p.name === sug ? ' sug' : '') + '" data-k="' + k + '" data-f="' + esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : ''))) + '">' +
+    '<label class="meopt"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><span dir="auto">' + esc(nick(p.name)) + '<small>' + (Nick.has(p.name) ? '<bdi>' + esc(p.name) + '</bdi> · ' : '') + t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) }) +
+    (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : p.name === S.me && p.name === S.meGuess ? ' · ' + t('me.best_guess') : '') + '</small></span></label>' +
+    '<button class="ibtn sm mepen" data-pen="' + k + '" aria-expanded="false" aria-label="' + esc(t(Nick.has(p.name) ? 'nick.edit_label' : 'nick.set_label', { name: p.name })) + '" title="' + esc(t(Nick.has(p.name) ? 'nick.edit' : 'nick.set')) + '">' + ICON.pencil + '</button></div>').join('') +
     '<label class="meopt"><input type="radio" name="me" value=""' + (!sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
   $('meFilterW').hidden = !many;
   if (!many) $('meFilter').value = '';
@@ -584,7 +587,7 @@ function openMeModal() {
 function filterMe() {
   const q = fold($('meFilter').value.trim());
   let n = 0;
-  for (const l of $('meList').querySelectorAll('.meopt[data-f]')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
+  for (const l of $('meList').querySelectorAll('.merow')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
   $('meNone').hidden = !q || n > 0;
 }
 $('meFilter').addEventListener('input', filterMe);
