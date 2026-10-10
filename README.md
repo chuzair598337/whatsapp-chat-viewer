@@ -4,7 +4,7 @@
 
 **Live app:** https://chuzair598337.github.io/whatsapp-chat-viewer/
 
-Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with photos, videos, voice notes, documents, search and statistics. The chat is processed **entirely in your browser**: nothing is uploaded, and the page makes no network requests once it has loaded.
+Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with photos, videos, voice notes, documents, search and statistics. The chat is processed **entirely in your browser**: nothing is uploaded, and the page makes no network requests once it has loaded. The one exception is **Online link previews** in Settings, which is off unless you turn it on: then supported links (YouTube, Instagram, TikTok, Spotify, Google Docs and a few more) can play inside the chat and show their titles, loaded only from the site the link points to.
 
 | Desktop (light) | Phone (dark) |
 |---|---|
@@ -45,7 +45,7 @@ flowchart LR
 ```
 
 - **Static site:** plain HTML, CSS and JavaScript with no build step and no server code.
-- **Five dependencies, all vendored in `js/vendor/`:** JSZip; pdf.js for PDF previews, only loaded when a chat has a PDF; the lottie-web light build for iPhone animated stickers, only loaded when a chat has one; libheif for HEIC photos outside Safari, only loaded when one needs decoding; and Notyf for notifications.
+- **Six dependencies, all vendored in `js/vendor/`:** JSZip; Simple Icons brand logos for link cards; pdf.js for PDF previews, only loaded when a chat has a PDF; the lottie-web light build for iPhone animated stickers, only loaded when a chat has one; libheif for HEIC photos outside Safari, only loaded when one needs decoding; and Notyf for notifications.
 - **Parsing and unzipping:** run in Web Workers created from inline Blob URLs, so large chats don't freeze the page.
 - **Media:** stays in memory as `blob:` URLs, which are revoked when another chat is opened.
 - **Rendering:** only the rows on screen exist in the DOM. A Fenwick tree tracks row heights for fast scrolling.
@@ -69,6 +69,7 @@ whatsapp-chat-viewer/
 │   ├── vendor/lottie/                    # lottie-web 5.13.0 light build (MIT), loaded on demand
 │   ├── vendor/libheif/                   # libheif-js 1.23.5 HEIC decoder (LGPL-3.0), loaded on demand
 │   ├── vendor/notyf/                     # Notyf 3.10.0 notifications (MIT)
+│   ├── vendor/brand-icons/               # Simple Icons 16.34.0 logo subset for link cards (CC0)
 │   ├── i18n/                             # i18n.js (t() helper), en.js, ur.js and ar.js dictionaries
 │   ├── parser.js                         # chat parser and worker setup
 │   ├── media.js                          # ZIP reading, media map, audio controller
@@ -76,7 +77,7 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
+│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes
@@ -130,8 +131,8 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `viewer` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/select-messages` → `components/settings` → `components/nicknames` → `components/search-history` → `tour-controller`. Keep that order when adding files.
-- Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/select-messages` → `components/settings` → `components/nicknames` → `components/search-history` → `tour-controller`. Keep that order when adding files.
+- Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`. The only exception is the opt-in Online link previews in `js/components/link-cards.js` (see PROJECT_RULES.md, section 1).
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
 ## Branching and contributions
@@ -152,4 +153,4 @@ Workflow:
 
 ## License
 
-The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), Notyf under the MIT license (`js/vendor/notyf/LICENSE.md`), libheif (the HEIC decoder, from libheif-js) under the GNU LGPL 3.0 (`js/vendor/libheif/LICENSE`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).
+The viewer's code is provided as-is by its author. JSZip is used under the MIT license (see the header of `js/vendor/jszip.min.js`), pdf.js under the Apache License 2.0 (`js/vendor/pdfjs/LICENSE`), lottie-web under the MIT license (`js/vendor/lottie/LICENSE.md`), Notyf under the MIT license (`js/vendor/notyf/LICENSE.md`), the Simple Icons brand logos under CC0 1.0 (`js/vendor/brand-icons/LICENSE.md`; the logos remain trademarks of their owners and only label links to their sites), libheif (the HEIC decoder, from libheif-js) under the GNU LGPL 3.0 (`js/vendor/libheif/LICENSE`), and the Noto Nastaliq Urdu and Noto Naskh Arabic fonts under the SIL Open Font License 1.1 (`fonts/OFL-noto-nastaliq-urdu.txt`, `fonts/OFL-noto-naskh-arabic.txt`).

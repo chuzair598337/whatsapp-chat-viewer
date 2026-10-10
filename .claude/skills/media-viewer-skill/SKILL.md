@@ -16,6 +16,8 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 | Lazy queues: waveforms (`Waves`), video posters, PDF thumbnails (`PdfView`), contact cards (`Cards`) | `js/viewer.js` |
 | Photo lightbox: zoom, pan, pinch, 90° rotation | `js/viewer.js` (`Z`, `zTo`, `zRotate`, `zFit`) |
 | HEIC photos outside Safari: decoded with libheif into a JPEG copy in `e.view` (download keeps the original `e.url`) | `js/viewer.js` (`isHeic`, `Heic`), `js/vendor/libheif/` |
+| Link cards (chat and Media > Links): site logo, name and what the link is, all from the URL; nothing is fetched. Add a site with a `SITE_RULES` entry; add a logo by copying its path and hex from the simple-icons package into `BRAND_ICONS` (only brands Simple Icons still ships, CC0) | `js/components/link-cards.js` (`siteOf`, `linkCards`, `linkCardsH`), `js/vendor/brand-icons/` |
+| Online link previews (opt-in, `cv-online-links`): players and titles from the linked site only. A new site needs an `embedOf` rule and its host in the CSP in `index.html` | `js/components/link-cards.js` (`embedOf`, `LinkOnline`, `embedHTML`) |
 | iPhone `.was` stickers (Lottie in a ZIP) | `js/viewer.js` (`Was`), `js/vendor/lottie/` |
 | Files the browser can't decode: `Media.bad` / `Media.cantShow`, the "Can't show this file here" card | `js/media.js`, `js/viewer.js` (`cantShowHTML`) |
 | Media, links and docs gallery, its sorting | `js/components/media-gallery.js` |
