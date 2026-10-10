@@ -35,7 +35,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **Local preferences only.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. Who you are and the date order belong to the open chat and are not stored. Chat contents are never stored.
+- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -179,8 +179,9 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 ## 7. Search and navigation
 
-- **Search:** in the bar under the chat header. Results update as you type and ignore case. Message text, sender names and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
+- **Search:** in the bar under the chat header. Results update as you type and ignore case. Message text, sender names (both the exported name and any nickname) and poll options are all searched. Urdu and Arabic spellings match each other: Arabic ي ى ك ه ة find Urdu ی ک ہ, and vowel marks (harakat), the tatweel and zero-width joiners are ignored, so "السلام" finds "السَّلام". Matches are highlighted in the chat with an "n of N" counter.
 - **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
+- **Recent searches** (`js/components/search-history.js`): when the search field gets focus, a list under it shows your last 7 searches, newest first. Typing narrows it to the searches that contain the text. A search is added when you submit it (`Enter`, ↑ ↓, or picking it from the list); searching for the same words again moves them to the top instead of adding a copy, and the oldest drops off past 7. Click one to fill the bar and run it. Each has a ✕ that removes only that one. Keyboard: ↓ moves from the field into the list, ↑ ↓ move through it, `Delete` removes the focused search, `Esc` closes the list. A click outside or leaving the field closes it too. The list is shared by every chat and kept on this device (`chat_search_history`). It mirrors in Urdu and Arabic.
 - **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
 - **Starred messages:** open a message's menu (right-click, long-press or the ⌄ button) and pick **Star**. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. The panel's title shows how many there are. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](deferred.md)).
@@ -188,7 +189,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
 - **Keyboard shortcuts:**
   - `/` or `Ctrl/Cmd+F` opens search. `/` is ignored while you're typing in a field.
-  - `Esc`: in the search field it clears the text, then closes the bar. Elsewhere it closes, in order, the dialog on top (a pick sheet before the gallery under it), the starred panel, the search bar and the drawer. It also closes the ⋮ menu and the message menu.
+  - `Esc`: in the search field it closes the recent searches list, then clears the text, then closes the bar. Elsewhere it closes, in order, the dialog on top (a pick sheet before the gallery under it), the starred panel, the search bar and the drawer. It also closes the ⋮ menu and the message menu.
   - `Shift+F10` or the menu key on a focused message opens its message menu.
   - In the photo viewer: `+`, `-`, `0`, `R`, arrow keys and `Esc`. In the PDF viewer: `+`, `-`, `0` and `Esc`.
 
@@ -229,7 +230,8 @@ The statistics window shows:
   - two long messages, for Read more;
   - Urdu and Arabic messages: a vowelled Arabic verse with its Urdu translation, an Arabic message, a line with Arabic spellings and vowel marks for search, and a message mixing English and Urdu lines;
   - the encryption notice, group events, an iPhone admin event, a disappearing-message timer change and a security-code change;
-  - fourteen people, so **Which one is you?** shows its name search and the statistics table has rows to sort;
+  - fifteen people, so **Which one is you?** and **Participants and nicknames** show their name search and the statistics table has rows to sort;
+  - someone saved only as a phone number (a made-up `+1 555 0142`, "Zain"), to try a nickname on;
   - missed and answered calls, a poll, a location, links, reactions, a deleted message and "You deleted this message.";
   - photos (one after a caption over two lines), a video, a GIF, a sticker, an iPhone animated `.was` sticker, a HEIC photo, a voice note, a music file, a PDF, a text file and a contact card;
   - a "video omitted" placeholder.
@@ -257,7 +259,7 @@ The statistics window shows:
 
 ## 12. Code layout
 
-The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
+The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
 
 | File | Responsibility |
 |---|---|
@@ -275,14 +277,16 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
 | `js/viewer.js` | Formatting, Urdu and Arabic script fonts, the virtual list, row rendering, media players, `.was` stickers, HEIC decoding, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
-| `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, date format, statistics, help and About, and the pick sheet for choices |
+| `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, date format, nicknames, statistics, help and About, and the pick sheet for choices |
+| `js/components/nicknames.js` | Participant nicknames: `nick(name)`, the per-chat store and the Participants and nicknames sheet |
+| `js/components/search-history.js` | Recent searches: the list under the search bar and its store |
 | `js/components/media-gallery.js` | The media, links and docs gallery: its index of attachments and links, the filter chips, sorting, grid and list layouts, and paging |
 | `js/components/message-menu.js` | The message menu: long-press, right-click, the ⌄ button and Shift+F10, and its actions |
 | `js/components/select-messages.js` | Selecting messages: the selection bar, Star, Copy and Share for several messages |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
-| `css/settings.css` | The Settings screen and pick sheet |
+| `css/settings.css` | The Settings screen, pick sheet and Participants and nicknames sheet |
 | `tests/parser.test.js` | Parser tests (`node tests/parser.test.js`) |
 
 ## 13. Interface languages
@@ -307,9 +311,14 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Language:** English, اردو or العربية. The whole app redraws in the new language at once, the Settings screen included.
   - **Background pattern:** a switch for the doodles behind the messages.
   - **Date format:** Automatic, Day / Month or Month / Day (a change re-reads the chat behind a progress screen), with the order being used and a **guessed** badge when the chat could be read either way. A forced order that gives impossible dates is refused with a message. Exports written as YYYY-MM-DD have nothing to choose, so the row is disabled.
-- **This chat:** **Chat statistics**.
+- **This chat:**
+  - **Participants and nicknames** (`js/components/nicknames.js`): lists everyone who wrote in the chat (with a name search above 12 people), each with their exported name, message count and a nickname field. Type a nickname and press `Enter` or leave the field to save it; a notification confirms it. **Reset** (or clearing the field) brings back the exported name. The row shows how many nicknames are set.
+    - A nickname replaces the person's name everywhere the viewer shows a sender: the name and initials above their messages, voice note avatars, reactions, the side panel's participant list and the chat card, the sender filter and filter bar, starred messages, statistics, **Which one is you?** (with the exported name under it), the photo viewer, the gallery, copied messages, and the title of a one-to-one chat. Avatar colours stay the same.
+    - Messages keep their exported sender, so who you are and the sender filter are unaffected, and search finds a person by either name. Chat content stays as exported, so system notices such as "Ayesha Khan added …" keep the original names.
+    - Kept on this device per chat (`chat_nicknames_<id>`, where the id comes from everyone's exported name and the first message), so the same export opens with the same nicknames and other chats never share them.
+  - **Chat statistics**.
 - **Help:** **Help and guided tour**, the version and the privacy note.
-- **What is remembered:** the theme, language and background pattern, on this device. Who you are and the date format apply to the open chat only, because a name is chat data and is never stored.
+- **What is remembered:** the theme, language and background pattern, nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
 - **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
 - **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The side panel keeps **Jump to date**. The start screen keeps its English / اردو / العربية switch, because no chat is open there yet.

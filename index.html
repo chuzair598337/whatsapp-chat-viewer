@@ -127,6 +127,10 @@
         <input id="q2" type="search" placeholder="Search this chat" autocomplete="off" enterkeyhint="search" aria-label="Search this chat" data-i18n-attr="aria-label:common.search_this_chat;placeholder:common.search_this_chat">
         <span id="count2" class="count"></span>
       </div>
+      <div id="shist" class="shist" hidden>
+        <div class="shh" id="shistHead" data-i18n="shist.title">Recent searches</div>
+        <ul id="shistList" aria-labelledby="shistHead"></ul>
+      </div>
       <button class="ibtn sm" id="prev2" aria-label="Previous match (older)" data-i18n-attr="aria-label:common.previous_match_older"></button>
       <button class="ibtn sm" id="next2" aria-label="Next match (newer)" data-i18n-attr="aria-label:common.next_match_newer"></button>
       <button class="ibtn sm" id="sClose" aria-label="Close search" title="Close search" data-i18n-attr="aria-label:search.close_search;title:search.close_search"></button>
@@ -160,6 +164,12 @@
   <div class="sheet narrow settings">
     <header><button class="ibtn" id="setBack" aria-label="Close settings" data-i18n-attr="aria-label:settings.close"></button><h2 id="setTitle" data-i18n="settings.title">Settings</h2></header>
     <div class="body set-body" id="setBody"></div>
+  </div>
+</div>
+<div id="nickModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="nickTitle">
+  <div class="sheet narrow nicks">
+    <header><h2 id="nickTitle" data-i18n="nick.title">Participants and nicknames</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
+    <div class="body"><p class="lead" data-i18n="nick.lead">Give anyone a nickname to show instead of their name everywhere in this chat. Reset brings back the name from the export. Nicknames are remembered on this device for this chat.</p><div class="searchbox mefilter" id="nickFilterW" hidden><span id="nickFilterIcon"></span><input id="nickFilter" type="search" autocomplete="off" placeholder="Search names" aria-label="Search names" data-i18n-attr="placeholder:me.filter_names;aria-label:me.filter_names"></div><div class="nicklist" id="nickList"></div><p class="menone" id="nickNone" hidden data-i18n="me.no_names_match">No one in this chat matches that name.</p></div>
   </div>
 </div>
 <div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
@@ -252,6 +262,8 @@
 <script src="js/components/message-menu.js"></script>
 <script src="js/components/select-messages.js"></script>
 <script src="js/components/settings.js"></script>
+<script src="js/components/nicknames.js"></script>
+<script src="js/components/search-history.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>
 </html>

@@ -132,6 +132,20 @@ mark.cur { background: var(--hl-cur); }
 .samplebar button { border: 0; background: transparent; color: var(--accent-ink); font-weight: 600; cursor: pointer; padding: 4px 6px; }
 .sstrip { flex: none; display: flex; align-items: center; gap: 4px; padding: 6px 8px; background: var(--header); border-top: 1px solid var(--line); z-index: 5; }
 .sstrip .searchbox { flex: 1; background: var(--input); }
+/* Recent searches (js/components/search-history.js): a card under the search field, newest first, each with a ✕. */
+.sstrip { position: relative; }
+.shist { position: absolute; top: calc(100% - 2px); inset-inline: 8px; z-index: 20; background: var(--panel); border-radius: 10px; box-shadow: 0 8px 28px var(--shadow); padding: 6px 0; max-width: 560px; }
+.shh { padding: 6px 16px 4px; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
+.shist ul { list-style: none; margin: 0; padding: 0; }
+.shi { display: flex; align-items: center; }
+.shq { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 9px 16px; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 14.5px; text-align: start; cursor: pointer; }
+.shq svg { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+.shq span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.shx { flex: none; display: grid; place-items: center; width: 36px; height: 36px; margin-inline-end: 6px; border: 0; border-radius: 50%; background: transparent; color: var(--ink-3); cursor: pointer; }
+.shx svg { width: 16px; height: 16px; }
+@media (hover: hover) { .shq:hover, .shx:hover { background: var(--panel-2); } .shx:hover { color: var(--ink); } }
+.shq:focus-visible, .shx:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+:root[lang="ur"] .shq, :root[lang="ur"] .shh { line-height: 1.8; }
 
 .thread-wrap { flex: 1; min-height: 0; position: relative; isolation: isolate; }
 .thread-wrap::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: var(--doodle-url); background-size: 280px 280px; opacity: var(--doodle-op); filter: var(--doodle-filter); pointer-events: none; }

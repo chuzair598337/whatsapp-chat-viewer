@@ -55,7 +55,7 @@ const Sel = {
   // The picked messages as text, oldest first, one per message: "[3 Apr 2026, 8:02 AM] Ayesha Khan: …".
   text() {
     return this.picked().map(m => {
-      const who = m.isOutgoing && S.me ? S.me : (m.sender || '');
+      const who = nick(m.isOutgoing && S.me ? S.me : (m.sender || '')); // a nickname replaces the exported name here too
       const body = [copyable(m)].concat(m.attachments.map(a => a.name ? '<' + (a.title || baseName(a.name)) + '>' : '')).filter(Boolean).join('\n');
       return '[' + selDate.format(dkToT(m.dateKey)) + ', ' + m.formattedTime + '] ' + (who ? who + ': ' : '') + body;
     }).join('\n');

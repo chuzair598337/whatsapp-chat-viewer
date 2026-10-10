@@ -88,6 +88,10 @@ const SAMPLE = [
   // An iPhone animated sticker (.was, plays with the bundled Lottie player) and an iPhone HEIC photo.
   `[03/04/2026, 8:12:00${N}AM] Omar Farooq: ${L}<attached: 00000035-STICKER-2026-04-03-08-12-00.was>`,
   `[03/04/2026, 8:13:00${N}AM] Hamza Iqbal: ${L}<attached: 00000036-PHOTO-2026-04-03-08-13-00.heic>`,
+  // Someone saved only as a phone number (a made-up 555 number): give them a nickname in Settings › Participants and nicknames.
+  `[03/04/2026, 8:20:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added +1 555 0142`,
+  `[03/04/2026, 8:21:00${N}AM] +1 555 0142: Hi all, Zain here 👋 Ayesha's cousin. Save my number!`,
+  `[03/04/2026, 8:21:30${N}AM] Sara Malik: Welcome Zain! See you at the trailhead`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 // A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.

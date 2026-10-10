@@ -9,7 +9,7 @@ These rules apply to everyone changing this repository, people and coding agents
 
 - Everything runs in the browser. No chat text, file name or media may leave the device, whether through `fetch`, XHR, beacons, WebSockets, image pixels, or anything else.
 - Don't add network dependencies: no CDNs, web fonts, analytics or link-preview fetches. Vendor libraries into `js/vendor/` with their license.
-- Don't store chat content. Only display preferences, the interface language (`app_language`) and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [docs/deferred.md](docs/deferred.md).
+- Don't store chat content. Only display preferences, the interface language (`app_language`), the `has_completed_walkthrough` flag, and the two things the maintainer asked to be remembered go in `localStorage`: nicknames per chat (`chat_nicknames_<id>`, exported name → nickname) and the last 7 searches (`chat_search_history`). Messages and media are never stored. Starred messages and filters live in memory for the open chat. See [docs/deferred.md](docs/deferred.md).
 - Treat every export as hostile input:
   - Escape text before formatting it.
   - Only link `http(s)`, `tel:` and `mailto:` URLs.
@@ -78,7 +78,7 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - `main` is production. Every push to it deploys GitHub Pages.
   - Merge `development` into `main` only when the maintainer asks.
 - **Code style.**
-  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `tour-controller`. There is no build step.
+  - Scripts are classic files sharing globals, loaded in order: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. There is no build step.
   - **Every word the app shows goes through `t('section.key')`** (or `data-i18n` in `index.html`), with the text added to every dictionary: `js/i18n/en.js`, `js/i18n/ur.js` and `js/i18n/ar.js`. Never translate chat content: messages, names, file names, system notices, call logs, deleted and omitted placeholders and the date rows stay as exported.
   - **Use logical CSS properties** (`margin-inline-start`, `inset-inline-end`, `text-align: start`) instead of left and right, so the Urdu layout mirrors. The chat (`#layer`) is `dir="ltr"` and never mirrors: sent on the right, received and avatars on the left.
   - Match the surrounding style.
@@ -86,7 +86,8 @@ The sample chat (`js/demo-data.js`) is how the maintainer tests every change: op
   - **One place for settings.** Every app-wide preference (theme, language, background pattern, display modes) and every per-chat choice (who you are, the date format) lives in the Settings screen, `js/components/settings.js` with `css/settings.css`, opened from **Settings** in the ⋮ menu.
   - **No settings in menus or the sidebar.** The ⋮ menu and the side panel hold only actions for the open chat (Media, links and docs, Starred messages, Select messages, Chat statistics, Open another chat, Help). Never put theme or language pickers there.
   - **Text for every setting.** Each new setting adds its words to `js/i18n/en.js`, `js/i18n/ur.js` and `js/i18n/ar.js` (through `t()`), and a row in `Settings.render()`.
-  - **Storage.** Only display preferences go in `localStorage` (`cv-theme`, `app_language`, `cv-doodle`). Nothing from the chat, such as a name, is ever stored.
+  - **Storage.** Only display preferences go in `localStorage` (`cv-theme`, `app_language`, `cv-doodle`), plus nicknames (`chat_nicknames_<id>`) and recent searches (`chat_search_history`), which the maintainer asked to be remembered. No other chat data, such as who you are, is stored.
+  - **Names.** Show a sender through `nick(name)` (`js/components/nicknames.js`) so nicknames apply, but compare and store the exported `m.sender`.
 - **Tests.** Run `node tests/parser.test.js` after any parser change, and add a case for each new export format.
 - **Documentation.** Update it when a task is complete, in the same change as the code:
   - [docs/features.md](docs/features.md) describes only what the app does today. Anything added, changed or removed is added, changed or removed there.
