@@ -132,6 +132,26 @@ mark.cur { background: var(--hl-cur); }
 .samplebar button { border: 0; background: transparent; color: var(--accent-ink); font-weight: 600; cursor: pointer; padding: 4px 6px; }
 .sstrip { flex: none; display: flex; align-items: center; gap: 4px; padding: 6px 8px; background: var(--header); border-top: 1px solid var(--line); z-index: 5; }
 .sstrip .searchbox { flex: 1; background: var(--input); }
+/* Search toggles: Match case, Whole word, Regular expression. On a wide screen they close off the end of
+   the search field; on a phone they get their own row under it, with their names. On = filled green with
+   a green outline; off = a plain grey glyph. */
+.sstrip .count.bad { color: var(--danger); font-weight: 600; }
+.sopts { flex: none; display: flex; align-items: center; gap: 2px; height: 38px; padding-inline: 2px 6px; background: var(--input); border-start-end-radius: 8px; border-end-end-radius: 8px; }
+.sstrip .searchbox { border-start-end-radius: 0; border-end-end-radius: 0; }
+.sopt { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 30px; height: 28px; padding: 0 5px; border: 1.5px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-3); font: inherit; font-size: 13px; cursor: pointer; }
+.sopt .sg { font: 600 13.5px/1 var(--mono); letter-spacing: -.02em; direction: ltr; unicode-bidi: isolate; }
+.sopt .sw { padding: 0 2px 1px; border: 1.5px solid currentColor; border-top: 0; border-radius: 0 0 2px 2px; }
+.sopt .sl { display: none; white-space: nowrap; }
+@media (hover: hover) { .sopt:hover { background: var(--quote); color: var(--ink); } }
+.sopt[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
+.sopt:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+@media (max-width: 600px) {
+  .sstrip { flex-wrap: wrap; row-gap: 6px; }
+  .sstrip .searchbox { min-width: 0; border-radius: 8px; }
+  .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
+  .sopt { height: 30px; padding: 0 10px; border-color: var(--line); background: var(--input); }
+  .sopt .sl { display: inline; }
+}
 /* Recent searches (js/components/search-history.js): a card under the search field, newest first, each with a ✕. */
 .sstrip { position: relative; }
 .shist { position: absolute; top: calc(100% - 2px); inset-inline: 8px; z-index: 20; background: var(--panel); border-radius: 10px; box-shadow: 0 8px 28px var(--shadow); padding: 6px 0; max-width: 560px; }

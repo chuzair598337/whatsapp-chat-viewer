@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Search options: Match case, Whole word and Regex.** Three toggles in the search bar, like a code editor's: **Aa** finds only the same upper and lower case, **ab** finds whole words only (so "develop" no longer finds "developer" or "development", and it works for Urdu and Arabic words too), and **.\*** searches with a regular expression. They combine, and the highlights, the "n of N" counter and ↑ ↓ follow them. An active toggle is filled green with a green outline; an inactive one is a grey glyph. On phones they get their own row under the search field, with their names. `Alt+C`, `Alt+W` and `Alt+R` switch them from the keyboard. An invalid regular expression shows "Invalid pattern" instead of a count. Sample chat: three new messages on 3 April (8:24 to 8:26 AM) from Faisal, Ayesha and Bilal; try `develop` with **ab**, `Develop` with **Aa**, `TRL-\d+` with **.\***, and `سب` with **ab**.
+
 ## 1.8.0 (2026-10-10)
 
 - **Nicknames for anyone in the chat.** Settings → **Participants and nicknames** lists everyone who wrote, each with a nickname field and a **Reset** button that brings back the exported name. A nickname replaces the name everywhere the viewer shows a sender: above messages, avatars, reactions, the side panel, filters, starred messages, statistics, the photo viewer, the gallery, copied messages and a one-to-one chat's title. Search finds people by either name. **Which one is you?**, shown when a chat opens, has a ✎ button in its header that turns the list into optional nickname fields (labelled with each exported name) with **Cancel** and **Save**, so nicknames can be set right away. Nicknames are remembered on this device for that chat only. Sample chat: a new member saved as `+1 555 0142` says "Zain here", so try giving them a nickname.
