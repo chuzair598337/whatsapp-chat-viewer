@@ -9,7 +9,8 @@ These rules apply to everyone changing this repository, people and coding agents
 
 - Everything runs in the browser. No chat text, file name or media may leave the device, whether through `fetch`, XHR, beacons, WebSockets, image pixels, or anything else.
 - Don't add network dependencies: no CDNs, web fonts, analytics or link-preview fetches. Vendor libraries into `js/vendor/` with their license.
-- Don't store chat content. Only display preferences, the interface language (`app_language`) and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [docs/deferred.md](docs/deferred.md).
+- **The one exception is Settings → Online link previews** (`cv-online-links`, off by default, the maintainer's choice on 2026-10-10). Only while it is on, `js/components/link-cards.js` may load titles from a site's own oEmbed service, YouTube thumbnails, and, on a tap, the site's own player for the link being shown. Only the link itself is sent, only to the site it points to; never to a third-party preview service. Each host is allowed by name in the Content-Security-Policy in `index.html`; add a host there only together with its `embedOf` rule.
+- Don't store chat content. Only display preferences (including `cv-online-links`), the interface language (`app_language`) and the `has_completed_walkthrough` flag go in `localStorage`. Starred messages and filters live in memory for the open chat. See [docs/deferred.md](docs/deferred.md).
 - Treat every export as hostile input:
   - Escape text before formatting it.
   - Only link `http(s)`, `tel:` and `mailto:` URLs.

@@ -4,7 +4,7 @@
 
 **Live app:** https://chuzair598337.github.io/whatsapp-chat-viewer/
 
-Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with photos, videos, voice notes, documents, search and statistics. The chat is processed **entirely in your browser**: nothing is uploaded, and the page makes no network requests once it has loaded.
+Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with photos, videos, voice notes, documents, search and statistics. The chat is processed **entirely in your browser**: nothing is uploaded, and the page makes no network requests once it has loaded. The one exception is **Online link previews** in Settings, which is off unless you turn it on: then supported links (YouTube, Instagram, TikTok, Spotify, Google Docs and a few more) can play inside the chat and show their titles, loaded only from the site the link points to.
 
 | Desktop (light) | Phone (dark) |
 |---|---|
@@ -132,7 +132,7 @@ Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing
 
 Notes:
 - The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/select-messages` → `components/settings` → `tour-controller`. Keep that order when adding files.
-- Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`.
+- Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`. The only exception is the opt-in Online link previews in `js/components/link-cards.js` (see PROJECT_RULES.md, section 1).
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
 ## Branching and contributions

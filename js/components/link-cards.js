@@ -207,6 +207,77 @@ function siteOf(x) {
   return { name, color, shown, detail, badge: '<span class="lbadge' + (lightHex(color) ? ' dark' : '') + '" style="background:' + color + '">' + logo + '</span>' };
 }
 
+/* Online link previews, only when the reader turns them on in Settings (cv-online-links, off by default).
+   Then a supported link gets a Play button that loads the site's own player into the card on a tap, YouTube
+   links show their thumbnail, and titles come from the site's own oEmbed service. Nothing goes to any other
+   company, nothing is kept after the page closes, and with the switch off none of this code runs.
+   The hosts are allowed one by one in index.html's Content-Security-Policy. */
+let onlineLinks = store('cv-online-links') === '1';
+const lkRe = (re, s) => { const m = re.exec(s); return m ? m[1] : ''; };
+function embedOf(x) {
+  const host = x.hostname.replace(/^(www|m)\./, ''), p = lkSeg(x), enc = encodeURIComponent(x.href);
+  if (/(^|\.)(youtube\.com|youtu\.be)$/.test(host) && host !== 'music.youtube.com') {
+    const id = host === 'youtu.be' ? p[0] : /^(shorts|live|embed)$/.test(p[0]) ? p[1] : p[0] === 'watch' ? x.searchParams.get('v') : '';
+    if (!id || !/^[\w-]{6,20}$/.test(id)) return null;
+    const start = parseInt(x.searchParams.get('t') || x.searchParams.get('start'), 10);
+    return { src: 'https://www.youtube-nocookie.com/embed/' + id + '?autoplay=1&rel=0' + (start > 0 ? '&start=' + start : ''), ratio: p[0] === 'shorts' ? '9/16' : '16/9', thumb: 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg', oe: 'https://www.youtube.com/oembed?format=json&url=' + enc, act: 'play' };
+  }
+  if (host === 'vimeo.com' && /^\d+$/.test(p[0] || '')) return { src: 'https://player.vimeo.com/video/' + p[0] + '?autoplay=1', ratio: '16/9', oe: 'https://vimeo.com/api/oembed.json?url=' + enc, act: 'play' };
+  if (/(^|\.)instagram\.com$/.test(host)) {
+    const i = p.findIndex(v => /^(p|reel|reels|tv)$/.test(v)), code = i >= 0 ? p[i + 1] : '';
+    if (code && /^[\w-]+$/.test(code)) return { src: 'https://www.instagram.com/' + (p[i] === 'reels' ? 'reel' : p[i]) + '/' + code + '/embed/', h: 620, act: 'post' };
+  }
+  if (host === 'tiktok.com' && p[1] === 'video' && /^\d+$/.test(p[2] || '')) return { src: 'https://www.tiktok.com/player/v1/' + p[2] + '?autoplay=1', ratio: '9/16', oe: 'https://www.tiktok.com/oembed?url=' + enc, act: 'play' };
+  if (host === 'open.spotify.com') {
+    const q = p.filter(v => !/^intl-/.test(v));
+    if (/^(track|album|playlist|episode|show|artist)$/.test(q[0] || '') && /^\w+$/.test(q[1] || '')) return { src: 'https://open.spotify.com/embed/' + q[0] + '/' + q[1], h: /^(track|episode)$/.test(q[0]) ? 152 : 352, oe: 'https://open.spotify.com/oembed?url=' + enc, act: 'listen' };
+  }
+  if (host === 'soundcloud.com' && p.length >= 2) return { src: 'https://w.soundcloud.com/player/?url=' + enc + '&auto_play=true', h: 166, oe: 'https://soundcloud.com/oembed?format=json&url=' + enc, act: 'listen' };
+  if (host === 'dailymotion.com' && p[0] === 'video' && /^\w+$/.test(p[1] || '')) return { src: 'https://www.dailymotion.com/embed/video/' + p[1] + '?autoplay=1', ratio: '16/9', act: 'play' };
+  if (host === 'docs.google.com') {
+    if (/^(document|spreadsheets|presentation)$/.test(p[0]) && p[1] === 'd' && /^[\w-]+$/.test(p[2] || '')) return { src: 'https://docs.google.com/' + p[0] + '/d/' + p[2] + '/preview', h: 440, act: 'doc' };
+    if (p[0] === 'forms' && p[1] === 'd' && p[2] === 'e' && /^[\w-]+$/.test(p[3] || '')) return { src: 'https://docs.google.com/forms/d/e/' + p[3] + '/viewform?embedded=true', h: 520, act: 'doc' };
+  }
+  if (host === 'facebook.com' && (p.includes('videos') || p[0] === 'reel' || (p[0] === 'watch' && x.searchParams.get('v')))) return { src: 'https://www.facebook.com/plugins/video.php?show_text=false&href=' + enc, ratio: p[0] === 'reel' ? '9/16' : '16/9', act: 'play' };
+  return null;
+}
+const LinkOnline = {
+  open: new Set(),   // "message index + link" of players the reader opened
+  titles: new Map(), // link -> title, '' while loading or when there is none
+  key: (i, href) => i + ' ' + href,
+  // Loads a title once per link, then writes it into every card and gallery row that shows the link.
+  title(href, oe) {
+    if (!onlineLinks || !oe || this.titles.has(href)) return this.titles.get(href) || '';
+    this.titles.set(href, '');
+    fetch(oe, { credentials: 'omit', referrerPolicy: 'no-referrer' }).then(r => r.ok ? r.json() : null).then(j => {
+      const tt = j && typeof j.title === 'string' ? j.title.trim().slice(0, 200) : '';
+      if (!tt) return;
+      this.titles.set(href, tt);
+      for (const el of document.querySelectorAll('[data-lt]')) if (el.dataset.lt === href) el.textContent = tt;
+    }).catch(() => {});
+    return '';
+  },
+  set(on) {
+    onlineLinks = on; store('cv-online-links', on ? '1' : '0');
+    if (!on) this.open.clear();
+    if (on) toast.info(t('link.online_on')); else toast.info(t('link.online_off'));
+    if (S.items && S.items.length) { VL.relayout(); VL.refresh(); }
+    if (typeof Gallery !== 'undefined' && !$('galModal').hidden) Gallery.show(Gallery.cat);
+  }
+};
+// The "what it is" part of a Media > Links row, which an online title replaces when it loads.
+function linkDetailHTML(x, s) {
+  const e = onlineLinks ? embedOf(x) : null, tt = e ? LinkOnline.title(x.href, e.oe) : '';
+  return '<span class="gdet"' + (e ? ' data-lt="' + esc(x.href) + '"' : '') + '>' + esc(tt || s.detail) + '</span>';
+}
+function embedHTML(x, e, i) {
+  if (LinkOnline.open.has(LinkOnline.key(i, x.href)))
+    return '<div class="lemb on"><iframe src="' + esc(e.src) + '" style="' + (e.ratio ? 'aspect-ratio:' + e.ratio : 'height:' + e.h + 'px') + '" title="' + esc(t('link.player')) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" loading="lazy"></iframe></div>';
+  const label = t('link.' + e.act);
+  if (e.thumb) return '<div class="lemb"><button class="lplay thumb" data-emb="' + esc(x.href) + '" aria-label="' + esc(label) + '"><img src="' + esc(e.thumb) + '" alt="" loading="lazy" referrerpolicy="no-referrer"><span class="lpbtn">' + ICON.play + '</span></button></div>';
+  return '<div class="lemb"><button class="lplay" data-emb="' + esc(x.href) + '">' + ICON.play + '<span>' + esc(label) + '</span></button></div>';
+}
+
 // Every link in the message gets a card, up to three; more are counted below them.
 const LINK_CARDS_MAX = 3;
 function linksIn(text) {
@@ -214,22 +285,38 @@ function linksIn(text) {
   for (const u of urlsIn(text)) { const x = safeUrl(u); if (x && !urls.some(u => u.href === x.href)) urls.push(x); }
   return urls;
 }
-function linkCards(text) {
+function linkCards(text, i) {
   const urls = linksIn(text);
   if (!urls.length) return '';
   const cards = urls.slice(0, LINK_CARDS_MAX).map(x => {
-    const s = siteOf(x);
-    return '<div class="lcard"><a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer">' + s.badge +
-      '<span class="ltxt"><b>' + esc(s.name) + '</b>' + (s.detail ? '<span class="ldet" dir="auto">' + esc(s.detail) + '</span>' : '') + '<small title="' + esc(x.href) + '">' + esc(s.shown) + '</small></span></a>' +
+    const s = siteOf(x), e = onlineLinks ? embedOf(x) : null, tt = e ? LinkOnline.title(x.href, e.oe) : '';
+    return '<div class="lcard' + (e ? ' emb' : '') + '">' + (e ? embedHTML(x, e, i) : '') + '<a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer">' + s.badge +
+      '<span class="ltxt"><b>' + esc(s.name) + '</b>' + (s.detail || e ? '<span class="ldet" dir="auto"' + (e ? ' data-lt="' + esc(x.href) + '"' : '') + '>' + esc(tt || s.detail) + '</span>' : '') + '<small title="' + esc(x.href) + '">' + esc(s.shown) + '</small></span></a>' +
       '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + ICON.copy + '</button></div>';
   }).join('');
   const more = urls.length - LINK_CARDS_MAX;
   return cards + (more > 0 ? '<div class="lmore">' + (more === 1 ? t('link.more_one') : t('link.more', { n: more })) + '</div>' : '');
 }
 // Height of a message's link cards, for the virtual list's first guess (rows are measured once shown).
-function linkCardsH(text) {
+function linkCardsH(text, i) {
   const urls = linksIn(text), n = Math.min(urls.length, LINK_CARDS_MAX);
   let h = 0;
-  for (let k = 0; k < n; k++) h += siteOf(urls[k]).detail ? 72 : 58;
+  for (let k = 0; k < n; k++) {
+    const e = onlineLinks ? embedOf(urls[k]) : null;
+    h += siteOf(urls[k]).detail || e ? 72 : 58;
+    if (e) h += LinkOnline.open.has(LinkOnline.key(i, urls[k].href)) ? (e.h || (e.ratio === '16/9' ? 169 : 533)) : e.thumb ? 169 : 40;
+  }
   return h + (urls.length > LINK_CARDS_MAX ? 18 : 0);
 }
+// A tap on Play swaps the button for the site's player, in this message only.
+layer.addEventListener('click', e => {
+  const b = e.target.closest('.lplay');
+  if (!b || !onlineLinks) return;
+  const row = b.closest('[data-i]'), k = row ? +row.dataset.i : -1, it = S.items[k];
+  if (!it) return;
+  LinkOnline.open.add(LinkOnline.key(it.i, b.dataset.emb));
+  const el = rerenderRow(k), f = el && el.querySelector('.lemb.on iframe');
+  if (f) f.focus();
+});
+// A thumbnail that can't load leaves the dark box with its play button, not a broken picture.
+layer.addEventListener('error', e => { const img = e.target; if (img.tagName === 'IMG' && img.closest('.lplay.thumb')) img.style.visibility = 'hidden'; }, true);

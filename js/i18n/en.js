@@ -378,7 +378,14 @@ I18N.add('en-US', {
   "link": {
     "copy": "Copy link",
     "more": "+ {n} more links in this message",
-    "more_one": "+ 1 more link in this message"
+    "more_one": "+ 1 more link in this message",
+    "play": "Play here",
+    "post": "Show post here",
+    "listen": "Listen here",
+    "doc": "Show document here",
+    "player": "Player from the linked site",
+    "online_on": "Online link previews are on. Supported links load titles and players from their own sites.",
+    "online_off": "Online link previews are off. Nothing is loaded from the internet."
   },
   "dl": {
     "blocked": "This preview can't save .{ext} files. It downloads normally in the full viewer (the website, or index.html on your device).",
@@ -614,7 +621,9 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language and background pattern are remembered on this device. Who you are and the date format apply to the open chat only."
+    "saved_note": "The theme, language, background pattern and online link previews are remembered on this device. Who you are and the date format apply to the open chat only.",
+    "online_links": "Online link previews",
+    "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites."
   },
   "mm": {
     "menu": "Message options",

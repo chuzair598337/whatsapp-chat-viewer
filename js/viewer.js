@@ -395,7 +395,7 @@ function estimate(it, W) {
       else { const e = Media.get(a.name); h += extOf(a.name) === 'pdf' && !PdfView.failed.has(e ? e.name : a.name) ? 66 + 146 : 66; } // failed is keyed by the ZIP's file name
     } else h += 74;
   }
-  if (it.hasLink) h += it.linkH !== undefined ? it.linkH : (it.linkH = linkCardsH(m.message));
+  if (it.hasLink) h += linkCardsH(m.message, it.i);
   else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
@@ -1074,7 +1074,7 @@ function makeRow(it, idx) {
     if (m.message && m.kind !== 'poll' && m.kind !== 'call') {
       const sv = shownText(it); endTxt = sv.text; const btn = (label, open) => '<button class="read-more-btn" data-more="' + it.i + '" aria-expanded="' + open + '">' + label + '</button>';
       const more = sv.state === 'collapsed' ? '<span class="rm-tail">…' + btn(t('message.read_more'), false) + '</span>' : sv.state === 'expanded' ? '<div class="rm-less">' + btn(t('message.show_less'), true) + '</div>' : '';
-      body += '<div dir="auto" class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message) + '<div class="mline"></div>' : '');
+      body += '<div dir="auto" class="txt' + (it.jumbo ? ' jumbo' : '') + (sv.state ? ' trunc' : '') + '">' + hl(formatText(sv.text), it.i) + more + (it.hasLink ? '' : space) + '</div>' + (it.hasLink ? linkCards(m.message, it.i) + '<div class="mline"></div>' : '');
     }
     else body += '<div class="mline"></div>';
   }

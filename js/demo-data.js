@@ -70,6 +70,7 @@ const SAMPLE = [
   `[02/04/2026, 8:12:05${N}PM] Ayesha Khan: Kit list https://docs.google.com/spreadsheets/d/1DemoKitList/edit and the sign-up form https://forms.gle/DemoSignup1`,
   `Permits from the parks office https://parks.example.gov.pk/permits`,
   `[02/04/2026, 8:13:30${N}PM] Sara Malik: Club updates are on our channel https://whatsapp.com/channel/0029DemoHikingCrew and photos at https://share.google/DemoAlbum123 https://1drv.ms/x/s!DemoBudget https://bit.ly/demo-trail`,
+  `[02/04/2026, 8:14:10${N}PM] Omar Farooq: Road trip playlist https://open.spotify.com/playlist/0DemoTrailMix2026xyz and the summit timelapse https://www.tiktok.com/@trailcrew.demo/video/7300000000000000001`,
   // April: ten more members join, so "Which one is you?" gets its name filter (more than 12 people).
   `[03/04/2026, 8:00:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added Hamza Iqbal, Zainab Raza, Usman Tariq, Mariam Siddiqui, Faisal Qureshi, Hina Aslam, Kamran Shah, Nida Hussain, Imran Javed and Sana Mirza`,
   // An iPhone admin event is "sent" by the admin; the chat's name must still come from the group, not from Ayesha.
