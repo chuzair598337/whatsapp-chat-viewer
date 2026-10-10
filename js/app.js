@@ -401,10 +401,14 @@ function renderStars() {
 }
 function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
 function closeStars() { $('starPanel').hidden = true; document.body.classList.remove('stars-open'); }
-function jumpToMsg(i) {
+// focus: also move keyboard focus to the message (used after a dialog such as the media gallery closes).
+function jumpToMsg(i, focus) {
   if (S.m2i[i] < 0) clearFilters();
   VL.clear(); VL.scrollTo(S.m2i[i], 'center');
-  const el = VL.nodes.get(S.m2i[i]); if (el) el.classList.add('flash');
+  const el = VL.nodes.get(S.m2i[i]);
+  if (!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); // restarts the flash if it just ran
+  if (focus) { if (!el.hasAttribute('tabindex')) el.tabIndex = -1; el.focus({ preventScroll: true }); }
 }
 $('starBtn').onclick = () => { if ($('starPanel').hidden) openStars(); else closeStars(); };
 $('starClose').onclick = closeStars;

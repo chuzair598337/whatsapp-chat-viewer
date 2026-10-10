@@ -173,7 +173,13 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
   - links: site badge, site name, address, the message text around the link, copy and open buttons;
   - contacts: the contact card with **View contact** and **Save .vcf**.
 - **Sort:** the sort button in the gallery header opens a pick sheet: newest first (the default), oldest first, name A–Z, name Z–A, largest first and smallest first. Size isn't offered for links. Month headings show only for the date sorts. Names sort with the interface language's collation, numbers in order (IMG-2 before IMG-10).
-- Every row has a **Show in chat** button that closes the gallery and jumps to the message.
+- **Item options** (`js/components/gallery-menu.js`): long-press an item on a phone, right-click it on a computer, press its ⋮ button (on every row, and on a grid tile when you hover or focus it), or press `Shift+F10` on a focused item. The menu starts with the sender, date, time, size and file name (or the link), then offers, by type:
+  - **Go to message** on every item: closes the gallery and scrolls the chat to the message, which flashes and gets keyboard focus. A date or sender filter that hides it is cleared first;
+  - **View** for photos, GIFs, videos and stickers; **Open** for documents (PDFs in the PDF viewer); **Play** or **Pause** for audio; **View contact** for contacts; **Open link** for links;
+  - **Star** or **Unstar** the message. Items of a starred message show a small star on their tile or next to their date;
+  - **Copy caption** when the message has text, **Copy contact details** for contacts, **Copy link** for links;
+  - **Download** for files, and **Share** where the browser has a share sheet.
+- The photo viewer has a **Go to message** button too, opened from the gallery or the chat.
 - Only files that are in the export are listed. A category with nothing in it says so ("No videos in this chat"); for a `.txt`-only import it suggests opening the ZIP export instead.
 - Items are added 120 at a time as you scroll, so chats with thousands of files stay smooth.
 
@@ -189,7 +195,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - **Keyboard shortcuts:**
   - `/` or `Ctrl/Cmd+F` opens search. `/` is ignored while you're typing in a field.
   - `Esc`: in the search field it clears the text, then closes the bar. Elsewhere it closes, in order, the dialog on top (a pick sheet before the gallery under it), the starred panel, the search bar and the drawer. It also closes the ⋮ menu and the message menu.
-  - `Shift+F10` or the menu key on a focused message opens its message menu.
+  - `Shift+F10` or the menu key on a focused message opens its message menu, and on a focused gallery item opens its options.
   - In the photo viewer: `+`, `-`, `0`, `R`, arrow keys and `Esc`. In the PDF viewer: `+`, `-`, `0` and `Esc`.
 
 ## 8. Statistics

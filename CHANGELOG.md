@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- **Options for each item in Media, links and docs.** Long-press an item on a phone, right-click it on a computer, press its ⋮ button or use Shift+F10. The menu shows who sent it, when, its size and file name, and offers:
+  - **Go to message**, which closes the gallery, scrolls the chat to that message and flashes it (clearing a filter that hides it);
+  - **View**, **Open**, **Play/Pause**, **View contact** or **Open link**, by type;
+  - **Star / Unstar** the message, with a small star on the items of starred messages;
+  - **Copy caption**, **Copy contact details** or **Copy link**;
+  - **Download**, and **Share** where the browser supports it.
+- The rows' separate **Show in chat** button is now **Go to message** in that menu.
+- **Go to message in the photo viewer:** a new button in its top bar closes the viewer (and the gallery) and jumps to the photo's message.
+- Sample chat: a captioned group photo from Kamran Shah (3 April), to try the options and Copy caption.
+
 ## 1.7.0 (2026-10-07)
 
 - **Urdu in the chat uses the Urdu font in every language.** Any Urdu line in a message, a sender name, the chat title or a system notice is drawn in Jameel Noori Nastaleeq when it is installed, else the bundled Noto Nastaliq Urdu, also when the interface is in English or Arabic.

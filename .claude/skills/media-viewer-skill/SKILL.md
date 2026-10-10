@@ -20,6 +20,7 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 | Files the browser can't decode: `Media.bad` / `Media.cantShow`, the "Can't show this file here" card | `js/media.js`, `js/viewer.js` (`cantShowHTML`) |
 | Media, links and docs gallery, its sorting | `js/components/media-gallery.js` |
 | Message menu: View photo, Open document, Download, Share | `js/components/message-menu.js` |
+| Gallery item options (Go to message, View, Star, Copy, Download, Share) and the photo viewer's Go to message button | `js/components/gallery-menu.js` |
 
 ## Lookup and lifetime
 
