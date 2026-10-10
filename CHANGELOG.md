@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.8.0 (2026-10-10)
 
 - **Nicknames for anyone in the chat.** Settings → **Participants and nicknames** lists everyone who wrote, each with a nickname field and a **Reset** button that brings back the exported name. A nickname replaces the name everywhere the viewer shows a sender: above messages, avatars, reactions, the side panel, filters, starred messages, statistics, the photo viewer, the gallery, copied messages and a one-to-one chat's title. Search finds people by either name. **Which one is you?**, shown when a chat opens, has a ✎ button in its header that turns the list into optional nickname fields (labelled with each exported name) with **Cancel** and **Save**, so nicknames can be set right away. Nicknames are remembered on this device for that chat only. Sample chat: a new member saved as `+1 555 0142` says "Zain here", so try giving them a nickname.
 - **Recent searches.** Focusing the search bar shows your last 7 searches under it, newest first, narrowing as you type. Click one to run it again, its ✕ to remove just that one, or **Clear all** to remove every search after you confirm (↓ ↑ and `Delete` work from the keyboard, `Esc` closes the list). Searches are saved when you press Enter or use the ↑ ↓ buttons, and kept on this device.
