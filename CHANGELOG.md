@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Link cards with official logos.** Links in the chat and in Media > Links now show the site's real logo on its brand colour for about 100 widely used sites (YouTube, TikTok, Instagram, Facebook, X, WhatsApp, Telegram, Google, Maps, Drive, Docs, Sheets, Slides, Forms, Meet, Gmail, Spotify, GitHub, Wikipedia, Zoom and more), bundled from Simple Icons (CC0), so nothing is fetched. Sites with no free-to-use logo (Microsoft Excel, Word, PowerPoint, OneDrive, Teams, LinkedIn, Amazon, Canva, ChatGPT, Daraz) get a plain icon in their brand colour, and government and university sites get their own icons.
+- **Each card says what the link is,** worked out from the address: a YouTube Short, an Instagram reel, a TikTok video by @name, a WhatsApp channel or group invite, a Google search, a OneDrive folder, a short link and so on. Media > Links shows the same next to the site's name.
+- **Every link in a message gets its own card,** up to three, instead of only the first.
+- Sample chat: new messages on 2 April (from Omar, Bilal, Ayesha and Sara) with YouTube Shorts, TikTok, Instagram, Google Sheets and Forms, a `.gov.pk` site, a WhatsApp channel, a share.google link, OneDrive Excel and bit.ly links.
+
 ## 1.7.0 (2026-10-07)
 
 - **Urdu in the chat uses the Urdu font in every language.** Any Urdu line in a message, a sender name, the chat title or a system notice is drawn in Jameel Noori Nastaleeq when it is installed, else the bundled Noto Nastaliq Urdu, also when the interface is in English or Arabic.

@@ -166,8 +166,8 @@ function rowHTML(it, k) {
   const m = S.msgs[it.i], when = '<small class="gwhen">' + esc(galWhen(m)) + '</small>';
   if (it.cat === 'links') {
     const s = siteOf(it.x), ctx = m.message.replace(RE_URL, ' ').replace(/\s+/g, ' ').trim();
-    return '<div class="grow glink"><span class="lbadge" style="background:' + s.color + '">' + esc((s.name[0] || '?').toUpperCase()) + '</span>' +
-      '<span class="gtxt"><b>' + esc(s.name) + '</b><a href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(it.x.href) + '">' + esc(s.shown) + '</a>' +
+    return '<div class="grow glink">' + s.badge +
+      '<span class="gtxt"><b>' + esc(s.name) + (s.detail ? ' · ' + esc(s.detail) : '') + '</b><a href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(it.x.href) + '">' + esc(s.shown) + '</a>' +
       (ctx ? '<small dir="auto" class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' +
       '<span class="gacts"><button class="ibtn sm lcopy" data-url="' + esc(it.x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + galSm('copy') + '</button>' +
       '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>' + jumpBtn(it.i) + '</span></div>';

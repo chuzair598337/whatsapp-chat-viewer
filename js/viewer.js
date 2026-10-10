@@ -395,7 +395,7 @@ function estimate(it, W) {
       else { const e = Media.get(a.name); h += extOf(a.name) === 'pdf' && !PdfView.failed.has(e ? e.name : a.name) ? 66 + 146 : 66; } // failed is keyed by the ZIP's file name
     } else h += 74;
   }
-  if (it.hasLink) h += 70;
+  if (it.hasLink) h += it.linkH !== undefined ? it.linkH : (it.linkH = linkCardsH(m.message));
   else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
@@ -840,33 +840,9 @@ function attHTML(a, m) {
     '<span class="alert">' + ICON.warn + esc(alert) + '</span></span></div>';
 }
 
-/* Link preview cards: built only from the URL itself (no fetching), with a local site badge. */
-const SITES = [
-  [/(^|\.)(youtube\.com|youtu\.be)$/, 'YouTube', '#d4181f'], [/(^|\.)github\.com$/, 'GitHub', '#24292f'], [/(^|\.)(twitter\.com|x\.com)$/, 'X (Twitter)', '#14171a'],
-  [/(^|\.)instagram\.com$/, 'Instagram', '#c13584'], [/(^|\.)(facebook\.com|fb\.watch|fb\.com)$/, 'Facebook', '#1877f2'], [/(^|\.)linkedin\.com$/, 'LinkedIn', '#0a66c2'],
-  [/(^|\.)tiktok\.com$/, 'TikTok', '#111111'], [/(^|\.)wikipedia\.org$/, 'Wikipedia', '#54595d'], [/(^|\.)reddit\.com$/, 'Reddit', '#e0410b'],
-  [/(^|\.)spotify\.com$/, 'Spotify', '#1a9e4b'], [/^chat\.whatsapp\.com$/, 'site.wa_group', '#128c7e'], [/(^|\.)wa\.me$/, 'site.wa_chat', '#128c7e'],
-  [/^(maps\.google\.[a-z.]+|maps\.app\.goo\.gl|goo\.gl)$/, 'Google Maps', '#1e8e3e'], [/^(docs|drive)\.google\.com$/, 'Google Docs', '#1a73e8'],
-  [/(^|\.)amazon\.[a-z.]+$/, 'Amazon', '#b86e00'], [/(^|\.)t\.me$/, 'Telegram', '#2481cc'], [/(^|\.)stackoverflow\.com$/, 'Stack Overflow', '#d16a14'],
-];
+// Link cards and site badges are in js/components/link-cards.js.
 function safeUrl(u) {
   try { const x = new URL(/^www\./i.test(u) ? 'https://' + u : u); return x.protocol === 'http:' || x.protocol === 'https:' ? x : null; } catch (e) { return null; }
-}
-// The site's name and badge colour, and a short address, all worked out from the URL itself.
-function siteOf(x) {
-  const host = x.hostname.replace(/^www\./, ''), site = SITES.find(sv => sv[0].test(host));
-  const shown = (host + x.pathname + x.search).replace(/\/$/, '');
-  return { name: site ? (/^site\./.test(site[1]) ? t(site[1]) : site[1]) : host, color: site ? site[2] : 'var(--n' + colorIdx(host) + ')', shown: shown.length > 70 ? shown.slice(0, 68) + '…' : shown };
-}
-function linkCards(text) {
-  const urls = [];
-  for (const u of urlsIn(text)) { const x = safeUrl(u); if (x && !urls.some(u => u.href === x.href)) urls.push(x); }
-  if (!urls.length) return '';
-  const x = urls[0], { name, color, shown } = siteOf(x);
-  return '<div class="lcard"><a class="lmain" href="' + esc(x.href) + '" target="_blank" rel="noopener noreferrer"><span class="lbadge" style="background:' + color + '">' + esc((name[0] || '?').toUpperCase()) + '</span>' +
-    '<span class="ltxt"><b>' + esc(name) + '</b><small title="' + esc(x.href) + '">' + esc(shown) + '</small></span></a>' +
-    '<button class="lcopy" data-url="' + esc(x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + ICON.copy + '</button></div>' +
-    (urls.length > 1 ? '<div class="lmore">' + t('link.more', { n: urls.length - 1 }) + '</div>' : '');
 }
 /* System notices are grouped like WhatsApp shows them: the encryption and business notices on yellow,
    security-code changes and disappearing-message timers with an icon, and group changes as plain pills. */

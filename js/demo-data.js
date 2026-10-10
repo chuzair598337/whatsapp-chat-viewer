@@ -64,6 +64,12 @@ const SAMPLE = [
   `[02/04/2026, 7:45:30${N}PM] Sara Malik: Scouting photo for April's trail. Route details: https://www.alltrails.com/trail/ridge-loop`,
   `[02/04/2026, 7:46:02${N}PM] Sara Malik: Parking for the ridge loop is behind the tea stall`,
   `Bring coins for the meter ${L}<attached: 00000034-PHOTO-2026-04-02-19-46-02.jpg>`,
+  // Links to well-known sites get their logo and say what they point to, worked out from the address alone.
+  `[02/04/2026, 8:10:15${N}PM] Omar Farooq: Ridge loop drone clip https://youtube.com/shorts/rdgLoop2026 and the full ride https://vt.tiktok.com/ZSdemo123/`,
+  `[02/04/2026, 8:11:40${N}PM] Bilal Ahmed: Same trail on Insta https://www.instagram.com/reel/DemoReel2026/?igsh=ZGVtbw==`,
+  `[02/04/2026, 8:12:05${N}PM] Ayesha Khan: Kit list https://docs.google.com/spreadsheets/d/1DemoKitList/edit and the sign-up form https://forms.gle/DemoSignup1`,
+  `Permits from the parks office https://parks.example.gov.pk/permits`,
+  `[02/04/2026, 8:13:30${N}PM] Sara Malik: Club updates are on our channel https://whatsapp.com/channel/0029DemoHikingCrew and photos at https://share.google/DemoAlbum123 https://1drv.ms/x/s!DemoBudget https://bit.ly/demo-trail`,
   // April: ten more members join, so "Which one is you?" gets its name filter (more than 12 people).
   `[03/04/2026, 8:00:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added Hamza Iqbal, Zainab Raza, Usman Tariq, Mariam Siddiqui, Faisal Qureshi, Hina Aslam, Kamran Shah, Nida Hussain, Imran Javed and Sana Mirza`,
   // An iPhone admin event is "sent" by the admin; the chat's name must still come from the group, not from Ayesha.
