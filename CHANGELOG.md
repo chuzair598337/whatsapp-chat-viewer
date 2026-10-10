@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.9.0 (2026-10-10)
 
 - **Search text is selected after a search,** found or not, so typing again starts a new search without clearing the field first: after Enter, after picking a recent search, and when you click or tab back into the field. It isn't selected while you type.
 - **Search options: Match case, Whole word and Regex.** Three toggles in the search bar, like a code editor's: **Aa** finds only the same upper and lower case, **ab** finds whole words only (so "develop" no longer finds "developer" or "development", and it works for Urdu and Arabic words too), and **.\*** searches with a regular expression. They combine, and the highlights, the "n of N" counter and ↑ ↓ follow them. An active toggle is filled green with a green outline; an inactive one is a grey glyph. On phones they get their own row under the search field, with their names. `Alt+C`, `Alt+W` and `Alt+R` switch them from the keyboard. An invalid regular expression shows "Invalid pattern" instead of a count. Sample chat: three new messages on 3 April (8:24 to 8:26 AM) from Faisal, Ayesha and Bilal; try `develop` with **ab**, `Develop` with **Aa**, `TRL-\d+` with **.\***, and `سب` with **ab**.
