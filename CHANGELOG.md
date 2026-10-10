@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Voice notes and audio files play on iPhone again.** iPhone Safari would show the pause button but stay at 0:00 with no sound and a `–:––` length. The player now checks that playback really starts; if it doesn't within 2.5 seconds, or the browser can't play the format, the note is decoded and played through Web Audio (same seek, pause and speed controls), and every later note goes straight to Web Audio. Voice-note lengths now show before the first play on iPhone too, taken from the decoded waveform. The sample chat has a second voice note (Omar Farooq, 9:16 AM 16 March) to test switching between notes.
+
 ## 1.7.0 (2026-10-07)
 
 - **Urdu in the chat uses the Urdu font in every language.** Any Urdu line in a message, a sender name, the chat title or a system notice is drawn in Jameel Noori Nastaleeq when it is installed, else the bundled Noto Nastaliq Urdu, also when the interface is in English or Arabic.

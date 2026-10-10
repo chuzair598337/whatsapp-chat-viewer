@@ -168,49 +168,155 @@ async function nativeArchive(file) {
   return { names: [...z.entries.keys()], extract: p => z.extract(p) };
 }
 
-/* One shared <audio> element drives every voice-note player, so playback survives row recycling. */
+/* One shared <audio> element drives every voice-note player, so playback survives row recycling.
+   iPhone Safari sometimes accepts play() on a Blob URL and then never starts (stuck at 0:00, no sound),
+   while Web Audio decodes the same file fine. So a watchdog checks that playback really moves; if it
+   doesn't (or the format can't be played), the note is decoded and played through Web Audio instead. */
 const AudioCtl = {
   el: null, name: null, rate: 1, dur: new Map(), failed: new Set(),
+  wa: null, waOnly: false, watch: 0, tick: 0, cache: null, at: null,
   audio() {
     if (this.el) return this.el;
     const a = this.el = new Audio();
     a.preload = 'metadata';
-    a.addEventListener('timeupdate', () => this.paint());
+    a.addEventListener('timeupdate', () => { if (a.currentTime > 0) clearTimeout(this.watch); this.paint(); });
     a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration)) this.dur.set(this.name, a.duration); this.paint(); });
     a.addEventListener('play', () => this.paint());
     a.addEventListener('pause', () => this.paint());
-    a.addEventListener('ended', () => { a.currentTime = 0; this.paint(); });
-    a.addEventListener('error', () => { if (this.name && a.getAttribute('src')) { this.failed.add(this.name); this.paint(); } });
+    a.addEventListener('ended', () => { clearTimeout(this.watch); a.currentTime = 0; this.paint(); });
+    a.addEventListener('error', () => { if (this.name && a.getAttribute('src') && !this.wa) this.fallback(false); });
     return a;
+  },
+  ctx() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    return AC ? (Waves.ctx = Waves.ctx || new AC()) : null;
+  },
+  // Called inside the tap, the only moment iPhone Safari lets a page start sound.
+  unlock() {
+    try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (err) { /* ignore */ }
+    const c = this.ctx();
+    if (c && c.state !== 'running') c.resume().catch(() => {});
   },
   toggle(name, at) {
     const e = Media.get(name);
     if (!e) return;
-    const a = this.audio();
+    this.unlock();
     if (this.name !== name) {
       const prev = this.name;
-      a.pause(); pauseVideos(); this.name = name; a.src = e.url; a.playbackRate = this.rate;
+      this.halt(); pauseVideos(); this.name = name; this.at = at; this.failed.delete(name);
       this.paintFor(prev);
+      if (this.waOnly) { this.waPlay(e, at); return; }
+      const a = this.audio();
+      a.src = e.url; a.playbackRate = this.rate;
       if (at != null) a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration)) a.currentTime = at * a.duration; }, { once: true });
-      a.play().catch(() => {});
+      this.start();
       return;
     }
+    if (this.wa) {
+      if (at != null) this.waSeek(at);
+      else if (this.wa.playing) this.waPause();
+      else { pauseVideos(); this.waResume(); }
+      return;
+    }
+    const a = this.audio();
     if (at != null) { if (isFinite(a.duration)) a.currentTime = at * a.duration; return; }
-    if (a.paused) { pauseVideos(); a.play().catch(() => {}); } else a.pause();
+    if (a.paused) { pauseVideos(); this.start(); } else this.pause();
   },
-  speed() { this.rate = this.rate === 1 ? 1.5 : this.rate === 1.5 ? 2 : 1; if (this.el) this.el.playbackRate = this.rate; document.querySelectorAll('.aplayer').forEach(n => this.paintNode(n)); },
-  stop() { if (this.el) { this.el.pause(); this.el.removeAttribute('src'); this.el.load(); } this.name = null; this.dur.clear(); this.failed.clear(); },
+  // Plays the <audio> element and arms the watchdog.
+  start() {
+    const a = this.el, name = this.name, t0 = a.currentTime;
+    a.play().catch(err => { if (err && err.name === 'NotSupportedError' && this.name === name && !this.wa) this.fallback(false); });
+    clearTimeout(this.watch);
+    this.watch = setTimeout(() => { if (this.name === name && !this.wa && a.currentTime <= t0 + 0.05) this.fallback(true); }, 2500);
+  },
+  // stalled: playback never moved, so this browser's <audio> is unreliable; play every later note with Web Audio too.
+  fallback(stalled) {
+    const e = Media.get(this.name), a = this.el, at = a.currentTime || 0;
+    clearTimeout(this.watch);
+    a.pause(); a.removeAttribute('src'); a.load();
+    if (stalled) this.waOnly = true;
+    if (e) this.waPlay(e, at ? null : this.at, at);
+  },
+  pause() {
+    clearTimeout(this.watch);
+    if (this.wa) { if (this.wa.playing) this.waPause(); } else if (this.el && !this.el.paused) this.el.pause();
+  },
+  halt() {
+    clearTimeout(this.watch);
+    if (this.el) this.el.pause();
+    if (this.wa) { this.waKill(); this.wa = null; }
+  },
+  async decode(e) {
+    if (this.cache && this.cache.e === e) return this.cache.buf;
+    const c = this.ctx(), ab = await e.blob.arrayBuffer();
+    const buf = await new Promise((ok, no) => { const p = c.decodeAudioData(ab, ok, no); if (p && p.catch) p.catch(no); });
+    this.cache = { e, buf };
+    return buf;
+  },
+  // Web Audio playback; frac is a position from 0 to 1, sec a position in seconds.
+  async waPlay(e, frac, sec) {
+    const name = this.name, w = this.wa = { name, buf: null, src: null, start: 0, off: sec || 0, frac, playing: true };
+    this.paint();
+    try {
+      if (!this.ctx() || e.size > 40e6) throw new Error('unplayable');
+      const buf = await this.decode(e);
+      if (this.wa !== w) return;
+      w.buf = buf; this.dur.set(name, buf.duration);
+      if (w.frac != null) w.off = w.frac * buf.duration;
+      if (w.playing) this.waStart(); else this.paint();
+    } catch (err) {
+      if (this.wa !== w) return;
+      this.wa = null; this.failed.add(name); this.paint();
+    }
+  },
+  waStart() {
+    const w = this.wa, c = this.ctx();
+    if (c.state !== 'running') c.resume().catch(() => {});
+    if (w.off >= w.buf.duration - 0.05) w.off = 0;
+    const s = c.createBufferSource();
+    s.buffer = w.buf; s.playbackRate.value = this.rate; s.connect(c.destination);
+    s.onended = () => { if (w.src !== s) return; w.src = null; w.playing = false; w.off = 0; this.stopTick(); this.paint(); };
+    s.start(0, w.off);
+    w.src = s; w.start = c.currentTime; w.playing = true;
+    clearInterval(this.tick); this.tick = setInterval(() => this.paint(), 200);
+    this.paint();
+  },
+  waNow() { const w = this.wa; return !w ? 0 : w.src ? Math.min(w.buf.duration, w.off + (this.ctx().currentTime - w.start) * this.rate) : w.off; },
+  waKill() {
+    const w = this.wa;
+    if (w && w.src) { const s = w.src; w.src = null; try { s.stop(); } catch (err) { /* already stopped */ } s.disconnect(); }
+    this.stopTick();
+  },
+  stopTick() { clearInterval(this.tick); this.tick = 0; },
+  waPause() { const w = this.wa; w.off = this.waNow(); w.playing = false; this.waKill(); this.paint(); },
+  waResume() { const w = this.wa; w.playing = true; if (w.buf) this.waStart(); else this.paint(); },
+  waSeek(frac) {
+    const w = this.wa;
+    if (!w.buf) { w.frac = frac; return; }
+    const was = w.playing; this.waKill(); w.off = frac * w.buf.duration;
+    if (was) this.waStart(); else this.paint();
+  },
+  speed() {
+    const w = this.wa;
+    if (w && w.src) { w.off = this.waNow(); w.start = this.ctx().currentTime; }
+    this.rate = this.rate === 1 ? 1.5 : this.rate === 1.5 ? 2 : 1;
+    if (this.el) this.el.playbackRate = this.rate;
+    if (w && w.src) w.src.playbackRate.value = this.rate;
+    document.querySelectorAll('.aplayer').forEach(n => this.paintNode(n));
+  },
+  stop() { this.halt(); if (this.el) { this.el.removeAttribute('src'); this.el.load(); } this.name = null; this.cache = null; this.dur.clear(); this.failed.clear(); },
   fmt(s) { if (!isFinite(s)) return '–:––'; s = Math.floor(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); },
   paintFor(name) { if (name) document.querySelectorAll('.aplayer[data-audio="' + CSS.escape(name) + '"]').forEach(n => this.paintNode(n)); },
   paint() { this.paintFor(this.name); },
   paintNode(n) {
-    const name = n.dataset.audio, a = this.el, cur = !!a && name === this.name;
-    const playing = cur && !a.paused;
+    const name = n.dataset.audio, a = this.el, w = this.wa, cur = name === this.name && (!!w || !!a);
+    const playing = cur && (w ? w.playing : !a.paused);
     const btn = n.querySelector('.aplay');
     btn.innerHTML = playing ? ICON.pause : ICON.play;
     btn.setAttribute('aria-label', playing ? t('audio.pause') : t('audio.play'));
-    const d = cur && isFinite(a.duration) ? a.duration : this.dur.get(name);
-    const at = cur ? a.currentTime : 0;
+    const cd = !cur ? NaN : w ? (w.buf ? w.buf.duration : NaN) : a.duration;
+    const d = isFinite(cd) ? cd : this.dur.get(name);
+    const at = !cur ? 0 : w ? this.waNow() : a.currentTime;
     const frac = d ? at / d : 0;
     const sk = n.querySelector('.aseek');
     if (sk) sk.value = Math.round(frac * 1000);

@@ -56,6 +56,7 @@ const SAMPLE = [
   `[16/03/2026, 9:02:44${N}AM] Ayesha Khan: ${L}Voice call, ${L}12 min`,
   `[16/03/2026, 9:15:10${N}AM] Ayesha Khan: Same time next month? 🗓️`,
   `[16/03/2026, 9:16:03${N}AM] Sara Malik: ${L}<attached: 00000030-AUDIO-2026-03-16-09-16-03.opus>`,
+  `[16/03/2026, 9:16:12${N}AM] Omar Farooq: ${L}<attached: 00000040-AUDIO-2026-03-16-09-16-12.opus>`,
   `[16/03/2026, 9:16:20${N}AM] Bilal Ahmed: ${L}<attached: 00000031-Trail-playlist.mp3>`,
   `[16/03/2026, 9:16:45${N}AM] Bilal Ahmed: ${L}<attached: 00000032-Margalla Park Rangers.vcf>`,
   `[16/03/2026, 9:16:52${N}AM] Bilal Ahmed: Ranger desk number, in case anyone gets lost next time`,
@@ -169,6 +170,7 @@ async function makeSampleMedia() {
   staged.set('stk', ['00000019-STICKER-2026-03-15-11-49-30.webp', webp]);
   staged.set('pdf', ['00000026-Trail-notes.pdf', makePdf(['Trail 5 notes', 'Distance: 11.4 km', 'Moving time: 3 h 52 min', 'Elevation gain: 720 m', 'Water used: about 1.6 L each', 'Next time: start 30 minutes earlier'])]);
   staged.set('voice', ['00000030-AUDIO-2026-03-16-09-16-03.opus', makeWav(6)]);
+  staged.set('voice2', ['00000040-AUDIO-2026-03-16-09-16-12.opus', makeWav(3)]); // a second note, to switch between players
   staged.set('song', ['00000031-Trail-playlist.mp3', makeWav(9)]);
   staged.set('vcf', ['00000032-Margalla Park Rangers.vcf', new Blob([['BEGIN:VCARD', 'VERSION:3.0', 'N:;Margalla Park Rangers;;;', 'FN:Margalla Park Rangers',
     'ORG:Margalla Park Rangers', 'TEL;type=WORK;type=VOICE;waid=15550100:+1 555 0100', 'EMAIL;type=WORK:desk@rangers.example', 'END:VCARD'].join('\r\n')], { type: 'text/vcard' })]);

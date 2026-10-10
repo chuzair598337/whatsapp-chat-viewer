@@ -128,8 +128,8 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 | **Files the browser can't show** | A photo, sticker or video the browser can't decode (a HEIC that can't be decoded, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
 | **GIFs** | Marked with a GIF badge and loop automatically. iPhone exports store GIFs as `-GIF-….mp4`, so these play as muted looping video. With reduced motion turned on, GIFs start paused and a tap plays them. |
 | **Video** | Shown like WhatsApp: a thumbnail from the first frame, a big play button, a video icon with the length in the bottom-left corner, and the time in the bottom-right. The thumbnail keeps the video's real shape, so a portrait phone video (down to 9:16) is shown up to 400 px tall instead of being boxed into landscape. After the first play it switches to custom controls: play/pause, elapsed and total time, a seek bar, mute and full screen. A poster image is taken from the first frame. Only one video or voice note plays at a time. |
-| **Voice notes** (`PTT-`, iPhone `-AUDIO-`, `.opus`) | Card with the sender's avatar and a mic badge. Its 36-bar waveform is decoded from the audio with the Web Audio API. Tap or drag the waveform to seek, and switch speed between 1×, 1.5× and 2×. |
-| **Audio files** (`AUD-`, `.mp3`, `.m4a`, …) | Music-file card with the file name, play button, seek bar and duration. |
+| **Voice notes** (`PTT-`, iPhone `-AUDIO-`, `.opus`) | Card with the sender's avatar and a mic badge. Its 36-bar waveform is decoded from the audio with the Web Audio API. Tap or drag the waveform to seek, and switch speed between 1×, 1.5× and 2×. The length shows before the first play, also on iPhone. If the browser's audio player accepts a note but never starts it (seen on iPhone Safari), or can't play its format, the note is decoded and played through Web Audio instead, and later notes go straight there. |
+| **Audio files** (`AUD-`, `.mp3`, `.m4a`, …) | Music-file card with the file name, play button, seek bar and duration. Uses the same Web Audio fallback as voice notes (files up to 40 MB). |
 | **Documents** | Card with a coloured type badge (PDF, Word, Excel, PowerPoint, archive, text), the document's title, the file size and a download button. |
 | **PDFs** | Like WhatsApp: a preview of the first page above the card, plus the page count. Tapping it opens the in-app PDF viewer (details below). If a PDF is damaged or password protected, the card says so, and the file can still be downloaded. |
 | **Links** | Clickable inline. A card under the message shows the site name and address with a coloured letter badge drawn locally, plus a copy button. When a message has several links, the card adds "+ N more links". |
@@ -231,7 +231,7 @@ The statistics window shows:
   - the encryption notice, group events, an iPhone admin event, a disappearing-message timer change and a security-code change;
   - fourteen people, so **Which one is you?** shows its name search and the statistics table has rows to sort;
   - missed and answered calls, a poll, a location, links, reactions, a deleted message and "You deleted this message.";
-  - photos (one after a caption over two lines), a video, a GIF, a sticker, an iPhone animated `.was` sticker, a HEIC photo, a voice note, a music file, a PDF, a text file and a contact card;
+  - photos (one after a caption over two lines), a video, a GIF, a sticker, an iPhone animated `.was` sticker, a HEIC photo, two voice notes, a music file, a PDF, a text file and a contact card;
   - a "video omitted" placeholder.
 
   New features add a line to it; see PROJECT_RULES.md, section 5.
