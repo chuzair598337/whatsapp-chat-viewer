@@ -178,11 +178,12 @@
     <div class="body" id="statsBody"></div>
   </div>
 </div>
-<div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle">
+<!-- Mandatory: no ✕, and Esc or a tap outside doesn't close it. The ✎ button switches to editing nicknames. -->
+<div id="meModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="meTitle" data-mandatory>
   <div class="sheet narrow">
-    <header><h2 id="meTitle" data-i18n="me.which_one_is_you">Which one is you?</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
-    <div class="body"><p class="lead" data-i18n="me.whatsapp_exports_don_t_say">WhatsApp exports don't say who saved the chat. Pick yourself so your messages appear on the right. You can change this later in Settings.</p><div class="searchbox mefilter" id="meFilterW" hidden><span id="meFilterIcon"></span><input id="meFilter" type="search" autocomplete="off" placeholder="Search names" aria-label="Search names" data-i18n-attr="placeholder:me.filter_names;aria-label:me.filter_names"></div><div class="melist" id="meList"></div><p class="menone" id="meNone" hidden data-i18n="me.no_names_match">No one in this chat matches that name.</p></div>
-    <div class="foot"><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
+    <header><h2 id="meTitle">Which one is you?</h2><button class="ibtn" id="meEdit" aria-label="Edit nicknames" title="Edit nicknames" data-i18n-attr="aria-label:nick.edit_all;title:nick.edit_all"></button></header>
+    <div class="body"><p class="lead" id="meLead"></p><div class="searchbox mefilter" id="meFilterW" hidden><span id="meFilterIcon"></span><input id="meFilter" type="search" autocomplete="off" placeholder="Search names" aria-label="Search names" data-i18n-attr="placeholder:me.filter_names;aria-label:me.filter_names"></div><div class="melist" id="meList"></div><p class="menone" id="meNone" hidden data-i18n="me.no_names_match">No one in this chat matches that name.</p></div>
+    <div class="foot"><button class="btn" id="meCancel" hidden data-i18n="common.cancel">Cancel</button><button class="btn primary" id="meSave" hidden data-i18n="nick.save">Save</button><button class="btn primary" id="meDone" data-i18n="me.show_chat">Show chat</button></div>
   </div>
 </div>
 <div class="menu ctxmenu" id="msgMenu" role="menu" aria-label="Message options" hidden data-i18n-attr="aria-label:mm.menu"></div>

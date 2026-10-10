@@ -552,7 +552,8 @@ $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(
 function openModal(id) { const m = $(id); if (m.hidden) m.ret = document.activeElement; m.hidden = false; Dialogs.open(m); const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
 function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
-  m.addEventListener('click', e => { if (e.target === m || e.target.closest('[data-close]')) closeModal(m.id); });
+  // A mandatory dialog (data-mandatory, "Which one is you?") doesn't close on a tap outside.
+  m.addEventListener('click', e => { if ((e.target === m && !m.hasAttribute('data-mandatory')) || e.target.closest('[data-close]')) closeModal(m.id); });
 }
 // Asks before something that can't be undone. Cancel has focus first, so Enter or a stray tap does nothing harmful;
 // Cancel, Esc or a tap outside closes it without a change.
@@ -565,24 +566,39 @@ function confirmDialog(title, text, ok, done) {
 }
 $('cfCancel').onclick = () => { cfDone = null; closeModal('cfModal'); };
 $('cfOk').onclick = () => { const d = cfDone; cfDone = null; if (d) d(); closeModal('cfModal'); }; // done first: focus goes back to a page that already shows the result
-// Everyone who wrote is listed. Big groups get a name filter; the choice in progress survives a redraw (a language change).
+/* "Which one is you?": shown when a chat opens and from Settings › You are. It is mandatory: there is no ✕, and
+   Esc or a tap outside doesn't close it; Show chat confirms the choice. Someone is always chosen: who you are,
+   else the suggested person (the most messages), else nobody ("None of these").
+   The ✎ in its header switches to editing nicknames: the radio buttons go, and each person becomes a field
+   labelled with their exported name (all optional; empty keeps that name). Save stores them all and Cancel drops
+   the edits; both go back to choosing, with the earlier choice kept. Big groups get a name filter in both modes. */
+const MeUI = { editing: false, sel: null };
 function openMeModal() {
   const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
-  const r = open && document.querySelector('input[name="me"]:checked'), sel = r ? r.value : S.me || '';
-  const sug = !S.me && S.meGuess && S.meGuess !== 'You' ? S.meGuess : null;
-  // Each person has a ✎ button that opens a nickname field under their name (MeNick in js/components/nicknames.js).
-  $('meList').innerHTML = ps.map((p, k) =>
-    '<div class="merow' + (p.name === sug ? ' sug' : '') + '" data-k="' + k + '" data-f="' + esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : ''))) + '">' +
-    '<label class="meopt"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><span dir="auto">' + esc(nick(p.name)) + '<small>' + (Nick.has(p.name) ? '<bdi>' + esc(p.name) + '</bdi> · ' : '') + t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) }) +
-    (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : p.name === S.me && p.name === S.meGuess ? ' · ' + t('me.best_guess') : '') + '</small></span></label>' +
-    '<button class="ibtn sm mepen" data-pen="' + k + '" aria-expanded="false" aria-label="' + esc(t(Nick.has(p.name) ? 'nick.edit_label' : 'nick.set_label', { name: p.name })) + '" title="' + esc(t(Nick.has(p.name) ? 'nick.edit' : 'nick.set')) + '">' + ICON.pencil + '</button></div>').join('') +
-    '<label class="meopt"><input type="radio" name="me" value=""' + (!sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  const sug = S.meGuess && S.meGuess !== 'You' && ps.some(p => p.name === S.meGuess) ? S.meGuess : null;
+  if (!open) { MeUI.editing = false; MeUI.sel = S.me || sug || ''; $('meFilter').value = ''; }
+  else if (!MeUI.editing) { const r = document.querySelector('input[name="me"]:checked'); if (r) MeUI.sel = r.value; }
+  const ed = MeUI.editing, fkey = p => esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : '')));
+  const count = p => t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) });
+  $('meTitle').textContent = t(ed ? 'nick.title' : 'me.which_one_is_you');
+  $('meLead').textContent = t(ed ? 'nick.edit_lead' : 'me.whatsapp_exports_don_t_say');
+  $('meList').classList.toggle('editing', ed);
+  $('meList').innerHTML = ed
+    ? ps.map((p, k) =>
+      '<div class="merow ed" data-f="' + fkey(p) + '"><span class="av c' + colorIdx(p.name) + '" aria-hidden="true">' + esc(initials(nick(p.name))) + '</span>' +
+      '<div class="nk"><label for="mnk' + k + '"><bdi>' + esc(p.name) + '</bdi><small>' + count(p) + '</small></label>' +
+      '<input id="mnk' + k + '" data-k="' + k + '" type="text" dir="auto" maxlength="' + NICK_MAX + '" autocomplete="off" enterkeyhint="next" placeholder="' + esc(t('nick.optional_placeholder')) + '" value="' + esc(Nick.map[p.name] || '') + '"></div></div>').join('')
+    : ps.map(p =>
+      '<label class="meopt merow' + (p.name === sug ? ' sug' : '') + '" data-f="' + fkey(p) + '"><input type="radio" name="me" value="' + esc(p.name) + '"' + (p.name === MeUI.sel ? ' checked' : '') + '><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><span dir="auto">' + esc(nick(p.name)) + '<small>' + (Nick.has(p.name) ? '<bdi>' + esc(p.name) + '</bdi> · ' : '') + count(p) +
+      (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : '') + '</small></span></label>').join('') +
+      '<label class="meopt"><input type="radio" name="me" value=""' + (!MeUI.sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
+  $('meEdit').hidden = ed;
+  $('meDone').hidden = ed; $('meSave').hidden = !ed; $('meCancel').hidden = !ed;
   $('meFilterW').hidden = !many;
   if (!many) $('meFilter').value = '';
-  if (!open) $('meFilter').value = '';
   filterMe();
-  openModal('meModal');
-  if (many && !open) $('meFilter').focus();
+  if (!open) openModal('meModal');
+  if (!open) { const c = many ? $('meFilter') : $('meList').querySelector('input:checked'); (c || $('meDone')).focus(); }
 }
 function filterMe() {
   const q = fold($('meFilter').value.trim());
@@ -590,8 +606,30 @@ function filterMe() {
   for (const l of $('meList').querySelectorAll('.merow')) { const show = !q || l.dataset.f.includes(q); l.hidden = !show; if (show) n++; }
   $('meNone').hidden = !q || n > 0;
 }
+function meMode(edit) {
+  if (!edit) { MeUI.editing = false; openMeModal(); $('meEdit').focus(); return; }
+  const r = document.querySelector('input[name="me"]:checked'); if (r) MeUI.sel = r.value;
+  MeUI.editing = true; openMeModal();
+  const f = $('meList').querySelector('.merow:not([hidden]) input'); if (f) f.focus();
+}
+function meSave() {
+  const ps = S.res.participants, pairs = [...$('meList').querySelectorAll('input[data-k]')].map(i => [ps[+i.dataset.k].name, i.value]);
+  const n = Nick.setAll(pairs);
+  meMode(false);
+  if (n) toast.success(t('nick.saved_n', { n, count: nf(n) }));
+}
 $('meFilter').addEventListener('input', filterMe);
 $('meFilterIcon').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
+$('meEdit').onclick = () => meMode(true);
+$('meCancel').onclick = () => meMode(false);
+$('meSave').onclick = meSave;
+// In edit mode Enter moves to the next field, and saves from the last one.
+$('meList').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || !e.target.dataset.k) return;
+  e.preventDefault();
+  const all = [...$('meList').querySelectorAll('.merow:not([hidden]) input')], k = all.indexOf(e.target);
+  if (k >= 0 && k < all.length - 1) all[k + 1].focus(); else meSave();
+});
 $('meDone').onclick = () => { const r = document.querySelector('input[name="me"]:checked'); closeModal('meModal'); setMe(r ? r.value : null); };
 
 /* ---------- Date order, jump to date, doodles (the controls are in Settings) ---------- */
@@ -784,7 +822,9 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
-    const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'meModal', 'nickModal', 'setModal'];
+    // "Which one is you?" is mandatory: Esc only leaves its nickname editing, and never closes it or what is under it.
+    if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); return; }
+    const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
     const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
     if (top) { closeModal(top.id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }

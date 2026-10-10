@@ -605,13 +605,12 @@ I18N.add('en-US', {
     "reset_label": "Reset {name} to the original name",
     "saved": "{name} now shows as {nick}",
     "restored": "{name} is back to the original name",
-    "set": "Set nickname",
-    "edit": "Edit nickname",
-    "set_label": "Set a nickname for {name}",
-    "edit_label": "Edit the nickname for {name}",
-    "field_label": "Nickname for {name}",
     "save": "Save",
-    "cancel": "Cancel"
+    "edit_all": "Edit nicknames",
+    "edit_lead": "Give anyone a nickname to show instead of their name. Every field is optional: leave one empty to keep the name from the export.",
+    "optional_placeholder": "Nickname (optional)",
+    "saved_n": "{count} nicknames updated",
+    "saved_n_one": "1 nickname updated"
   },
   "shist": {
     "title": "Recent searches",
