@@ -35,7 +35,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
+- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`), the Online link previews switch (`cv-online-links`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -256,9 +256,9 @@ The statistics window shows:
   New features add a line to it; see PROJECT_RULES.md, section 5.
 - **Guided tour:** 25 steps under five chapter labels. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
   1. **Getting started:** opening a chat; the timeline and date badges.
-  2. **Finding things:** search; date and sender filters; jump to date; statistics; media, links and docs; Settings (who you are, theme, language, pattern and date format).
+  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters; jump to date; statistics; media, links and docs (with each item's options and Go to message); Settings (who you are, nicknames, theme, language, pattern, date format and Online link previews).
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
-  4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links.
+  4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links (logos, link types and the Online link previews switch).
   5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
@@ -276,7 +276,7 @@ The statistics window shows:
 
 ## 12. Code layout
 
-The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `viewer`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
+The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `vendor/brand-icons`, `viewer`, `components/link-cards`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
 
 | File | Responsibility |
 |---|---|

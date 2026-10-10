@@ -531,8 +531,8 @@ I18N.add('en-US', {
     },
     "search": {
       "title": "Search",
-      "text": "Search for any word, sender name or poll option. Every match is highlighted in the chat, with an \"n of N\" counter, and Enter or Shift+Enter steps through them. Press / to search from anywhere.",
-      "textNarrow": "Tap here to search for any word, sender name or poll option. Every match is highlighted in the chat, and the arrows step through them."
+      "text": "Search for any word, sender name or poll option. Every match is highlighted, with an \"n of N\" counter, and Enter or Shift+Enter steps through them. Aa, ab and .* turn on Match case, Whole word and Regex, and your recent searches appear under the field. Press / to search from anywhere.",
+      "textNarrow": "Tap here to search for any word, sender name or poll option. Every match is highlighted and the arrows step through them. Match case, Whole word and Regex sit under the field, and your recent searches appear when you tap it."
     },
     "date_and_sender": {
       "title": "Date and sender filters",
@@ -548,7 +548,7 @@ I18N.add('en-US', {
     },
     "media_links_and": {
       "title": "Media, links and docs",
-      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. It is also in the ⋮ menu."
+      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. Each item's ⋮ button (or a long-press or right-click) has Go to message, Star, Copy and Download. It is also in the ⋮ menu."
     },
     "whatsapp_formatting": {
       "title": "WhatsApp formatting",
@@ -608,11 +608,11 @@ I18N.add('en-US', {
     },
     "links": {
       "title": "Links",
-      "text": "Links are clickable, and a card under the message shows the site with a copy button. No preview is fetched, so the page stays offline."
+      "text": "Links are clickable, and each one gets a card with the site's logo and what the link is, such as a YouTube Short or a WhatsApp channel, with a copy button. Nothing is fetched unless you turn on Online link previews in Settings, which adds titles and players for YouTube, Instagram, TikTok, Spotify and more."
     },
     "menu": {
       "title": "The ⋮ menu",
-      "text": "Media, links and docs, your starred messages, chat statistics, light and dark themes, the language, and this tour are all here. To star a message, hover over it (or tap it on a phone) and press the star."
+      "text": "Media, links and docs, your starred messages, chat statistics, Settings and this tour are all here. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star."
     },
     "all_set": {
       "title": "You're all set",
@@ -620,7 +620,7 @@ I18N.add('en-US', {
     },
     "settings": {
       "title": "Settings",
-      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green. The theme, language, background pattern and date format are here too. The viewer guesses who you are and the date order for you."
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews switch are here too. The viewer guesses who you are and the date order for you."
     }
   },
   "settings": {

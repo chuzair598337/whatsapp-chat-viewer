@@ -24,7 +24,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - A statistics window with message counts, top senders and activity charts.
 - A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern, the date format and nicknames for anyone in the chat, and a responsive layout for desktop and phone.
 - English, Urdu and Arabic interface, with a right-to-left layout for Urdu and Arabic. Urdu text in the chat is drawn in a Nastaliq font and Arabic in Noto Naskh Arabic, in every interface language, even when a message mixes them with English. Chat text is never translated, and sent messages stay on the right.
-- A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. Sorting in Media, links and docs, and a side panel you can hide on large screens.
+- A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. In Media, links and docs, sorting and an options menu on every item with **Go to message**. A side panel you can hide on large screens.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
