@@ -35,7 +35,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`), the Online link previews switch (`cv-online-links`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
+- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`), the Online link previews switch (`cv-online-links`), Autoplay voice messages (`cv-autoplay`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -174,6 +174,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
   - audio: the same voice-note and music players as in the chat, with waveform, seek and speed;
   - links: the site's logo, its name and what the link is (as in the chat's link cards), address, the message text around the link, copy and open buttons;
   - contacts: the contact card with **View contact** and **Save .vcf**.
+- **Autoplay:** on **Audio**, an Autoplay button (a list with a play mark) sits in the header before Sort, on phones and computers. While it is on (highlighted, `aria-pressed`), each audio that plays to its end starts the next one in the list, voice notes and music files alike, in the list's sort order, loading more of the list and scrolling to it as needed. A notification says when it is turned on or off. It is the same switch as **Autoplay voice messages** in Settings, so it is remembered on this device and off by default.
 - **Sort:** the sort button in the gallery header opens a pick sheet: newest first (the default), oldest first, name A–Z, name Z–A, largest first and smallest first. Size isn't offered for links. Month headings show only for the date sorts. Names sort with the interface language's collation, numbers in order (IMG-2 before IMG-10).
 - **Item options** (`js/components/gallery-menu.js`): long-press an item on a phone, right-click it on a computer, press its ⋮ button (on every row, and on a grid tile when you hover or focus it), or press `Shift+F10` on a focused item. On phones (600 px and narrower) the rows show only the ⋮ button, and the copy, open and download buttons move into it; larger screens keep those quick buttons next to ⋮. The menu is a plain list of options with no title. By type, it offers:
   - **Go to message** on every item: closes the gallery and scrolls the chat to the message, which flashes and gets keyboard focus. A date or sender filter that hides it is cleared first;
@@ -250,15 +251,15 @@ The statistics window shows:
   - fifteen people, so **Which one is you?** and **Participants and nicknames** show their name search and the statistics table has rows to sort;
   - someone saved only as a phone number (a made-up `+1 555 0142`, "Zain"), to try a nickname on;
   - missed and answered calls, a poll, a location, links, reactions, a deleted message and "You deleted this message.";
-  - photos (one after a caption over two lines), a video, a GIF, a sticker, an iPhone animated `.was` sticker, a HEIC photo, two voice notes, a music file, a PDF, a text file and a contact card;
+  - photos (one after a caption over two lines), a video, a GIF, a sticker, an iPhone animated `.was` sticker, a HEIC photo, five voice notes in a row from four people (16 March, 9:16 AM, for Autoplay voice messages; the music file after them ends the run), a music file, a PDF, a text file and a contact card;
   - a "video omitted" placeholder.
 
   New features add a line to it; see PROJECT_RULES.md, section 5.
 - **Guided tour:** 25 steps under five chapter labels. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
   1. **Getting started:** opening a chat; the timeline and date badges.
-  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters; jump to date; statistics; media, links and docs (with each item's options and Go to message); Settings (who you are, nicknames, theme, language, pattern, date format and Online link previews).
+  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters; jump to date; statistics; media, links and docs (with each item's options, Go to message and the Audio autoplay button); Settings (who you are, nicknames, theme, language, pattern, date format, Online link previews and Autoplay voice messages).
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
-  4. **Media:** photos; videos and GIFs; stickers; voice notes and audio; the PDF viewer; contact cards; locations; links (logos, link types and the Online link previews switch).
+  4. **Media:** photos; videos and GIFs; stickers; voice notes and audio (with Autoplay voice messages); the PDF viewer; contact cards; locations; links (logos, link types and the Online link previews switch).
   5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
@@ -276,7 +277,7 @@ The statistics window shows:
 
 ## 12. Code layout
 
-The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `vendor/brand-icons`, `viewer`, `components/link-cards`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/select-messages`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
+The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `vendor/brand-icons`, `viewer`, `components/link-cards`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/select-messages`, `components/autoplay`, `components/settings`, `components/nicknames`, `components/search-history`, `tour-controller`. pdf.js, lottie-web and libheif are loaded later, only when needed.
 
 | File | Responsibility |
 |---|---|
@@ -294,11 +295,12 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/text-truncator.js` | Decides when a long message is shortened and where the cut goes (Read more / Show less) |
 | `js/viewer.js` | Formatting, Urdu and Arabic script fonts, the virtual list, row rendering, media players, `.was` stickers, HEIC decoding, contact cards, the photo and PDF viewers |
 | `js/demo-data.js` | The made-up sample chat and the code that generates its media on the device |
-| `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, date format, nicknames, statistics, help and About, and the pick sheet for choices |
+| `js/components/settings.js` | The Settings screen: who you are, theme, language, background pattern, Online link previews, Autoplay voice messages, date format, nicknames, statistics, help and About, and the pick sheet for choices |
 | `js/components/nicknames.js` | Participant nicknames: `nick(name)`, the per-chat store and the Participants and nicknames sheet |
 | `js/components/search-history.js` | Recent searches: the list under the search bar and its store |
 | `js/components/media-gallery.js` | The media, links and docs gallery: its index of attachments and links, the filter chips, sorting, grid and list layouts, and paging |
 | `js/components/message-menu.js` | The message menu: long-press, right-click, the ⌄ button and Shift+F10, and its actions |
+| `js/components/autoplay.js` | Autoplay: the `cv-autoplay` switch, the next voice note in the chat or the next audio in the gallery when one ends, and the gallery's Autoplay button |
 | `js/components/select-messages.js` | Selecting messages: the selection bar, Star, Copy and Share for several messages |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
@@ -327,6 +329,7 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Theme:** Light, Dark or Match system, in a pick sheet.
   - **Language:** English, اردو or العربية. The whole app redraws in the new language at once, the Settings screen included.
   - **Background pattern:** a switch for the doodles behind the messages.
+  - **Autoplay voice messages** (`js/components/autoplay.js`, off by default): when a voice message plays to its end, the next message plays if it is also a voice message and comes straight after it, whoever sent it, like WhatsApp. Anything else in between (text, a link, a photo, a music file, a notice) ends the run. The next note scrolls into view if it isn't on screen. Pausing a note stops the run. The same switch drives the **Autoplay** button in Media, links and docs. It works with the iPhone Web Audio fallback too.
   - **Date format:** Automatic, Day / Month or Month / Day (a change re-reads the chat behind a progress screen), with the order being used and a **guessed** badge when the chat could be read either way. A forced order that gives impossible dates is refused with a message. Exports written as YYYY-MM-DD have nothing to choose, so the row is disabled.
 - **This chat:**
   - **Participants and nicknames** (`js/components/nicknames.js`): lists everyone who wrote in the chat (with a name search above 12 people), each with their exported name, message count and a nickname field. Type a nickname and press `Enter` or leave the field to save it; a notification confirms it. **Reset** (or clearing the field) brings back the exported name. The row shows how many nicknames are set.
@@ -336,10 +339,10 @@ The scripts are plain browser scripts with no build step. They share globals and
     - Kept on this device per chat (`chat_nicknames_<id>`, where the id comes from everyone's exported name and the first message), so the same export opens with the same nicknames and other chats never share them.
   - **Chat statistics**.
 - **Help:** **Help and guided tour**, the version and the privacy note.
-- **What is remembered:** the theme, language and background pattern, nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
+- **What is remembered:** the theme, language, background pattern, Online link previews and Autoplay voice messages, nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
 - **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
-- **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The side panel keeps **Jump to date**. The start screen keeps its English / اردو / العربية switch, because no chat is open there yet.
+- **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The one shortcut is the **Autoplay** button in Media, links and docs (on Audio), which flips the same Autoplay voice messages switch. The side panel keeps **Jump to date**. The start screen keeps its English / اردو / العربية switch, because no chat is open there yet.
 
 ## 15. Message menu
 

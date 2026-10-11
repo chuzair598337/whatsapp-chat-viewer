@@ -6,7 +6,7 @@
    date format, plus shortcuts to statistics, the tour and the About note.
 
    - Theme, language and background pattern are kept in localStorage
-     (cv-theme, app_language, cv-doodle, cv-online-links). Who you are and the date format
+     (cv-theme, app_language, cv-doodle, cv-online-links, cv-autoplay). Who you are and the date format
      belong to the open chat and are not stored.
    - Participants and nicknames opens its own sheet
      (js/components/nicknames.js); nicknames are kept per chat.
@@ -61,6 +61,7 @@ const Settings = {
         row('lang', 'globe', t('common.language'), '<bdi>' + esc(I18N.info().name) + '</bdi>') +
         '<label class="set-row"><span class="si">' + ICON.doodle + '</span><span class="st"><b>' + t('sidebar.background_pattern') + '</b><small>' + t('settings.pattern_sub') + '</small></span><input type="checkbox" class="switch" id="doodle"' + (doodleOn ? ' checked' : '') + '></label>' +
         '<label class="set-row"><span class="si">' + ICON.link + '</span><span class="st"><b>' + t('settings.online_links') + '</b><small>' + t('settings.online_links_sub') + '</small></span><input type="checkbox" class="switch" id="onlineLinks"' + (onlineLinks ? ' checked' : '') + '></label>' +
+        '<label class="set-row"><span class="si">' + ICON.autoplay + '</span><span class="st"><b>' + t('settings.autoplay') + '</b><small>' + t('settings.autoplay_sub') + '</small></span><input type="checkbox" class="switch" id="autoplay"' + (Autoplay.on ? ' checked' : '') + '></label>' +
         row('order', 'calendar', t('sidebar.date_format'), orderSub, res.order === 'ymd' ? ' disabled' : '') +
       '</section>' +
       '<section class="set-grp" aria-labelledby="setG2"><h3 id="setG2">' + t('settings.this_chat') + '</h3>' +
@@ -111,7 +112,7 @@ $('pickList').addEventListener('keydown', e => {
 });
 
 $('setBody').addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b && !b.disabled) Settings.act(b.dataset.set); });
-$('setBody').addEventListener('change', e => { if (e.target.id === 'doodle') setDoodle(e.target.checked); else if (e.target.id === 'onlineLinks') LinkOnline.set(e.target.checked); });
+$('setBody').addEventListener('change', e => { if (e.target.id === 'doodle') setDoodle(e.target.checked); else if (e.target.id === 'onlineLinks') LinkOnline.set(e.target.checked); else if (e.target.id === 'autoplay') Autoplay.set(e.target.checked); });
 $('setBack').innerHTML = ICON.back;
 $('setBack').onclick = () => Settings.close();
 $('miSet').innerHTML = ICON.gear;

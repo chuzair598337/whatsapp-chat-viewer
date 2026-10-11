@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Autoplay voice messages (Settings, off by default).** When a voice message plays to its end, the next message plays too if it is a voice message that comes straight after it, whoever sent it, like WhatsApp. A text, link, photo, music file or notice in between ends the run, and pausing a note stops it. The next note scrolls into view when it is off screen. Remembered on this device (`cv-autoplay`). Works through the iPhone Web Audio fallback as well.
+- **Autoplay button in Media, links and docs.** On **Audio**, a new button in the header (before Sort, on phones and computers) turns autoplay on or off, with a notification. While it is on, each audio that ends starts the next one in the list, voice notes and music files alike, in the list's sort order. It is the same switch as the Settings option.
+- The guided tour's Voice notes, Media, links and docs, and Settings steps mention autoplay, in English, Urdu and Arabic.
+- Sample chat: three more voice notes on 16 March (9:16 AM) from Ayesha and Bilal, so five play in a row, and the music file after them ends the run.
+
 ## 1.9.0 (2026-10-10)
 
 - **Search text is selected after a search,** found or not, so typing again starts a new search without clearing the field first: after Enter, after picking a recent search, and when you click or tab back into the field. It isn't selected while you type.

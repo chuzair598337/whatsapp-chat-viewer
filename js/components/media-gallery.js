@@ -83,6 +83,7 @@ const Gallery = {
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     this.list = galSorted(cat === 'all' ? this.items : this.items.filter(x => x.cat === cat), this.sort);
     $('galSort').classList.toggle('on', this.sort !== 'new');
+    if (typeof Autoplay !== 'undefined') Autoplay.paint(); // the Autoplay button shows on the Audio chip
     this.n = 0; this.sec = null;
     galBody.scrollTop = 0;
     galBody.innerHTML = '';

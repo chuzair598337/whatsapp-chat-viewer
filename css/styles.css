@@ -789,8 +789,10 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gtile img, .gtile video { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
 .gtile.stk { background: var(--panel-2); }
 .gtile.stk img { object-fit: contain; padding: 10%; }
-.sheet.gal header #galSort { margin-inline-start: auto; }
+.sheet.gal header #galAuto, .sheet.gal header #galAuto[hidden] + #galSort { margin-inline-start: auto; }
 #galSort.on { color: var(--accent-ink); }
+/* Autoplay (js/components/autoplay.js): shown on the Audio chip; filled in the accent colour while on. */
+#galAuto[aria-pressed="true"] { color: var(--accent-ink); background: var(--quote); }
 .gsec:not(:has(h3)) { padding-top: 8px; }
 /* Animated stickers (.was) drawn by lottie-web as SVG */
 .lottie svg { display: block; width: 100% !important; height: 100% !important; }

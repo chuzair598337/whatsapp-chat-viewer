@@ -27,7 +27,7 @@ const GalMenu = {
       if (extOf(e.name) === 'pdf') out.push(['document', t('mm.open_document'), () => openPdf(e.name, it.a.title || '')]);
       else out.push(['document', t('media_gallery.open'), () => openBlank(e.url)]);
     } else if (it.cat === 'audio') {
-      const playing = AudioCtl.name === e.name && AudioCtl.el && !AudioCtl.el.paused;
+      const playing = AudioCtl.name === e.name && AudioCtl.playing();
       out.push([playing ? 'pause' : 'play', t(playing ? 'media_gallery.pause' : 'media_gallery.play'), () => AudioCtl.toggle(e.name)]);
     } else if (it.cat === 'contacts') out.push(['contact', t('vc.view_contact'), () => openContact(e.name)]);
     const starred = galStarred(it);
