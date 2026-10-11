@@ -549,7 +549,7 @@ I18N.add('en-US', {
     },
     "media_links_and": {
       "title": "Media, links and docs",
-      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. Each item's ⋮ button (or a long-press or right-click) has Go to message, Star, Copy and Download. It is also in the ⋮ menu."
+      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. Each item's ⋮ button (or a long-press or right-click) has Go to message, Star, Copy and Download. It is also in the ⋮ menu. On Audio, the Autoplay button plays each audio after the one before."
     },
     "whatsapp_formatting": {
       "title": "WhatsApp formatting",
@@ -593,7 +593,7 @@ I18N.add('en-US', {
     },
     "voice_notes_and": {
       "title": "Voice notes and audio",
-      "text": "Voice notes get a waveform you can tap or drag to seek, and play at 1×, 1.5× or 2×. Music and other audio files get their own player. Only one plays at a time."
+      "text": "Voice notes get a waveform you can tap or drag to seek once a note is playing (taps on other notes are ignored, so scrolling never moves them), and play at 1×, 1.5× or 2×. Music and other audio files get their own player. Only one plays at a time. Turn on Autoplay voice messages in Settings and voice notes sent one after another play in a row."
     },
     "built_in_pdf": {
       "title": "Built-in PDF viewer",
@@ -621,7 +621,7 @@ I18N.add('en-US', {
     },
     "settings": {
       "title": "Settings",
-      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews switch are here too. The viewer guesses who you are and the date order for you."
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you."
     }
   },
   "settings": {
@@ -641,9 +641,11 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language, background pattern, online link previews, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
+    "saved_note": "The theme, language, background pattern, online link previews, autoplay, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
     "online_links": "Online link previews",
-    "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites."
+    "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites.",
+    "autoplay": "Autoplay voice messages",
+    "autoplay_sub": "When a voice message ends, the next one plays if it comes right after it. In Media, links and docs, the next audio in the list plays."
   },
   "mm": {
     "menu": "Message options",
@@ -657,6 +659,11 @@ I18N.add('en-US', {
     "open_document": "Open document",
     "share": "Share",
     "share_failed": "Sharing isn't available here."
+  },
+  "autoplay": {
+    "title": "Autoplay",
+    "on_toast": "Autoplay is on. When an audio ends, the next one plays.",
+    "off_toast": "Autoplay is off."
   },
   "toast": {
     "dismiss": "Dismiss notification",

@@ -3,6 +3,11 @@
 ## Unreleased
 
 - **Tap a participant to filter by them.** In the side panel's **Participants** list, tapping a person sets the **Sender** filter to them, so only their messages show, and their row is highlighted. Tapping the same person again goes back to **Everyone**. On tablets and phones, picking a sender this way or from the Sender menu also closes the side panel and shows the chat; on a computer the docked panel stays as it is. The rest of the sender filter works as before. The tour's filters step mentions it, in English, Urdu and Arabic. Sample chat: a new message from Usman Tariq on 3 April (8:28 AM); tap his name under Participants.
+- **Autoplay voice messages (Settings, off by default).** When a voice message plays to its end, the next message plays too if it is a voice message that comes straight after it, whoever sent it, like WhatsApp. A text, link, photo, music file or notice in between ends the run, and pausing a note stops it. The next note scrolls into view when it is off screen. Remembered on this device (`cv-autoplay`). Works through the iPhone Web Audio fallback as well.
+- **Autoplay button in Media, links and docs.** On **Audio**, a new button in the header (before Sort, on phones and computers) turns autoplay on or off, with a notification. While it is on, each audio that ends starts the next one in the list, voice notes and music files alike, in the list's sort order. It is the same switch as the Settings option.
+- **Seeking only on the note that is playing.** In the chat and in Media, links and docs, tapping or dragging a waveform (or a music file's seek bar) moves the position only on the note that is playing or paused part-way. On any other note a tap does nothing and a swipe scrolls, so a stray touch while scrolling no longer starts a note from the middle. Start a note with its play button. Try it on the five voice notes on 16 March.
+- The guided tour's Voice notes, Media, links and docs, and Settings steps mention autoplay and seeking, in English, Urdu and Arabic.
+- Sample chat: three more voice notes on 16 March (9:16 AM) from Ayesha and Bilal, so five play in a row, and the music file after them ends the run.
 
 ## 1.9.0 (2026-10-10)
 

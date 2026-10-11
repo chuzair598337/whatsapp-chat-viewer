@@ -11,7 +11,8 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 |---|---|
 | Opening a ZIP: the native streaming `DecompressionStream` reader first, then JSZip in a worker, then JSZip on the main thread | `js/media.js` (`openArchive`) |
 | Media store: name to `{blob, url, mime, type}` | `js/media.js` (`Media`) |
-| Shared `<audio>` for voice notes | `js/media.js` (`AudioCtl`) |
+| Shared `<audio>` for voice notes. Waveform and seek-bar taps act only on `AudioCtl.isCurrent(name)`; other notes ignore them (`.aplayer.cur` gets `touch-action: none`, the rest pan) | `js/media.js` (`AudioCtl`) |
+| Autoplay (`cv-autoplay`): the next voice note in the chat, or the next audio in Media > Audio, when one ends. Only a natural end (`AudioCtl.ended`, from the `<audio>` `ended` event or the Web Audio source's `onended`) chains, so pausing stops it | `js/components/autoplay.js` (`Autoplay`) |
 | Attachment cards and players | `js/viewer.js` (`attHTML`, `docHTML`, `contactHTML`) |
 | Lazy queues: waveforms (`Waves`), video posters, PDF thumbnails (`PdfView`), contact cards (`Cards`) | `js/viewer.js` |
 | Photo lightbox: zoom, pan, pinch, 90° rotation | `js/viewer.js` (`Z`, `zTo`, `zRotate`, `zFit`) |

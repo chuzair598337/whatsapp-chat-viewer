@@ -16,15 +16,15 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 
 - Opens a plain `.txt` export or a full `.zip` export with media, or several chats at once with a chat list to switch between them.
 - Reads iPhone and Android formats, 12-hour and 24-hour times, and day/month or month/day dates, detected automatically.
-- Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms, audio files, PDFs with page previews, documents, contact cards and link cards.
+- Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms (and optional autoplay of voice notes sent in a row), audio files, PDFs with page previews, documents, contact cards and link cards.
 - Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
 - Search with highlighting, match navigation, Match case, Whole word and Regex options, and your recent searches (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
 - Star messages to collect them in a side panel while you read (never saved).
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
-- A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern, the date format and nicknames for anyone in the chat, and a responsive layout for desktop and phone.
+- A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern, autoplay of voice messages, the date format and nicknames for anyone in the chat, and a responsive layout for desktop and phone.
 - English, Urdu and Arabic interface, with a right-to-left layout for Urdu and Arabic. Urdu text in the chat is drawn in a Nastaliq font and Arabic in Noto Naskh Arabic, in every interface language, even when a message mixes them with English. Chat text is never translated, and sent messages stay on the right.
-- A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. In Media, links and docs, sorting and an options menu on every item with **Go to message**. A side panel you can hide on large screens.
+- A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. In Media, links and docs, sorting, an Autoplay button for audio and an options menu on every item with **Go to message**. A side panel you can hide on large screens.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
 - Handles chats of 50,000+ messages smoothly.
 
@@ -77,7 +77,7 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
+│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, autoplay.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media
 ├── CHANGELOG.md                          # release notes

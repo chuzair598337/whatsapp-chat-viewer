@@ -183,7 +183,7 @@ const AudioCtl = {
     a.addEventListener('loadedmetadata', () => { if (isFinite(a.duration)) this.dur.set(this.name, a.duration); this.paint(); });
     a.addEventListener('play', () => this.paint());
     a.addEventListener('pause', () => this.paint());
-    a.addEventListener('ended', () => { clearTimeout(this.watch); a.currentTime = 0; this.paint(); });
+    a.addEventListener('ended', () => { clearTimeout(this.watch); a.currentTime = 0; this.paint(); this.ended(this.name); });
     a.addEventListener('error', () => { if (this.name && a.getAttribute('src') && !this.wa) this.fallback(false); });
     return a;
   },
@@ -237,6 +237,12 @@ const AudioCtl = {
     if (stalled) this.waOnly = true;
     if (e) this.waPlay(e, at ? null : this.at, at);
   },
+  // The note loaded in the player (playing, or paused part-way). Only its waveform and seek bar respond to taps.
+  isCurrent(name) { return !!name && name === this.name && (!!this.wa || !!this.el); },
+  playing() { return !!this.name && (this.wa ? this.wa.playing : !!this.el && !this.el.paused); },
+  // A note played to its end (not paused or stopped): autoplay may start the next one (js/components/autoplay.js).
+  // It runs inside the ended event, so iPhone Safari still counts the first tap and lets the next note sound.
+  ended(name) { if (typeof Autoplay !== 'undefined') Autoplay.ended(name); },
   pause() {
     clearTimeout(this.watch);
     if (this.wa) { if (this.wa.playing) this.waPause(); } else if (this.el && !this.el.paused) this.el.pause();
@@ -275,7 +281,7 @@ const AudioCtl = {
     if (w.off >= w.buf.duration - 0.05) w.off = 0;
     const s = c.createBufferSource();
     s.buffer = w.buf; s.playbackRate.value = this.rate; s.connect(c.destination);
-    s.onended = () => { if (w.src !== s) return; w.src = null; w.playing = false; w.off = 0; this.stopTick(); this.paint(); };
+    s.onended = () => { if (w.src !== s) return; w.src = null; w.playing = false; w.off = 0; this.stopTick(); this.paint(); this.ended(w.name); };
     s.start(0, w.off);
     w.src = s; w.start = c.currentTime; w.playing = true;
     clearInterval(this.tick); this.tick = setInterval(() => this.paint(), 200);
@@ -319,7 +325,8 @@ const AudioCtl = {
     const at = !cur ? 0 : w ? this.waNow() : a.currentTime;
     const frac = d ? at / d : 0;
     const sk = n.querySelector('.aseek');
-    if (sk) sk.value = Math.round(frac * 1000);
+    if (sk) { sk.value = Math.round(frac * 1000); sk.disabled = !cur; }
+    n.classList.toggle('cur', cur);
     const bars = n.querySelectorAll('.wave rect');
     for (let k = 0; k < bars.length; k++) bars[k].classList.toggle('on', cur && (k + 0.5) / bars.length <= frac);
     n.querySelector('.atime').textContent = cur && (at > 0 || playing) ? this.fmt(at) + ' / ' + this.fmt(d) : this.fmt(d);
