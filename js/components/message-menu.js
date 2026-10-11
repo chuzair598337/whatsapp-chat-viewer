@@ -20,28 +20,28 @@ Object.assign(ICON, {
 const MsgMenu = {
   el: $('msgMenu'), i: -1, ret: null,
   isOpen() { return !this.el.hidden; },
-  // The actions for message i: [icon, label, run]
+  // The actions for message i: [icon, label, run, id of the shortcut that does the same (js/components/shortcuts-list.js)]
   actions(i) {
     const m = S.msgs[i], out = [], starred = !!(S.starred && S.starred.has(i));
-    out.push([starred ? 'unstar' : 'star', t(starred ? 'msg.unstar_short' : 'msg.star_short'), () => toggleStar(i)]);
+    out.push([starred ? 'unstar' : 'star', t(starred ? 'msg.unstar_short' : 'msg.star_short'), () => toggleStar(i), 'msgStar']);
     const text = copyable(m);
-    if (text) out.push(['copy', t('mm.copy'), () => copyText(text, t(m.kind === 'poll' ? 'mm.poll' : 'mm.message'))]);
+    if (text) out.push(['copy', t('mm.copy'), () => copyText(text, t(m.kind === 'poll' ? 'mm.poll' : 'mm.message')), 'msgCopy']);
     const url = (m.message.match(RE_URL) || [])[0];
     if (url) out.push(['link', t('link.copy'), () => copyText(/^www\./i.test(url) ? 'https://' + url : trimUrl(url)[0])]);
     for (const a of m.attachments) {
       const e = a.url ? Media.get(a.name) : null;
       if (!e) continue;
-      if ((a.type === 'image' || a.type === 'gif') && !Media.cantShow(e.name) && !VIDEO_EXT.test(extOf(e.name))) out.push(['image', t('mm.view_photo'), () => openLightbox(e.name)]);
-      if (extOf(e.name) === 'pdf') out.push(['document', t('mm.open_document'), () => openPdf(e.name, a.title || '')]);
+      if ((a.type === 'image' || a.type === 'gif') && !Media.cantShow(e.name) && !VIDEO_EXT.test(extOf(e.name))) out.push(['image', t('mm.view_photo'), () => openLightbox(e.name), 'msgOpen']);
+      if (extOf(e.name) === 'pdf') out.push(['document', t('mm.open_document'), () => openPdf(e.name, a.title || ''), 'msgOpen']);
       if (a.type === 'contact') {
-        out.push(['contact', t('vc.view_contact'), () => openContact(e.name)]);
+        out.push(['contact', t('vc.view_contact'), () => openContact(e.name), 'msgOpen']);
         const cs = Media.cards.get(e.name);
         if (cs && cs.length) out.push(['copy', t('mm.copy_contact'), () => copyText(cs.map(contactText).join('\n\n'), t('mm.contact'))]);
       }
-      out.push(['download', m.attachments.length > 1 ? t('doc.download_name', { name: a.title || e.name }) : t('doc.download'), () => saveFile(e)]);
+      out.push(['download', m.attachments.length > 1 ? t('doc.download_name', { name: a.title || e.name }) : t('doc.download'), () => saveFile(e), m.attachments.length > 1 ? null : 'msgDownload']);
     }
     if (canShare()) out.push(['share', t('mm.share'), () => shareMsg(m)]);
-    out.push(['check', t('sel.select'), () => Sel.start(i)]);
+    out.push(['check', t('sel.select'), () => Sel.start(i), 'select']);
     return out;
   },
   open(i, x, y, anchor) {
@@ -50,7 +50,9 @@ const MsgMenu = {
     this.i = i; this.ret = document.activeElement;
     const acts = this.actions(i);
     this.run = acts.map(a => a[2]);
-    this.el.innerHTML = acts.map(([icon, label], k) => '<button role="menuitem" data-mm="' + k + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span></button>').join('');
+    // A shortcut that does the same is shown at the end of the item (js/components/shortcuts.js).
+    this.el.innerHTML = acts.map(([icon, label, , key], k) => '<button role="menuitem" data-mm="' + k + '"><span class="mi">' + (ICON[icon] || '') + '</span><span class="ml">' + esc(label) + '</span>' + (key ? '<span class="mk" data-key="' + key + '" aria-hidden="true"></span>' : '') + '</button>').join('');
+    Keys.decorate(this.el);
     this.el.hidden = false;
     const row = layer.querySelector('.row[data-i="' + S.m2i[i] + '"]');
     this.place(row, x, y);

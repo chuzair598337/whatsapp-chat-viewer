@@ -858,43 +858,7 @@ window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); 
 window.addEventListener('dragleave', () => { dragDepth = Math.max(0, dragDepth - 1); if (!dragDepth) $('drop').hidden = true; });
 window.addEventListener('drop', e => { if (!hasFiles(e)) return; e.preventDefault(); dragDepth = 0; $('drop').hidden = true; openFiles(e.dataTransfer.files); });
 
-/* ---------- Keyboard ---------- */
-document.addEventListener('keydown', e => {
-  if (!$('start').hidden) return; // nothing to search or navigate yet
-  if (!$('pdfv').hidden) {
-    if (e.key === 'Escape') closePdf();
-    else if (e.key === '+' || e.key === '=') pdfZoom(1);
-    else if (e.key === '-') pdfZoom(-1);
-    else if (e.key === '0') pdfZoom(0);
-    return;
-  }
-  if (!$('lb').hidden) {
-    if (e.key === 'Escape') closeLightbox();
-    else if (e.key === 'ArrowLeft') lbStep(I18N.rtl() ? 1 : -1); // the next photo is on the left in right-to-left
-    else if (e.key === 'ArrowRight') lbStep(I18N.rtl() ? -1 : 1);
-    else if (e.key === '+' || e.key === '=') zTo(Z.s * 1.5, undefined, undefined, true);
-    else if (e.key === '-') zTo(Z.s / 1.5, undefined, undefined, true);
-    else if (e.key === '0') zTo(1, undefined, undefined, true);
-    else if (e.key === 'r' || e.key === 'R') zRotate();
-    return;
-  }
-  const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable;
-  if (Dialogs.any() && e.key !== 'Escape') return; // no search shortcuts behind an open dialog
-  if (e.key === '/' && !typing && !e.ctrlKey && !e.metaKey && !e.altKey && S.msgs.length) { e.preventDefault(); openSearch(); return; }
-  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
-  else if (e.key === 'Escape') {
-    // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
-    // "Which one is you?": Esc first leaves its nickname editing. When a chat opens it is mandatory, so Esc never closes it
-    // or what is under it; opened from Settings, Esc closes it without a change.
-    if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); else if (MeUI.optional) closeModal('meModal'); return; }
-    const ids = ['wnModal', 'cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
-    const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
-    if (top) { closeModal(top.id); return; }
-    if (!$('starPanel').hidden) { closeStars(); return; }
-    if (!$('sstrip').hidden) { closeSearch(); return; }
-    if (document.body.classList.contains('drawer-open')) closeDrawer();
-  }
-});
+/* ---------- Keyboard: every shortcut is in js/components/shortcuts-list.js, handled by js/components/shortcuts.js ---------- */
 
 /* ---------- Static icons ---------- */
 $('logo').innerHTML = $('startLogo').innerHTML = ICON.chat; $('startDropIc').innerHTML = ICON.open; $('startDemoIc').innerHTML = ICON.chat;
