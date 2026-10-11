@@ -16,6 +16,31 @@
    ===================================================================== */
 const RELEASE_NOTES = [
   {
+    v: '1.11.0', date: '2026-10-11',
+    items: [
+      { kind: 'new',
+        en: 'What\'s new: after each update, a popup like this one lists what changed. Settings › About shows it again.',
+        ur: 'نیا کیا ہے: ہر اپ ڈیٹ کے بعد ایسا ہی ایک پاپ اپ بتاتا ہے کہ کیا بدلا۔ ترتیبات › تعارف میں یہ دوبارہ دیکھیں۔',
+        ar: 'ما الجديد: بعد كل تحديث تعرض نافذة مثل هذه ما تغيّر. يمكنك رؤيتها مجددًا من الإعدادات › حول.' },
+      { kind: 'new',
+        en: 'Keyboard shortcuts for every major action, such as Ctrl+O or ⌘O to open a chat, Ctrl+F or ⌘F to search, and J and K to move between messages.',
+        ur: 'ہر بڑے کام کے لیے کی بورڈ شارٹ کٹس، جیسے چیٹ کھولنے کے لیے Ctrl+O یا ⌘O، تلاش کے لیے Ctrl+F یا ⌘F، اور پیغامات میں آگے پیچھے جانے کے لیے J اور K۔',
+        ar: 'اختصارات لوحة المفاتيح لكل إجراء رئيسي، مثل Ctrl+O أو ⌘O لفتح دردشة، وCtrl+F أو ⌘F للبحث، وJ وK للتنقل بين الرسائل.' },
+      { kind: 'new',
+        en: 'Press ? to see every keyboard shortcut. The list is also in Settings and the ⋮ menu.',
+        ur: 'تمام کی بورڈ شارٹ کٹس دیکھنے کے لیے ? دبائیں۔ یہ فہرست ترتیبات اور ⋮ مینو میں بھی ہے۔',
+        ar: 'اضغط ? لرؤية كل اختصارات لوحة المفاتيح. القائمة موجودة أيضًا في الإعدادات والقائمة ⋮.' },
+      { kind: 'new',
+        en: 'Settings › Single-key shortcuts turns off the one-key shortcuts if they get in the way.',
+        ur: 'ترتیبات › ایک کلید والے شارٹ کٹس سے ایک کلید والے شارٹ کٹس بند کیے جا سکتے ہیں اگر وہ رکاوٹ بنیں۔',
+        ar: 'من الإعدادات › الاختصارات بمفتاح واحد يمكنك إيقاف هذه الاختصارات إذا أزعجتك.' },
+      { kind: 'fixed',
+        en: 'Shortcuts such as Ctrl+F now work with an Urdu or Arabic keyboard layout, and the search button shows ⌘F on a Mac.',
+        ur: 'Ctrl+F جیسے شارٹ کٹس اب اردو یا عربی کی بورڈ لے آؤٹ کے ساتھ بھی چلتے ہیں، اور Mac پر تلاش کا بٹن ⌘F دکھاتا ہے۔',
+        ar: 'تعمل الاختصارات مثل Ctrl+F الآن مع تخطيط لوحة مفاتيح عربي أو أردي، ويعرض زر البحث ⌘F على Mac.' }
+    ]
+  },
+  {
     v: '1.10.0', date: '2026-10-11',
     items: [
       { kind: 'new',
