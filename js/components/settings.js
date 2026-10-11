@@ -3,7 +3,7 @@
    Settings screen, laid out like WhatsApp's: opened from "Settings" in
    the header's ⋮ menu. Every preference lives here (PROJECT_RULES.md,
    "Settings"): who you are, theme, language, background pattern and the
-   date format, plus shortcuts to statistics, the tour and the About note.
+   date format, plus shortcuts to statistics, the tour and About (What's new).
 
    - Theme, language and background pattern are kept in localStorage
      (cv-theme, app_language, cv-doodle, cv-online-links, cv-autoplay). Who you are and the date format
@@ -70,7 +70,7 @@ const Settings = {
       '</section>' +
       '<section class="set-grp" aria-labelledby="setG3"><h3 id="setG3">' + t('settings.help') + '</h3>' +
         row('tour', 'help', t('menu.help_and_guided_tour'), t('settings.tour_sub')) +
-        '<div class="set-row static"><span class="si">' + ICON.info + '</span><span class="st"><b>' + t('settings.about') + '</b><small>' + esc(t('settings.version', { v: APP_VERSION })) + '</small></span></div>' +
+        row('whatsnew', 'info', t('settings.about'), esc(t('settings.version', { v: APP_VERSION })) + ' · ' + t('whats_new.title')) +
         '<div class="set-row static"><span class="si">' + ICON.lock + '</span><span class="st"><small>' + t('sidebar.your_chat_is_read_inside') + ' ' + t('settings.saved_note') + '</small></span></div>' +
       '</section>';
     const f = keep && $('setBody').querySelector(keep); if (f) f.focus({ preventScroll: true });
@@ -83,6 +83,7 @@ const Settings = {
     else if (a === 'nick') NickUI.open(); // js/components/nicknames.js
     else if (a === 'stats') openStats();
     else if (a === 'tour') { this.close(true); Tour.welcome(); }
+    else if (a === 'whatsnew') WhatsNew.show(); // js/components/whats-new.js: every version
   }
 };
 

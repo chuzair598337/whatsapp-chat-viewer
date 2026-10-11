@@ -25,6 +25,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # A release must carry its "What's new" notes (js/release-notes.js) for APP_VERSION and CHANGELOG.md.
+      - name: Check release notes
+        run: node tests/release-notes.test.js
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 

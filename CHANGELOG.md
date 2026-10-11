@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased (on development)
+
+- **What's new after each update.** The first time the app opens after a new version, a popup lists what's new, improved and fixed in it, with green, blue and amber badges, in English, Urdu and Arabic. It shows once per version on each device (remembered as `cv-seen-version`); someone who skipped versions sees each one they missed, up to three. First-time users don't see it, since they get the tour. It waits for any open dialog, the tour or loading to finish. **Settings › About** opens it again with every version's notes. To try it on `development`, open the app in a browser that has used it before but not since this change (it shows 1.10.0), or delete `cv-seen-version` and reload.
+- The guided tour's Settings step mentions What's new under About, in English, Urdu and Arabic.
+- Releases now add their What's new notes to `js/release-notes.js` (`.claude/skills/release-skill`), and the GitHub Pages deploy checks them first (`tests/release-notes.test.js`).
+
 ## 1.10.0 (2026-10-11)
 
 - **"Which one is you?" can be closed when opened from Settings.** From Settings → **You are** it now has a ✕ in its header and a **Cancel** button, and `Esc` or a tap outside closes it too, keeping who you were. When a new chat opens it stays mandatory as before: no ✕ or Cancel, and `Esc` or a tap outside doesn't close it.

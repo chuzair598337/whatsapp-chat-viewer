@@ -61,6 +61,7 @@ whatsapp-chat-viewer/
 ├── index.html                            # page markup
 ├── fonts/                                # Noto Nastaliq Urdu and Noto Naskh Arabic (OFL)
 ├── tests/parser.test.js                  # parser tests
+├── tests/release-notes.test.js           # checks the What's new notes match the version (run by the deploy)
 ├── css/styles.css                        # styles and light/dark theme tokens
 ├── css/settings.css                      # Settings screen
 ├── js/
@@ -77,9 +78,10 @@ whatsapp-chat-viewer/
 │   ├── viewer.js                         # formatting, virtual list, media players
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
-│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, autoplay.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js
+│   ├── release-notes.js                  # What's new notes per version, in English, Urdu and Arabic
+│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, autoplay.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js, whats-new.js
 │   └── tour-controller.js                # welcome dialog and guided tour
-├── .claude/skills/                       # agent guides: parser, virtual scroll, media
+├── .claude/skills/                       # agent guides: parser, virtual scroll, media, release
 ├── CHANGELOG.md                          # release notes
 ├── CLAUDE.md                             # short pointer for coding agents
 ├── PROJECT_RULES.md                      # rules for every change (privacy, both export types, performance, a11y)
@@ -148,8 +150,8 @@ Workflow:
 
 1. Branch from `development`, for example `feature/voice-speed` or `fix/android-dates`.
 2. Open a pull request into `development`. Check the viewer by hand with a `.txt` and a `.zip` export, in light and dark mode, and at phone width.
-3. When `development` is ready to release, open a pull request from **`development` → `main`**.
-4. Merging into `main` runs the **Deploy to GitHub Pages** workflow, and the live site updates a minute or two later.
+3. When `development` is ready to release, follow `.claude/skills/release-skill`: date the CHANGELOG's Unreleased section, bump `APP_VERSION`, and add the version's **What's new** notes to `js/release-notes.js` in English, Urdu and Arabic. Then open a pull request from **`development` → `main`**.
+4. Merging into `main` runs the **Deploy to GitHub Pages** workflow, and the live site updates a minute or two later. The workflow first runs `node tests/release-notes.test.js` and stops if the notes don't match the version. Each user sees the new version's notes once, the next time they open the app.
 
 ## License
 
