@@ -243,8 +243,9 @@ galBody.addEventListener('input', e => { const sk = e.target.closest('.aseek'); 
 galBody.addEventListener('pointerdown', e => { // tap or drag a waveform to seek
   const w = e.target.closest('.wave');
   if (!w) return;
-  e.preventDefault();
   const name = w.closest('.aplayer').dataset.audio;
+  if (!AudioCtl.isCurrent(name)) return; // as in the chat: only the current note seeks
+  e.preventDefault();
   const seek = ev => { const r = w.getBoundingClientRect(); AudioCtl.toggle(name, Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width))); };
   seek(e);
   const mv = ev => { if (ev.buttons) seek(ev); }, up = () => { w.removeEventListener('pointermove', mv); w.removeEventListener('pointerup', up); };

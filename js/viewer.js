@@ -1229,8 +1229,9 @@ let waveDrag = null;
 layer.addEventListener('pointerdown', e => {
   const w = e.target.closest('.wave');
   if (!w) return;
-  e.preventDefault();
   const name = w.closest('.aplayer').dataset.audio;
+  if (!AudioCtl.isCurrent(name)) return; // only the note that is playing (or paused mid-way) can be seeked, so a stray tap while scrolling does nothing
+  e.preventDefault();
   const seek = ev => { const r = w.getBoundingClientRect(); AudioCtl.toggle(name, Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width))); };
   seek(e);
   waveDrag = { w, seek };

@@ -593,7 +593,7 @@ I18N.add('en-US', {
     },
     "voice_notes_and": {
       "title": "Voice notes and audio",
-      "text": "Voice notes get a waveform you can tap or drag to seek, and play at 1×, 1.5× or 2×. Music and other audio files get their own player. Only one plays at a time. Turn on Autoplay voice messages in Settings and voice notes sent one after another play in a row."
+      "text": "Voice notes get a waveform you can tap or drag to seek once a note is playing (taps on other notes are ignored, so scrolling never moves them), and play at 1×, 1.5× or 2×. Music and other audio files get their own player. Only one plays at a time. Turn on Autoplay voice messages in Settings and voice notes sent one after another play in a row."
     },
     "built_in_pdf": {
       "title": "Built-in PDF viewer",

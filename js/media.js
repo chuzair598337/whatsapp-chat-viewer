@@ -237,6 +237,8 @@ const AudioCtl = {
     if (stalled) this.waOnly = true;
     if (e) this.waPlay(e, at ? null : this.at, at);
   },
+  // The note loaded in the player (playing, or paused part-way). Only its waveform and seek bar respond to taps.
+  isCurrent(name) { return !!name && name === this.name && (!!this.wa || !!this.el); },
   playing() { return !!this.name && (this.wa ? this.wa.playing : !!this.el && !this.el.paused); },
   // A note played to its end (not paused or stopped): autoplay may start the next one (js/components/autoplay.js).
   // It runs inside the ended event, so iPhone Safari still counts the first tap and lets the next note sound.
@@ -323,7 +325,8 @@ const AudioCtl = {
     const at = !cur ? 0 : w ? this.waNow() : a.currentTime;
     const frac = d ? at / d : 0;
     const sk = n.querySelector('.aseek');
-    if (sk) sk.value = Math.round(frac * 1000);
+    if (sk) { sk.value = Math.round(frac * 1000); sk.disabled = !cur; }
+    n.classList.toggle('cur', cur);
     const bars = n.querySelectorAll('.wave rect');
     for (let k = 0; k < bars.length; k++) bars[k].classList.toggle('on', cur && (k + 0.5) / bars.length <= frac);
     n.querySelector('.atime').textContent = cur && (at > 0 || playing) ? this.fmt(at) + ' / ' + this.fmt(d) : this.fmt(d);
