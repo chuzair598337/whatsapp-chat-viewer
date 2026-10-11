@@ -67,6 +67,7 @@ I18N.add('en-US', {
     "reading_dates_as": "Reading dates as {format}",
     "guessed": "guessed",
     "and_more": "and {n} more",
+    "show_only": "Show only {name}'s messages",
     "statistics": "Statistics",
     "open_chat": "Open chat",
     "jump_to_date": "Jump to date",
@@ -536,7 +537,7 @@ I18N.add('en-US', {
     },
     "date_and_sender": {
       "title": "Date and sender filters",
-      "text": "Show only the messages between two dates, from one person, or both. A bar above the chat says how many messages are showing, with a button to clear the filters."
+      "text": "Show only the messages between two dates, from one person, or both. Tapping someone under Participants does the same. A bar above the chat says how many messages are showing, with a button to clear the filters."
     },
     "jump_to_a": {
       "title": "Jump to a date",

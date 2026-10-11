@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **Tap a participant to filter by them.** In the side panel's **Participants** list, tapping a person sets the **Sender** filter to them, so only their messages show, and their row is highlighted. Tapping the same person again goes back to **Everyone**. On tablets and phones, picking a sender this way or from the Sender menu also closes the side panel and shows the chat; on a computer the docked panel stays as it is. The rest of the sender filter works as before. The tour's filters step mentions it, in English, Urdu and Arabic. Sample chat: a new message from Usman Tariq on 3 April (8:28 AM); tap his name under Participants.
+
 ## 1.9.0 (2026-10-10)
 
 - **Search text is selected after a search,** found or not, so typing again starts a new search without clearing the field first: after Enter, after picking a recent search, and when you click or tab back into the field. It isn't selected while you type.

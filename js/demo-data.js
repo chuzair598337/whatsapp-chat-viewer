@@ -108,6 +108,8 @@ const SAMPLE = [
   `[03/04/2026, 8:24:00${N}AM] Faisal Qureshi: Develop idea: I'm a developer, so I'll develop a tiny app for our hike logs. Development starts next week and two developers from work want to help.`,
   `[03/04/2026, 8:25:00${N}AM] Ayesha Khan: Parking is booked, codes TRL-2041 and TRL-2042. Keep them handy`,
   `[03/04/2026, 8:26:00${N}AM] Bilal Ahmed: اوپر سبزہ بہت ہے، سب کو مزہ آئے گا`,
+  // Tap a participant in the side panel (Usman Tariq, say) to show only their messages; tap them again for Everyone.
+  `[03/04/2026, 8:28:00${N}AM] Usman Tariq: Tap my name under Participants to see only my messages, tap it again to see everyone`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 // A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.

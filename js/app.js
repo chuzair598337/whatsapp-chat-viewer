@@ -339,7 +339,7 @@ function renderChrome() {
   const maxC = res.participants[0] ? res.participants[0].count : 1;
   $('pCount').textContent = nf(pN);
   $('people').innerHTML = res.participants.slice(0, 80).map(p =>
-    '<div class="person"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><div style="min-width:0"><div class="nm"' + (Nick.has(p.name) ? ' title="' + esc(p.name) + '"' : '') + '>' + esc(nick(p.name)) + (p.name === S.me ? '<em>' + t('common.you') + '</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></div>').join('') +
+    '<button class="person" data-k="' + res.participants.indexOf(p) + '" aria-pressed="false" title="' + esc(t('sidebar.show_only', { name: nick(p.name) }) + (Nick.has(p.name) ? ' (' + p.name + ')' : '')) + '"><span class="av c' + colorIdx(p.name) + '">' + esc(initials(nick(p.name))) + '</span><div style="min-width:0"><div class="nm">' + esc(nick(p.name)) + (p.name === S.me ? '<em>' + t('common.you') + '</em>' : '') + '</div><div class="bar"><i style="width:' + (p.count / maxC * 100).toFixed(1) + '%"></i></div></div><span class="ct">' + nf(p.count) + '<br>' + Math.round(p.count / Math.max(1, real) * 100) + '%</span></button>').join('') +
     (pN > 80 ? '<div class="res-more">' + t('sidebar.and_more', { n: nf(pN - 80) }) + '</div>' : '');
   renderMediaSummary();
   renderFilterUI(); renderStars();
@@ -353,6 +353,15 @@ function renderFilterUI() {
   $('fFrom').value = f.from; $('fTo').value = f.to;
   $('fSender').innerHTML = '<option value="">' + t('filter.everyone') + '</option>' + S.res.participants.slice(0, 300).map(p => '<option value="' + esc(p.name) + '">' + esc(p.name === S.me ? t('filter.name_you', { name: nick(p.name) }) : nick(p.name)) + '</option>').join('');
   $('fSender').value = f.sender;
+  markPeople();
+}
+// The participant who is the sender filter is marked in the side panel's list.
+function markPeople() {
+  const sender = (S.filter || {}).sender || '';
+  for (const b of $('people').querySelectorAll('.person')) {
+    const on = !!sender && S.res.participants[+b.dataset.k].name === sender;
+    b.classList.toggle('on', on); b.setAttribute('aria-pressed', on);
+  }
 }
 function renderFilterBar() {
   const on = filterOn(), f = S.filter || {};
@@ -369,11 +378,24 @@ function applyFilter() {
   let from = $('fFrom').value, to = $('fTo').value;
   if (from && to && from > to) { [from, to] = [to, from]; $('fFrom').value = from; $('fTo').value = to; }
   S.filter = { from, to, sender: $('fSender').value };
+  markPeople();
   buildItems(); VL.set(S.items, { i: 0, off: 0 });
   if (S.q && S.q.trim()) runSearch(S.q); else updateCounts();
 }
 function clearFilters() { S.filter = { from: '', to: '', sender: '' }; renderFilterUI(); applyFilter(); }
-for (const id of ['fFrom', 'fTo', 'fSender']) $(id).addEventListener('change', applyFilter);
+for (const id of ['fFrom', 'fTo']) $(id).addEventListener('change', applyFilter);
+// Picking a sender, from the menu or by tapping a participant, also closes the side panel on phones and
+// tablets so the chat shows. Tapping the participant who is already the filter goes back to Everyone.
+function pickSender(name) {
+  $('fSender').value = name; applyFilter();
+  if (isNarrow()) closeDrawer();
+}
+$('fSender').addEventListener('change', () => pickSender($('fSender').value));
+$('people').addEventListener('click', e => {
+  const b = e.target.closest('.person'); if (!b) return;
+  const name = S.res.participants[+b.dataset.k].name;
+  pickSender((S.filter || {}).sender === name ? '' : name);
+});
 $('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
 
 /* ---------- Starred messages (this session only; nothing is saved) ---------- */
