@@ -66,7 +66,9 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 - **Invisible characters:** removes the direction marks and zero-width characters WhatsApp inserts (U+200E, U+200F, U+202A–U+202E, U+2066–U+2069, U+FEFF), and normalises narrow and no-break spaces.
 - **Message kinds:**
   - Incoming and outgoing messages, based on the **Which one is you?** dialog. It opens when a chat with more than one person loads (and from **You are** in Settings) and lists everyone who wrote, with a name search box when there are more than 12 people.
-    - **Mandatory:** it has no ✕, and `Esc` or a tap outside doesn't close it. Someone is always chosen: in a one-to-one chat the best guess, in a group the person with the most messages (marked **suggested**); **None of these** puts everyone on the left. **Show chat** confirms the choice, and it can be changed later in Settings.
+    - **Mandatory when a chat opens:** it has no ✕, and `Esc` or a tap outside doesn't close it.
+    - **Optional from Settings:** opened from **You are**, it has a ✕ in its header and a **Cancel** button next to **Show chat**, and `Esc` or a tap outside closes it too. Each of these keeps who you were; only **Show chat** changes it. In nickname editing, `Esc` and **Cancel** first go back to choosing.
+    - Someone is always chosen: in a one-to-one chat the best guess, in a group the person with the most messages (marked **suggested**); **None of these** puts everyone on the left. **Show chat** confirms the choice, and it can be changed later in Settings.
     - **Nicknames:** the ✎ button in its header switches to editing. The radio buttons go away, the title becomes **Participants and nicknames**, and each person becomes a field labelled with their exported name and message count, with the placeholder "Nickname (optional)". Every field is optional; an empty one keeps the exported name. `Enter` moves to the next field (and saves from the last one). The footer shows **Cancel** and **Save**: Save stores every change at once (a notification says how many), Cancel or `Esc` drops the edits, and both go back to choosing, with the earlier choice kept. The name search works in both modes.
   - The chat's name on iPhone comes from the sender of its system lines (the encryption notice first). Admin events, which the admin "sends" ("~ Ali: ~ Ali changed this group's icon"), are left out.
   - Multi-line continuations.
@@ -324,7 +326,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 ## 14. Settings
 
 - **Where:** **Settings** in the header's ⋮ menu opens a screen laid out like WhatsApp's Settings. On a phone it slides up as a full-height sheet. ← or `Esc` closes it.
-- **You are:** the card at the top shows who you are in this chat, with your avatar. Tap it to pick another person (or nobody); your messages move to the right in green.
+- **You are:** the card at the top shows who you are in this chat, with your avatar. Tap it to pick another person (or nobody) in **Which one is you?**; your messages move to the right in green. Here the dialog can be closed without a change (✕, **Cancel**, `Esc` or a tap outside).
 - **Chats:**
   - **Theme:** Light, Dark or Match system, in a pick sheet.
   - **Language:** English, اردو or العربية. The whole app redraws in the new language at once, the Settings screen included.
