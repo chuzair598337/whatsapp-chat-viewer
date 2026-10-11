@@ -115,6 +115,9 @@ const SAMPLE = [
   `[03/04/2026, 8:26:00${N}AM] Bilal Ahmed: اوپر سبزہ بہت ہے، سب کو مزہ آئے گا`,
   // Tap a participant in the side panel (Usman Tariq, say) to show only their messages; tap them again for Everyone.
   `[03/04/2026, 8:28:00${N}AM] Usman Tariq: Tap my name under Participants to see only my messages, tap it again to see everyone`,
+  // Keyboard shortcuts (js/components/shortcuts-list.js): on a computer press ? for the list, J and K to move between
+  // messages, then S stars the focused one, Ctrl+C or ⌘C copies it and Enter opens its photo.
+  `[03/04/2026, 8:30:00${N}AM] Sana Mirza: On a laptop? Press ? to see every keyboard shortcut. J and K move between messages, S stars one and Ctrl+C (⌘C on a Mac) copies it`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 // A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.

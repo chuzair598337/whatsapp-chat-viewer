@@ -26,6 +26,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - English, Urdu and Arabic interface, with a right-to-left layout for Urdu and Arabic. Urdu text in the chat is drawn in a Nastaliq font and Arabic in Noto Naskh Arabic, in every interface language, even when a message mixes them with English. Chat text is never translated, and sent messages stay on the right.
 - A WhatsApp-style message menu (long-press, right-click or the ⌄ button): star, copy, download, share and more. In Media, links and docs, sorting, an Autoplay button for audio and an options menu on every item with **Go to message**. A side panel you can hide on large screens.
 - A start screen for picking a chat, plus a sample chat with a guided tour of every feature. **Help and guided tour** in the ⋮ menu brings the tour back.
+- Keyboard shortcuts for every major action, such as `Ctrl+O` / `⌘O` to open a chat, `Ctrl+F` / `⌘F` to search, `Ctrl+,` / `⌘,` for Settings and `J` / `K` to move between messages. Press `?` for the full list, also in Settings and the ⋮ menu.
 - Handles chats of 50,000+ messages smoothly.
 
 The full feature list is in **[docs/features.md](docs/features.md)**, and release notes are in **[CHANGELOG.md](CHANGELOG.md)**.
@@ -128,10 +129,10 @@ python3 -m http.server 8000      # or: npx serve .
 # then open http://localhost:8000
 ```
 
-Run the parser tests with `node tests/parser.test.js` (Node 18 or later, nothing to install).
+Run the parser tests with `node tests/parser.test.js` and the keyboard shortcut tests with `node tests/shortcuts.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/select-messages` → `components/settings` → `components/nicknames` → `components/search-history` → `tour-controller`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/select-messages` → `components/autoplay` → `components/settings` → `components/nicknames` → `components/search-history` → `components/shortcuts-list` → `components/shortcuts` → `tour-controller`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`. The only exception is the opt-in Online link previews in `js/components/link-cards.js` (see PROJECT_RULES.md, section 1).
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 

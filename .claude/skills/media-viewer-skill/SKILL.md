@@ -62,7 +62,7 @@ Never show a broken image or empty space. Never throw.
   - Only pages near the viewport are rendered.
 - **Lightbox controls:**
   - Buttons for zoom in and out, fit, rotate and download.
-  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Esc` (close).
+  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
   - Pinch and double-click zoom.
   - When rotated, `zFit()` scales the photo so it still fits, and `zClamp` swaps width and height so panning stays within bounds.
 - **Showing an image:** use `e.view || e.url` for `src`, so a decoded HEIC copy is used; use `e.url` for downloads and sharing.

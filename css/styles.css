@@ -934,3 +934,28 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .mi-lang { font-weight: 600; font-size: 15px; display: grid; place-items: center; color: var(--ink-3); }
 .mi-lang[lang="ur"] { font-family: "Noto Nastaliq Urdu", var(--font); font-size: 17px; }
 .menu .ml[lang="ur"] { font-family: "Jameel Noori Nastaleeq", "Jameel Noori Nastaliq", "Noto Nastaliq Urdu", var(--font); }
+
+/* ---------- Keyboard shortcuts (js/components/shortcuts.js) ----------
+   The sheet lists each shortcut with its keys as key caps, always left to right. Menus show the key at the end of an item,
+   and the start screen has a link to the sheet; both only where there is a mouse or trackpad, so phones stay uncluttered. */
+.sheet.keys { width: min(620px, 100%); }
+.sheet.keys .body { gap: 18px; }
+.sheet.keys .lead { margin: 0; color: var(--ink-2); font-size: 13.5px; line-height: 1.5; }
+.kgrp h3 { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--accent-ink); }
+.kgrp dl { margin: 0; display: grid; }
+.krow { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+.krow:last-child { border-bottom: 0; }
+.krow dt { font-size: 14px; color: var(--ink); min-width: 0; }
+.krow dd { margin: 0; display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 4px; flex: none; max-width: 60%; }
+.krow.off { opacity: .45; }
+.kc { display: inline-flex; align-items: center; gap: 2px; white-space: nowrap; }
+.kc i, .kor { font-style: normal; color: var(--ink-3); font-size: 12px; }
+.kor { padding-inline: 4px; }
+kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px; background: var(--panel-2); color: var(--ink); font: 500 12.5px/1.4 var(--font); text-align: center; }
+:root[lang="ur"] .krow dt, :root[lang="ur"] .kgrp h3 { line-height: 1.9; }
+.menu .mk { margin-inline-start: 12px; color: var(--ink-3); font-size: 12px; direction: ltr; unicode-bidi: isolate; white-space: nowrap; }
+.menu .mk:empty { display: none; }
+.start-keys { justify-self: center; display: inline-flex; align-items: center; gap: 8px; color: var(--ink-3); font-size: 13px; font-weight: 400; }
+.start-keys kbd { min-width: 0; }
+@media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
+@media (max-width: 640px) { .krow dd { max-width: 55%; } }

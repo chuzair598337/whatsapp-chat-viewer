@@ -56,6 +56,12 @@ const Tour = {
       // Phones: only the "You are" card, so the tour card below doesn't cover the highlight.
       target: () => [visEl(document.querySelector('#setModal .set-prof')), innerWidth > 640 && visEl(document.querySelector('#setModal .set-grp'))]
     },
+    {
+      sec: 'finding', key: 'keys', settings: true,
+      // Settings › Help › Keyboard shortcuts and the Single-key shortcuts switch under it (js/components/shortcuts.js).
+      prep: () => { closeDrawer(); Settings.open(); const r = keysRows()[1]; if (r) r.scrollIntoView({ block: 'center' }); },
+      target: () => keysRows().map(visEl)
+    },
     chatStep({
       sec: 'messages', key: 'whatsapp_formatting',
       rows: () => [rowOf(m => m.message.startsWith('- Meet at'))]
@@ -247,6 +253,8 @@ const Tour = {
   }
 };
 function vis(id) { return visEl($(id)); }
+// Settings › Keyboard shortcuts and the Single-key shortcuts switch under it.
+function keysRows() { const r = document.querySelector('#setModal [data-set="keys"]'), sw = $('singleKeys'); return [r, sw && sw.closest('.set-row')].filter(Boolean); }
 function visEl(el) {
   if (!el || el.hidden || !el.getClientRects().length) return null;
   const b = el.getBoundingClientRect();
@@ -293,7 +301,7 @@ $('scroller').addEventListener('scroll', () => Tour.schedule(), { passive: true 
 $('sidebar').addEventListener('transitionend', () => Tour.schedule()); // the drawer finished sliding in or out
 $('sidebar').addEventListener('scroll', () => Tour.schedule(), { capture: true, passive: true });
 
-// Captured first, so the app's own shortcuts (/, Ctrl+F, Esc) stay quiet while the tour or welcome is up.
+// Captured first, so the app's own shortcuts (js/components/shortcuts.js) stay quiet while the tour or welcome is up.
 document.addEventListener('keydown', e => {
   const welcome = !$('tourWelcome').hidden;
   if (!welcome && !Tour.active()) return;

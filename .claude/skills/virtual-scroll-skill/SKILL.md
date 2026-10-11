@@ -31,6 +31,7 @@ The chat never renders every message. `VL` in `js/viewer.js` keeps only the rows
 - **Width changes go through `VL.relayout()`**, which re-estimates the rows and keeps the position.
 - **Handle row clicks with delegation** on `layer`, not with listeners per row. Rows are recycled.
 - **Keep work out of the hot path.** Never query layout (`offsetHeight`, `getBoundingClientRect`) inside a loop over all items. Only rendered rows may be measured. `makeRow` must stay cheap: no decoding, no network, nothing synchronous over about 1 ms. Hand heavy work (waveforms, posters, PDF thumbnails) to the lazy queues in `viewer.js`.
+- **Keyboard focus on rows:** `J` / `K` (`Keys.move` in `js/components/shortcuts.js`) give the row itself focus (`tabIndex = -1`) and scroll just enough with `VL.target = { i, off }` + `VL.update()`. Shortcuts on a focused message (`S`, `Enter`, `Mod+C`, `Mod+S`, `Space`) find it with `rowMsg(document.activeElement)` and run the message menu's own action, so they follow any change to `MsgMenu.actions`. `VL.refresh()` and `rerenderRow()` replace the row, so call `Keys.refocus(i)` after them when the change came from the keyboard.
 - **Jumping:** go through `S.m2i`. If it's `-1`, the message is filtered out. Clear the filters first (`jumpToMsg` does this), then `VL.scrollTo(S.m2i[i], 'center')`.
 
 ## Checks after a change

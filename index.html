@@ -42,6 +42,7 @@
         <li data-i18n="start.save_the_file_to_your">Save the file to your device or send it to your computer, then open it here. No need to unzip it.</li>
       </ol>
     </details>
+    <button class="linkbtn start-keys" id="startKeys"><span data-i18n="keys.title">Keyboard shortcuts</span> <kbd>?</kbd></button>
     <ul class="start-trust">
       <li id="startT1" data-i18n="start.nothing_is_uploaded_the_chat">Nothing is uploaded: the chat is read in this browser</li>
       <li id="startT2" data-i18n="start.nothing_is_saved_close_the">Nothing is saved: close the tab and it's gone</li>
@@ -103,17 +104,18 @@
         <span class="av" id="headAv"></span>
         <div><div class="t" id="headTitle"></div><div class="s" id="headSub"></div></div>
       </button>
-      <button class="ibtn" id="searchBtn" aria-label="Search (Ctrl+F)" title="Search (Ctrl+F)" data-i18n-attr="aria-label:chat.search_ctrl_f;title:chat.search_ctrl_f"></button>
+      <button class="ibtn" id="searchBtn" aria-label="Search" title="Search" data-i18n-attr="aria-label:chat.search;title:chat.search"></button>
       <button class="ibtn" id="moreBtn" aria-label="Menu" title="Menu" aria-haspopup="menu" aria-expanded="false" aria-controls="moreMenu" data-i18n-attr="aria-label:chat.menu;title:chat.menu"></button>
       <div class="menu" id="moreMenu" role="menu" aria-label="Chat menu" hidden data-i18n-attr="aria-label:menu.chat_menu">
-        <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml" data-i18n="common.media_links_and_docs">Media, links and docs</span></button>
-        <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml" data-i18n="common.starred_messages">Starred messages</span><span class="mc" id="starBadge" hidden></span></button>
-        <button role="menuitem" id="selectBtn"><span class="mi" id="miSelect"></span><span class="ml" data-i18n="sel.select_messages">Select messages</span></button>
-        <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml" data-i18n="common.chat_statistics">Chat statistics</span></button>
-        <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml" data-i18n="menu.open_another_chat">Open another chat</span></button>
+        <button role="menuitem" id="galBtn"><span class="mi" id="miGal"></span><span class="ml" data-i18n="common.media_links_and_docs">Media, links and docs</span><span class="mk" data-key="gallery" aria-hidden="true"></span></button>
+        <button role="menuitem" id="starBtn"><span class="mi" id="miStar"></span><span class="ml" data-i18n="common.starred_messages">Starred messages</span><span class="mc" id="starBadge" hidden></span><span class="mk" data-key="starred" aria-hidden="true"></span></button>
+        <button role="menuitem" id="selectBtn"><span class="mi" id="miSelect"></span><span class="ml" data-i18n="sel.select_messages">Select messages</span><span class="mk" data-key="select" aria-hidden="true"></span></button>
+        <button role="menuitem" id="statsBtn"><span class="mi" id="miStats"></span><span class="ml" data-i18n="common.chat_statistics">Chat statistics</span><span class="mk" data-key="stats" aria-hidden="true"></span></button>
+        <button role="menuitem" id="openBtn"><span class="mi" id="miOpen"></span><span class="ml" data-i18n="menu.open_another_chat">Open another chat</span><span class="mk" data-key="open" aria-hidden="true"></span></button>
         <div class="msep" role="separator"></div>
-        <button role="menuitem" id="setBtn"><span class="mi" id="miSet"></span><span class="ml" data-i18n="menu.settings">Settings</span></button>
+        <button role="menuitem" id="setBtn"><span class="mi" id="miSet"></span><span class="ml" data-i18n="menu.settings">Settings</span><span class="mk" data-key="settings" aria-hidden="true"></span></button>
         <button role="menuitem" id="tourBtn"><span class="mi" id="miHelp"></span><span class="ml" data-i18n="menu.help_and_guided_tour">Help and guided tour</span></button>
+        <button role="menuitem" id="keysBtn"><span class="mi" id="miKeys"></span><span class="ml" data-i18n="keys.title">Keyboard shortcuts</span><span class="mk" data-key="keys" aria-hidden="true"></span></button>
       </div>
       <div id="selbar" class="selbar" hidden role="toolbar" aria-label="Selected messages" data-i18n-attr="aria-label:sel.toolbar">
         <button class="ibtn" id="selClose" aria-label="Cancel selection" title="Cancel selection" data-i18n-attr="aria-label:sel.cancel;title:sel.cancel"></button>
@@ -176,6 +178,13 @@
   <div class="sheet narrow nicks">
     <header><h2 id="nickTitle" data-i18n="nick.title">Participants and nicknames</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
     <div class="body"><p class="lead" data-i18n="nick.lead">Give anyone a nickname to show instead of their name everywhere in this chat. Reset brings back the name from the export. Nicknames are remembered on this device for this chat.</p><div class="searchbox mefilter" id="nickFilterW" hidden><span id="nickFilterIcon"></span><input id="nickFilter" type="search" autocomplete="off" placeholder="Search names" aria-label="Search names" data-i18n-attr="placeholder:me.filter_names;aria-label:me.filter_names"></div><div class="nicklist" id="nickList"></div><p class="menone" id="nickNone" hidden data-i18n="me.no_names_match">No one in this chat matches that name.</p></div>
+  </div>
+</div>
+<!-- Keyboard shortcuts (js/components/shortcuts.js): ? or Mod+/, Settings › Help, the ⋮ menu and the start screen. After Settings, so it sits on top when opened from there. -->
+<div id="keysModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="keysTitle">
+  <div class="sheet keys">
+    <header><h2 id="keysTitle" data-i18n="keys.title">Keyboard shortcuts</h2><button class="ibtn" data-close aria-label="Close" data-i18n-attr="aria-label:common.close"></button></header>
+    <div class="body" id="keysBody"></div>
   </div>
 </div>
 <div id="statsModal" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="statsTitle">
@@ -284,6 +293,8 @@
 <script src="js/components/settings.js"></script>
 <script src="js/components/nicknames.js"></script>
 <script src="js/components/search-history.js"></script>
+<script src="js/components/shortcuts-list.js"></script>
+<script src="js/components/shortcuts.js"></script>
 <script src="js/tour-controller.js"></script>
 </body>
 </html>

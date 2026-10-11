@@ -21,6 +21,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
 15. [Message menu](#15-message-menu)
 16. [Notifications](#16-notifications)
 17. [Selecting messages](#17-selecting-messages)
+18. [Keyboard shortcuts](#18-keyboard-shortcuts)
 
 ---
 
@@ -90,8 +91,8 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 - **Desktop (over 1024 px):** a two-pane layout. The side panel shows the chat card (messages, media, first and last date, file name, size and iPhone or Android format, with **Statistics** and **Open chat** buttons), the chat list when there are several, the filters, the media tiles, jump to date, the participants with their message counts (the first 80, then "and N more") and the privacy note. The chat pane fills the rest. Dragging the grip at the middle of the panel's inner edge makes it wider or narrower (280 px up to half the window, at most 640 px); the arrow keys do the same on the focused grip, Home and End jump to the limits, and a double-click resets it. The width lasts until the page is closed. The ☰ button in the chat header hides the sidebar so the chat takes the full width, and shows it again (not remembered between visits).
 - **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button.
-- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel), the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Select messages**, **Chat statistics**, **Open another chat**, **Settings** and **Help and guided tour**; the arrow keys, Home and End move through it, and Esc or Tab closes it.
-- **Search** from the header's search button (or `/`, `Ctrl/Cmd+F`) opens as a bar under the chat header on every screen size, with ↑ ↓ and a ✕ close button at the end.
+- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel), the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Select messages**, **Chat statistics**, **Open another chat**, **Settings**, **Help and guided tour** and **Keyboard shortcuts**; the arrow keys, Home and End move through it, and Esc or Tab closes it. On a computer each item shows its keyboard shortcut at the end (section 18).
+- **Search** from the header's search button (or `/`, `Ctrl+F`, `⌘F` on a Mac) opens as a bar under the chat header on every screen size, with ↑ ↓ and a ✕ close button at the end.
 - **Not selectable:** the side panel, the header, banners, menus, buttons and date pills can't be selected by dragging or clicking, as in WhatsApp. Message text, search and date fields stay selectable.
 - **Phone polish:** no horizontal scrolling at phone widths, and safe-area insets for notched phones.
 - **Group chats:** each sender's name has its own colour, and each run of their messages starts with an avatar showing their initials in that colour.
@@ -197,20 +198,16 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
   - **ab Whole word:** "develop" finds only the word "develop", not "developer" or "development". A word is letters, digits and `_` in any script, so it works for Urdu and Arabic too: "سب" skips "سبزہ".
   - **.\* Regex (regular expression):** the text is a JavaScript regular expression, for example `TRL-\d+`; `^` and `$` match at the start and end of each line. It ignores case unless Match case is on and keeps whole words when Whole word is on. A pattern that isn't valid shows "Invalid pattern" in red in place of the counter (the reason is in its tooltip), and nothing is searched until it's fixed.
   - **How they look:** on, a toggle is filled green with a green outline; off, it is a plain grey glyph. They report on or off to screen readers. On a computer or tablet they close off the end of the search field; on a phone (600 px or narrower) they sit on their own row under it, with their names.
-  - **Keyboard:** `Alt+C`, `Alt+W` and `Alt+R` while the search bar has focus.
+  - **Keyboard:** `Alt+C`, `Alt+W` and `Alt+R` (`⌥C`, `⌥W`, `⌥R` on a Mac) while the search bar has focus.
   - They stay as set while the page is open and go back to off when it reloads; nothing is stored.
-- **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter`.
+- **Moving between matches:** Prev/Next buttons, `Enter` and `Shift+Enter` in the field, and `F3` / `Shift+F3` or `Ctrl+G` / `Ctrl+Shift+G` (`⌘G` / `⇧⌘G`) while the bar is open.
 - **Recent searches** (`js/components/search-history.js`): when the search field gets focus, a list under it shows your last 7 searches, newest first. Typing narrows it to the searches that contain the text. A search is added when you submit it (`Enter`, ↑ ↓, or picking it from the list); searching for the same words again moves them to the top instead of adding a copy, and the oldest drops off past 7. Click one to fill the bar and run it. Each has a ✕ that removes only that one, and **Clear all** in the list's heading removes them all after a confirmation dialog (Cancel has focus, so a stray Enter or tap changes nothing; Esc or a tap outside cancels too). Keyboard: ↓ moves from the field into the list, ↑ ↓ move through it, `Delete` removes the focused search, `Esc` closes the list. A click outside or leaving the field closes it too. The list is shared by every chat and kept on this device (`chat_search_history`). It mirrors in Urdu and Arabic.
 - **Sticky date header:** shows the current day while you scroll and fades out shortly after you stop, as in WhatsApp, so it doesn't cover the first message on screen.
 - **Filters:** in the sidebar, pick a **From** and **To** date and/or a **Sender**. Tapping someone in the side panel's **Participants** list also sets the Sender filter to them (their row is highlighted), and tapping them again sets it back to **Everyone**. On tablets and phones, picking a sender either way closes the side panel and shows the chat; on a computer the docked panel stays open. Only matching messages are shown, and a bar above the chat says "Showing N of M messages" with a **Clear filters** button. Search, jump-to-date and the starred list respect the filters; jumping to a hidden starred message clears them first.
 - **Starred messages:** open a message's menu (right-click, long-press or the ⌄ button) and pick **Star**. Starred messages show a small star by the time. **Starred messages** in the header's ⋮ menu opens a panel listing them, newest last; click one to jump to it. The panel's title shows how many there are. Stars are kept in memory only while the chat is open and are never saved (see [deferred.md](deferred.md)).
 - **Jump to date:** a date picker in the sidebar, plus the busiest days listed in Statistics, take you straight to that day.
 - **Jump buttons:** jump-to-bottom and back-to-top buttons appear when you're away from either end.
-- **Keyboard shortcuts:**
-  - `/` or `Ctrl/Cmd+F` opens search. `/` is ignored while you're typing in a field.
-  - `Esc`: in the search field it closes the recent searches list, then clears the text, then closes the bar. Elsewhere it closes, in order, the dialog on top (a pick sheet before the gallery under it), the starred panel, the search bar and the drawer. It also closes the ⋮ menu and the message menu.
-  - `Shift+F10` or the menu key on a focused message opens its message menu, and on a focused gallery item opens its options.
-  - In the photo viewer: `+`, `-`, `0`, `R`, arrow keys and `Esc`. In the PDF viewer: `+`, `-`, `0` and `Esc`.
+- **Keyboard shortcuts:** see section 18.
 
 ## 8. Statistics
 
@@ -257,12 +254,12 @@ The statistics window shows:
   - a "video omitted" placeholder.
 
   New features add a line to it; see PROJECT_RULES.md, section 5.
-- **Guided tour:** 25 steps under five chapter labels. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
+- **Guided tour:** 26 steps under five chapter labels. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
   1. **Getting started:** opening a chat; the timeline and date badges.
-  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters (also by tapping a participant); jump to date; statistics; media, links and docs (with each item's options, Go to message and the Audio autoplay button); Settings (who you are, nicknames, theme, language, pattern, date format, Online link previews and Autoplay voice messages).
+  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters (also by tapping a participant); jump to date; statistics; media, links and docs (with each item's options, Go to message and the Audio autoplay button); Settings (who you are, nicknames, theme, language, pattern, date format, Online link previews and Autoplay voice messages); keyboard shortcuts (Settings › Keyboard shortcuts and the Single-key shortcuts switch).
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
   4. **Media:** photos; videos and GIFs; stickers; voice notes and audio (with Autoplay voice messages); the PDF viewer; contact cards; locations; links (logos, link types and the Online link previews switch).
-  5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
+  5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help, keyboard shortcuts), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts (press `?` for the list). It also says what exports leave out (forwarded labels, event details, live locations).
 
   The card shows the chapter, the step number and a progress bar. The pinned date header is hidden during the tour so it doesn't cover a highlighted message.
 
@@ -304,11 +301,14 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/components/message-menu.js` | The message menu: long-press, right-click, the ⌄ button and Shift+F10, and its actions |
 | `js/components/autoplay.js` | Autoplay: the `cv-autoplay` switch, the next voice note in the chat or the next audio in the gallery when one ends, and the gallery's Autoplay button |
 | `js/components/select-messages.js` | Selecting messages: the selection bar, Star, Copy and Share for several messages |
+| `js/components/shortcuts-list.js` | Every keyboard shortcut: its keys on a Mac and elsewhere, where it works, its name and what it does |
+| `js/components/shortcuts.js` | The one keyboard handler for the shortcuts, the Keyboard shortcuts sheet, and the shortcut hints in menus and tooltips |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
 | `css/settings.css` | The Settings screen, pick sheet and Participants and nicknames sheet |
 | `tests/parser.test.js` | Parser tests (`node tests/parser.test.js`) |
+| `tests/shortcuts.test.js` | Keyboard shortcut list tests: every name in en, ur and ar, no clashing or browser-reserved keys (`node tests/shortcuts.test.js`) |
 
 ## 13. Interface languages
 
@@ -340,11 +340,11 @@ The scripts are plain browser scripts with no build step. They share globals and
     - Nicknames can also be set from **Which one is you?**, which opens with every new chat (and from **You are** in Settings), with the ✎ button in its header.
     - Kept on this device per chat (`chat_nicknames_<id>`, where the id comes from everyone's exported name and the first message), so the same export opens with the same nicknames and other chats never share them.
   - **Chat statistics**.
-- **Help:** **Help and guided tour**, the version and the privacy note.
-- **What is remembered:** the theme, language, background pattern, Online link previews and Autoplay voice messages, nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
+- **Help:** **Help and guided tour**, **Keyboard shortcuts** (opens the list, section 18), **Single-key shortcuts** (on by default; turns off the shortcuts that are a single key without Ctrl, ⌘ or Alt, such as `M`, `J` and `?`, for people whose screen reader or voice control uses those keys), the version and the privacy note.
+- **What is remembered:** the theme, language, background pattern, Online link previews, Autoplay voice messages and Single-key shortcuts (`cv-single-keys`), nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
 - **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
-- **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The one shortcut is the **Autoplay** button in Media, links and docs (on Audio), which flips the same Autoplay voice messages switch. The side panel keeps **Jump to date**. The start screen keeps its English / اردو / العربية switch, because no chat is open there yet.
+- **No settings anywhere else.** The ⋮ menu and the side panel hold only actions for the open chat. The one shortcut is the **Autoplay** button in Media, links and docs (on Audio), which flips the same Autoplay voice messages switch. **Keyboard shortcuts** in the ⋮ menu is help, like Help and guided tour: it opens the list and changes nothing. The side panel keeps **Jump to date**. The start screen keeps its English / اردو / العربية switch, because no chat is open there yet.
 
 ## 15. Message menu
 
@@ -361,7 +361,7 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Download:** one entry per attached file (photo, video, voice note, sticker, document, contact card), named by file when there are several.
   - **Select:** starts selecting messages with this one picked (see below).
   - **Share:** the device's share sheet with the files, or the text. It is offered only where the page may open the share sheet (not in browsers without one, nor inside a frame that blocks it, such as the dev preview); if sharing is refused anyway, the message is copied instead. It stands in for Forward. Reply, Forward, Delete and React need a live chat, so they aren't offered.
-- **Keyboard:** ↑ ↓, Home and End move; Enter runs; Esc closes and returns focus to the message. Scrolling, resizing, switching language or a press outside closes it.
+- **Keyboard:** ↑ ↓, Home and End move; Enter runs; Esc closes and returns focus to the message. Scrolling, resizing, switching language or a press outside closes it. On a computer, Star, Copy, View photo, Open document, View contact, Download (one file) and Select show the key that does the same on a focused message (section 18).
 
 ## 16. Notifications
 
@@ -391,3 +391,28 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Copy** the picked messages as text, oldest first, one per message: `[Mar 14, 2026, 8:03 AM] Ayesha Khan: …`, with attachments as `<file name>`;
   - **Share** them through the device's share sheet, as that text plus their files where the device can share files. As with a single message, Share is only offered where the page may open the share sheet; if it's refused, the text is copied instead.
 - **Ending:** ✕, `Esc`, or sharing them. Opening another chat ends it too. Nothing about a selection is stored.
+
+## 18. Keyboard shortcuts
+
+`js/components/shortcuts-list.js` lists every shortcut; `js/components/shortcuts.js` handles the keys and draws the list. Mod is `⌘` (Command) on a Mac and `Ctrl` on Windows and Linux; on a Mac, `Ctrl` combinations are left to the browser.
+
+- **Where to see them all:** the **Keyboard shortcuts** sheet. Open it with `?` or `Ctrl+/` (`⌘/`), from Settings › Help › **Keyboard shortcuts**, from the ⋮ menu, or from the **Keyboard shortcuts ?** link on the start screen (computers only). It lists every shortcut by group with its keys as key caps, in English, Urdu or Arabic (key names stay as printed on the keyboard). On the start screen it shows only what works there. `?`, `Esc` or ✕ closes it.
+- **Hints where things are:** on a computer, items in the ⋮ menu and the message menu show their key at the end, and buttons such as search, the search options, ↑ ↓, the jump buttons, Download and Go to message name their key in the tooltip and to screen readers (`aria-keyshortcuts`). Phones and tablets without a mouse don't show them.
+- **Anywhere in a chat:**
+  - `Ctrl+O` / `⌘O` open a chat export (also on the start screen);
+  - `Ctrl+F` / `⌘F` or `/` search;
+  - `Ctrl+,` or `Ctrl+Shift+S` (`⌘,` or `⇧⌘S`) Settings;
+  - `?` or `Ctrl+/` (`⌘/`) the shortcuts list;
+  - `M` Media, links and docs; `*` starred messages; `X` select messages; `I` chat statistics; `P` participants and nicknames; `D` jump to date; `[` show or hide the side panel;
+  - `J` / `K` next and previous message (keyboard focus moves to it and the chat scrolls just enough to show it);
+  - `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) first and latest message;
+  - `Alt+↓` / `Alt+↑` (`⌥↓` / `⌥↑`) next and previous chat, when several are open;
+  - `Esc` closes, in order, the dialog on top, the starred panel, the search bar and the side drawer. "Which one is you?" opened for a new chat can't be closed this way.
+- **On a message that has focus** (after `J` or `K`, or Go to message): `Shift+F10` or the menu key opens its menu; `Enter` opens its photo, PDF or contact; `S` stars or unstars it; `Ctrl+C` / `⌘C` copies it (when no text is selected); `Ctrl+S` / `⌘S` downloads its file; `Space` plays or pauses its voice message, and `←` / `→` go back or forward 5 seconds while it plays; `X` starts selecting with it.
+- **Search bar:** `Enter` / `Shift+Enter`, `F3` / `Shift+F3` and `Ctrl+G` / `Ctrl+Shift+G` (`⌘G` / `⇧⌘G`) step through matches; `Alt+C`, `Alt+W`, `Alt+R` (`⌥C`, `⌥W`, `⌥R`) switch Match case, Whole word and Regex; `↓` goes into the recent searches.
+- **Selecting messages:** `Space` or `Enter` picks or unpicks a message; `Ctrl+C` / `⌘C` copies the picked messages; `S` stars them; `Esc` stops selecting.
+- **Photo and PDF viewer:** `←` `→` previous and next photo (swapped in Urdu and Arabic); `+` `-` zoom; `0` fit; `R` rotate; `Space` plays or pauses a video; `Page Down` / `Page Up` move through a PDF; `G` goes to the photo's message; `Ctrl+S` / `⌘S` downloads the photo or PDF; `Esc` closes.
+- **Media, links and docs:** `1` to `8` switch to All, Photos, Videos, Audio, Documents, Stickers, Links or Contacts; `←` `→` move between those tabs; `Shift+F10` opens the focused item's options; `Ctrl+S` / `⌘S` downloads it; `Esc` closes.
+- **When they don't fire:** while the guided tour or a menu is open, behind another dialog (only `Esc` works there), and, for keys without Ctrl, ⌘ or Alt, while typing in a field or composing with an input method. Single keys can be turned off in Settings; the list then shows them greyed out.
+- **Browser keys are left alone:** new and close tab or window, page zoom (`Ctrl` `+` `-` `0`), back and forward, the address bar, reload, print, bookmarks, history and downloads. `Ctrl+S` is only taken where there is a file to save. On a Mac, `⌘,` may open the browser's own settings in some browsers; `⇧⌘S` works there instead. In Firefox and Edge, `Ctrl+Shift+S` may open the browser's screenshot tool; `Ctrl+,` works there instead.
+- **Any keyboard layout:** letter keys also work with an Urdu or Arabic layout, matched by the key's position.

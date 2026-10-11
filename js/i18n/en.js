@@ -77,7 +77,7 @@ I18N.add('en-US', {
   },
   "chat": {
     "show_chat_details": "Show chat details",
-    "search_ctrl_f": "Search (Ctrl+F)",
+    "search": "Search",
     "menu": "Menu",
     "messages": "Messages",
     "jump_to_first_message": "Jump to first message",
@@ -108,11 +108,11 @@ I18N.add('en-US', {
     "first_only": "Showing the first {lim} of {n}. Use the arrows to step through all of them.",
     "options": "Search options",
     "match_case": "Match case",
-    "match_case_tip": "Match case (Alt+C)",
+    "match_case_tip": "Match case",
     "whole_word": "Whole word",
-    "whole_word_tip": "Whole word (Alt+W)",
+    "whole_word_tip": "Whole word",
     "regex": "Regex",
-    "regex_tip": "Regular expression (Alt+R)",
+    "regex_tip": "Regular expression",
     "invalid_pattern": "Invalid pattern"
   },
   "banner": {
@@ -613,16 +613,62 @@ I18N.add('en-US', {
     },
     "menu": {
       "title": "The ⋮ menu",
-      "text": "Media, links and docs, your starred messages, chat statistics, Settings and this tour are all here. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star."
+      "text": "Media, links and docs, your starred messages, chat statistics, Settings, this tour and the keyboard shortcuts are all here. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star."
     },
     "all_set": {
       "title": "You're all set",
-      "html": "<ul><li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li><li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li><li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li><li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li><li><b>The chat isn't saved.</b> Close the tab and it's gone. Only your settings, nicknames and recent searches are remembered.</li><li><b>Shortcuts:</b> / to search, Esc to close, and + − 0 R and the arrow keys in the photo viewer.</li></ul><p class=\"tour-note\">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can't be shown here.</p>"
+      "html": "<ul><li><b>Private and offline.</b> Your chat is read inside this browser. Nothing is uploaded and the page makes no network requests.</li><li><b>iPhone and Android exports,</b> as a .zip with media or a .txt on its own, in any date and time format.</li><li><b>Big chats,</b> tens of thousands of messages, open in seconds and scroll smoothly.</li><li><b>Several chats at once:</b> pick or drop more than one and switch between them in the side panel.</li><li><b>The chat isn't saved.</b> Close the tab and it's gone. Only your settings, nicknames and recent searches are remembered.</li><li><b>Keyboard shortcuts:</b> press ? any time for the full list, like Ctrl+F (⌘F on a Mac) to search and J and K to move between messages.</li></ul><p class=\"tour-note\">WhatsApp leaves forwarded labels, event details and live locations out of exports, so they can't be shown here.</p>"
     },
     "settings": {
       "title": "Settings",
       "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you."
+    },
+    "keys": {
+      "title": "Keyboard shortcuts",
+      "text": "On a computer, press ? any time to see every keyboard shortcut. The list is also here in Settings and in the ⋮ menu, with a switch to turn off the single-key ones if they get in the way.",
+      "textNarrow": "With a keyboard attached, press ? any time to see every shortcut. The list is also here in Settings."
     }
+  },
+  "keys": {
+    "title": "Keyboard shortcuts",
+    "settings_sub": "Every shortcut, and where it works. Press ? to open this list.",
+    "single": "Single-key shortcuts",
+    "single_sub": "Keys like M, J and ? without Ctrl or ⌘. Turn off if they get in the way of a screen reader or voice control.",
+    "single_off": "Single-key shortcuts are off in Settings.",
+    "lead_mac": "On this Mac, ⌘ is the Command key, ⇧ is Shift and ⌥ is Option. Keys without ⌘ don't work while you're typing in a field.",
+    "lead_other": "Keys without Ctrl don't work while you're typing in a field. On a Mac, use ⌘ instead of Ctrl.",
+    "or": "or",
+    "g_general": "Anywhere in a chat",
+    "g_message": "On a message (move to it with J or K)",
+    "g_search": "Search",
+    "g_select": "Selecting messages",
+    "g_viewer": "Photo and PDF viewer",
+    "open": "Open a chat export",
+    "search": "Search in this chat",
+    "toggle_panel": "Show or hide the side panel",
+    "next_message": "Next message",
+    "prev_message": "Previous message",
+    "next_chat": "Next chat in the list",
+    "prev_chat": "Previous chat in the list",
+    "close": "Close the window or panel on top",
+    "msg_menu": "Message menu",
+    "msg_open": "Open its photo, PDF or contact",
+    "msg_star": "Star or unstar",
+    "download": "Download",
+    "msg_play": "Play or pause its voice message",
+    "msg_seek": "Back or forward 5 seconds while it plays",
+    "msg_select": "Start selecting with this message",
+    "next_match": "Next match",
+    "prev_match": "Previous match",
+    "recent": "Recent searches (from the search field)",
+    "sel_pick": "Pick or unpick the message",
+    "sel_copy": "Copy the picked messages",
+    "sel_star": "Star the picked messages",
+    "play_video": "Play or pause the video",
+    "pdf_page": "Next or previous page",
+    "gal_tab": "Switch to a tab (All, Photos, Videos, …)",
+    "gal_tabs": "Move between tabs",
+    "gal_menu": "Options for the focused item"
   },
   "settings": {
     "title": "Settings",
