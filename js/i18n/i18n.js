@@ -65,4 +65,6 @@ function applyI18n(rootEl) {
   }
 }
 // The saved choice, or English. viewer.js applies it before building the date formats.
-I18N.saved = (() => { try { return localStorage.getItem('app_language'); } catch (e) { return null; } })() || 'en-US';
+// stored is what was saved before this visit (set() saves it again): What's new uses it to tell a returning user.
+I18N.stored = (() => { try { return localStorage.getItem('app_language'); } catch (e) { return null; } })();
+I18N.saved = I18N.stored || 'en-US';

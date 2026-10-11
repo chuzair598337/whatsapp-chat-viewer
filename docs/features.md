@@ -21,6 +21,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
 15. [Message menu](#15-message-menu)
 16. [Notifications](#16-notifications)
 17. [Selecting messages](#17-selecting-messages)
+18. [What's new](#18-whats-new)
 
 ---
 
@@ -35,7 +36,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
   - It runs with `eval` disabled and with no font or CMap URLs, so it never fetches anything. Disabling `eval` is also the documented fix for CVE-2024-4367 in this version. A newer pdf.js only ships as ES modules, which a page opened from disk can't load, so 3.11 stays for now.
 - **Safe rendering.** Message text is HTML-escaped before formatting is applied. Links are only made clickable when they are `http://` or `https://`, and they open with `target="_blank" rel="noopener noreferrer"`. A message containing `<script>` tags or `javascript:` URLs shows as plain text.
 - **Memory hygiene.** Media is turned into `blob:` URLs that only this tab can read. Every URL, decoded waveform and video poster is revoked when another chat is opened. A new archive's media is only swapped in after its chat parses successfully, so a bad file never leaves the viewer half-loaded.
-- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`), the Online link previews switch (`cv-online-links`), Autoplay voice messages (`cv-autoplay`) and whether the welcome tour has been seen (`has_completed_walkthrough`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
+- **What is stored on the device.** The theme (`cv-theme`), the language (`app_language`), the background pattern (`cv-doodle`), the Online link previews switch (`cv-online-links`), Autoplay voice messages (`cv-autoplay`), whether the welcome tour has been seen (`has_completed_walkthrough`) and the last version whose What's new popup was seen (`cv-seen-version`) are stored in `localStorage`. So are, only once you use them, the nicknames you give people (`chat_nicknames_<id>`, one entry per chat, holding each renamed person's exported name and nickname) and your last 7 searches (`chat_search_history`). Who you are and the date order belong to the open chat and are not stored. Messages and media are never stored, and nothing stored ever leaves the device.
 
 ## 2. File ingestion: .txt and .zip
 
@@ -259,7 +260,7 @@ The statistics window shows:
   New features add a line to it; see PROJECT_RULES.md, section 5.
 - **Guided tour:** 25 steps under five chapter labels. Each one dims the page and spotlights the real control or a real message in the sample chat, scrolling the timeline to it first. On phones and tablets, the sidebar steps open the side panel.
   1. **Getting started:** opening a chat; the timeline and date badges.
-  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters (also by tapping a participant); jump to date; statistics; media, links and docs (with each item's options, Go to message and the Audio autoplay button); Settings (who you are, nicknames, theme, language, pattern, date format, Online link previews and Autoplay voice messages).
+  2. **Finding things:** search (with Match case, Whole word, Regex and recent searches); date and sender filters (also by tapping a participant); jump to date; statistics; media, links and docs (with each item's options, Go to message and the Audio autoplay button); Settings (who you are, nicknames, theme, language, pattern, date format, Online link previews and Autoplay voice messages, and What's new under About).
   3. **Messages:** formatting; Read more; edited, deleted and replies; reactions; system notices; calls; polls.
   4. **Media:** photos; videos and GIFs; stickers; voice notes and audio (with Autoplay voice messages); the PDF viewer; contact cards; locations; links (logos, link types and the Online link previews switch).
   5. The ⋮ menu (media, links and docs, starred messages, statistics, Settings, help), then a closing card, **What this viewer can do**: private and offline, iPhone and Android exports as .zip or .txt, big chats, several chats at once, nothing saved, and the keyboard shortcuts. It also says what exports leave out (forwarded labels, event details, live locations).
@@ -305,10 +306,13 @@ The scripts are plain browser scripts with no build step. They share globals and
 | `js/components/autoplay.js` | Autoplay: the `cv-autoplay` switch, the next voice note in the chat or the next audio in the gallery when one ends, and the gallery's Autoplay button |
 | `js/components/select-messages.js` | Selecting messages: the selection bar, Star, Copy and Share for several messages |
 | `js/app.js` | File opening and the chat list, reactions, filters, starred messages, search, statistics, modals, theme, drawer, and loading the sample chat |
+| `js/release-notes.js` | The What's new notes: for each version, what's new, improved and fixed, in English, Urdu and Arabic |
+| `js/components/whats-new.js` | The What's new popup: which versions this device hasn't seen (`cv-seen-version`), waiting for other dialogs, and showing it |
 | `js/tour-controller.js` | Sample-chat button on the start screen, the `?` dialog, the guided tour (spotlight, card placement, keyboard) and the `has_completed_walkthrough` flag |
 | `css/styles.css` | All styles and theme tokens |
 | `css/settings.css` | The Settings screen, pick sheet and Participants and nicknames sheet |
 | `tests/parser.test.js` | Parser tests (`node tests/parser.test.js`) |
+| `tests/release-notes.test.js` | Checks the newest release notes match `APP_VERSION` and the CHANGELOG, in all three languages, and how the popup picks versions; the deploy runs it |
 
 ## 13. Interface languages
 
@@ -340,7 +344,7 @@ The scripts are plain browser scripts with no build step. They share globals and
     - Nicknames can also be set from **Which one is you?**, which opens with every new chat (and from **You are** in Settings), with the ✎ button in its header.
     - Kept on this device per chat (`chat_nicknames_<id>`, where the id comes from everyone's exported name and the first message), so the same export opens with the same nicknames and other chats never share them.
   - **Chat statistics**.
-- **Help:** **Help and guided tour**, the version and the privacy note.
+- **Help:** **Help and guided tour**, **About** (the version; tap it for **What's new**, every version's notes) and the privacy note.
 - **What is remembered:** the theme, language, background pattern, Online link previews and Autoplay voice messages, nicknames (per chat) and recent searches, on this device. Who you are and the date format apply to the open chat only.
 - **Pick sheets** have a ✕ close button at the right of the title; tapping outside or `Esc` closes them too, without a change.
 - **Keyboard:** each row is a button; pick sheets are radio lists (arrow keys move, Enter or Space picks). Focus stays inside the open sheet and returns to the row afterwards.
@@ -391,3 +395,16 @@ The scripts are plain browser scripts with no build step. They share globals and
   - **Copy** the picked messages as text, oldest first, one per message: `[Mar 14, 2026, 8:03 AM] Ayesha Khan: …`, with attachments as `<file name>`;
   - **Share** them through the device's share sheet, as that text plus their files where the device can share files. As with a single message, Share is only offered where the page may open the share sheet; if it's refused, the text is copied instead.
 - **Ending:** ✕, `Esc`, or sharing them. Opening another chat ends it too. Nothing about a selection is stored.
+
+## 18. What's new
+
+- **Once per version:** after a new version is released, the next time the app opens a **What's new** popup lists what changed, grouped under **New** (green), **Improved** (blue) and **Fixed** (amber) badges, one short sentence per item. **Got it**, ✕, `Esc` or a tap outside closes it, and it doesn't come back for that version on that device.
+- **Who sees what:**
+  - Someone opening the app for the first time sees nothing; they get the start screen and the tour.
+  - Someone who used a version from before the popup existed sees the current version's notes.
+  - Someone who skipped versions sees every version they missed, newest first, each with its version number and date, up to three.
+- **When:** at start-up, on the start screen. If another dialog, the tour or the loading screen is open, it waits until they close.
+- **Stored:** the last version seen (`cv-seen-version` in `localStorage`), saved when the popup closes. If the browser can't store it (some private modes), the popup isn't shown, so it never repeats on every visit.
+- **Any time:** Settings › Help › **About** opens it with every version's notes.
+- **Languages:** the notes and their labels are in English, Urdu and Arabic, following the interface language (right to left in Urdu and Arabic).
+- **Where the notes come from:** `js/release-notes.js`, a list written at each release from the CHANGELOG (see `.claude/skills/release-skill`). The deploy runs `node tests/release-notes.test.js`, which stops a release whose notes don't match its version.

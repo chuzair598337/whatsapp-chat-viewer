@@ -611,7 +611,7 @@ $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(
 /* ---------- Modals ---------- */
 // Each modal remembers what had focus, so one opened from another (a contact from the media gallery) returns to the right place.
 function openModal(id) { const m = $(id); if (m.hidden) m.ret = document.activeElement; m.hidden = false; Dialogs.open(m); const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
-function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
+function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); m.dispatchEvent(new Event('modalclose')); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
   // A mandatory dialog (data-mandatory, "Which one is you?" when a chat opens) doesn't close on a tap outside.
   m.addEventListener('click', e => { if ((e.target === m && !m.hasAttribute('data-mandatory')) || e.target.closest('[data-close]')) closeModal(m.id); });
@@ -887,7 +887,7 @@ document.addEventListener('keydown', e => {
     // "Which one is you?": Esc first leaves its nickname editing. When a chat opens it is mandatory, so Esc never closes it
     // or what is under it; opened from Settings, Esc closes it without a change.
     if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); else if (MeUI.optional) closeModal('meModal'); return; }
-    const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
+    const ids = ['wnModal', 'cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
     const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
     if (top) { closeModal(top.id); return; }
     if (!$('starPanel').hidden) { closeStars(); return; }

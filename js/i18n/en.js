@@ -621,7 +621,7 @@ I18N.add('en-US', {
     },
     "settings": {
       "title": "Settings",
-      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you."
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you. About shows what's new in each version."
     }
   },
   "settings": {
@@ -718,5 +718,12 @@ I18N.add('en-US', {
     "clear_text": "Every saved search is removed from this device. This can't be undone.",
     "clear": "Clear",
     "cleared": "Recent searches cleared"
+  },
+  "whats_new": {
+    "title": "What's new",
+    "got_it": "Got it",
+    "new": "New",
+    "improved": "Improved",
+    "fixed": "Fixed"
   }
 });
