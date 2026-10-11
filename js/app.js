@@ -613,7 +613,7 @@ $('statsBtn').onclick = openStats; $('cardStats').onclick = () => { closeDrawer(
 function openModal(id) { const m = $(id); if (m.hidden) m.ret = document.activeElement; m.hidden = false; Dialogs.open(m); const f = m.querySelector('[data-close], button'); if (f) f.focus(); }
 function closeModal(id) { const m = $(id); m.hidden = true; Dialogs.close(m); if (m.ret && m.ret.focus && document.contains(m.ret)) m.ret.focus(); }
 for (const m of document.querySelectorAll('.modal')) {
-  // A mandatory dialog (data-mandatory, "Which one is you?") doesn't close on a tap outside.
+  // A mandatory dialog (data-mandatory, "Which one is you?" when a chat opens) doesn't close on a tap outside.
   m.addEventListener('click', e => { if ((e.target === m && !m.hasAttribute('data-mandatory')) || e.target.closest('[data-close]')) closeModal(m.id); });
 }
 // Asks before something that can't be undone. Cancel has focus first, so Enter or a stray tap does nothing harmful;
@@ -627,17 +627,18 @@ function confirmDialog(title, text, ok, done) {
 }
 $('cfCancel').onclick = () => { cfDone = null; closeModal('cfModal'); };
 $('cfOk').onclick = () => { const d = cfDone; cfDone = null; if (d) d(); closeModal('cfModal'); }; // done first: focus goes back to a page that already shows the result
-/* "Which one is you?": shown when a chat opens and from Settings › You are. It is mandatory: there is no ✕, and
-   Esc or a tap outside doesn't close it; Show chat confirms the choice. Someone is always chosen: who you are,
+/* "Which one is you?": shown when a chat opens and from Settings › You are. When a chat opens it is mandatory: there
+   is no ✕, and Esc or a tap outside doesn't close it; Show chat confirms the choice. From Settings (optional) it has a
+   ✕ and a Cancel button, and Esc or a tap outside closes it too, all keeping who you were. Someone is always chosen: who you are,
    else the suggested person (the most messages), else nobody ("None of these").
    The ✎ in its header switches to editing nicknames: the radio buttons go, and each person becomes a field
    labelled with their exported name (all optional; empty keeps that name). Save stores them all and Cancel drops
    the edits; both go back to choosing, with the earlier choice kept. Big groups get a name filter in both modes. */
-const MeUI = { editing: false, sel: null };
-function openMeModal() {
+const MeUI = { editing: false, sel: null, optional: false };
+function openMeModal(optional) {
   const ps = S.res.participants, many = ps.length > 12, open = !$('meModal').hidden;
   const sug = S.meGuess && S.meGuess !== 'You' && ps.some(p => p.name === S.meGuess) ? S.meGuess : null;
-  if (!open) { MeUI.editing = false; MeUI.sel = S.me || sug || ''; $('meFilter').value = ''; }
+  if (!open) { MeUI.editing = false; MeUI.optional = !!optional; MeUI.sel = S.me || sug || ''; $('meFilter').value = ''; $('meModal').toggleAttribute('data-mandatory', !MeUI.optional); }
   else if (!MeUI.editing) { const r = document.querySelector('input[name="me"]:checked'); if (r) MeUI.sel = r.value; }
   const ed = MeUI.editing, fkey = p => esc(fold(p.name + (Nick.has(p.name) ? ' ' + nick(p.name) : '')));
   const count = p => t('me.n_messages', { n: p.count === 1 ? 1 : nf(p.count) });
@@ -654,7 +655,7 @@ function openMeModal() {
       (p.name === sug ? ' · <b>' + t('me.suggested') + '</b>' : '') + '</small></span></label>').join('') +
       '<label class="meopt"><input type="radio" name="me" value=""' + (!MeUI.sel ? ' checked' : '') + '><span class="av" style="background:var(--bar-track);color:var(--ink-2)">–</span><span>' + t('me.none_of_these') + '<small>' + t('me.everyone_left') + '</small></span></label>';
   $('meEdit').hidden = ed;
-  $('meDone').hidden = ed; $('meSave').hidden = !ed; $('meCancel').hidden = !ed;
+  $('meDone').hidden = ed; $('meSave').hidden = !ed; $('meCancel').hidden = !ed && !MeUI.optional; $('meClose').hidden = !MeUI.optional;
   $('meFilterW').hidden = !many;
   if (!many) $('meFilter').value = '';
   filterMe();
@@ -682,7 +683,7 @@ function meSave() {
 $('meFilter').addEventListener('input', filterMe);
 $('meFilterIcon').innerHTML = ICON.search.replace('width="22" height="22"', 'width="18" height="18"');
 $('meEdit').onclick = () => meMode(true);
-$('meCancel').onclick = () => meMode(false);
+$('meCancel').onclick = () => { if (MeUI.editing) meMode(false); else closeModal('meModal'); }; // drops the nickname edits, or (from Settings) closes
 $('meSave').onclick = meSave;
 // In edit mode Enter moves to the next field, and saves from the last one.
 $('meList').addEventListener('keydown', e => {
@@ -883,8 +884,9 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f' && S.msgs.length) { e.preventDefault(); openSearch(); }
   else if (e.key === 'Escape') {
     // The dialog on top closes first (the sort sheet before the gallery, a contact before the gallery).
-    // "Which one is you?" is mandatory: Esc only leaves its nickname editing, and never closes it or what is under it.
-    if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); return; }
+    // "Which one is you?": Esc first leaves its nickname editing. When a chat opens it is mandatory, so Esc never closes it
+    // or what is under it; opened from Settings, Esc closes it without a change.
+    if (!$('meModal').hidden && Dialogs.stack[Dialogs.stack.length - 1] === $('meModal')) { if (MeUI.editing) meMode(false); else if (MeUI.optional) closeModal('meModal'); return; }
     const ids = ['cfModal', 'vcModal', 'galModal', 'statsModal', 'pickModal', 'nickModal', 'setModal'];
     const top = Dialogs.stack.filter(d => ids.includes(d.id) && !d.hidden).pop() || ids.map($).find(d => !d.hidden);
     if (top) { closeModal(top.id); return; }

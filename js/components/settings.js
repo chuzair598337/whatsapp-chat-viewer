@@ -75,7 +75,7 @@ const Settings = {
     const f = keep && $('setBody').querySelector(keep); if (f) f.focus({ preventScroll: true });
   },
   act(a) {
-    if (a === 'me') openMeModal();
+    if (a === 'me') openMeModal(true); // optional here: ✕, Cancel, Esc and a tap outside close it
     else if (a === 'theme') pickSheet(t('menu.theme'), [['light', t('menu.light')], ['dark', t('menu.dark')], ['system', t('menu.match_system')]], theme, v => { setTheme(v); this.render(); });
     else if (a === 'lang') pickSheet(t('common.language'), LANGS.map(l => [l.code, '<span lang="' + l.code + '">' + esc(l.name) + '</span>']), I18N.lang, v => I18N.set(v));
     else if (a === 'order') pickSheet(t('sidebar.date_format'), [['auto', t('sidebar.automatic')], ['dmy', t('sidebar.day_month') + ' <bdi dir="ltr">(DD/MM/YYYY)</bdi>'], ['mdy', t('sidebar.month_day') + ' <bdi dir="ltr">(MM/DD/YYYY)</bdi>']], S.order, v => setOrder(v));
