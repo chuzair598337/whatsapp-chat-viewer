@@ -1072,6 +1072,7 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
   .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
   .sopt { height: 40px; padding: 0 12px; border-color: var(--line); background: var(--input); }
   .sopt .sl { display: inline; }
+}
 
 /* ---- Responsive audit WS1: short screens and landscape phones ----
    Every rule above sizes by width only, so a phone on its side (844×390) got the desktop chrome and
@@ -1158,6 +1159,7 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
   .sheet.gal .gbody { grid-row: 2; grid-column: 1 / -1; align-self: stretch; background: var(--panel); }
   .sheet.gal .ibtn:last-child { margin-inline-end: 4px; }
   .ggrid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 0 2px; }
+}
 
 /* ---- Responsive audit WS3: Breakpoints and large screens ----
    Breakpoints: phones are 640 px and narrower everywhere; two panes from 1024 px (iPad landscape), where the side
