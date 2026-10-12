@@ -1072,4 +1072,90 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
   .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
   .sopt { height: 40px; padding: 0 12px; border-color: var(--line); background: var(--input); }
   .sopt .sl { display: inline; }
+
+/* ---- Responsive audit WS1: short screens and landscape phones ----
+   Every rule above sizes by width only, so a phone on its side (844×390) got the desktop chrome and
+   small floating sheets. Here: the ⋮ menu and recent searches scroll instead of running off the screen,
+   the filter bar is one line on phones, and under 500 px of height the header, banners and search strip
+   get compact and sheets use the whole height. */
+#moreMenu { max-height: calc(100dvh - 60px); overflow-y: auto; overscroll-behavior: contain; }
+.shist { display: flex; flex-direction: column; max-height: calc(100dvh - 130px); }
+.shist .shh { flex: none; }
+.shist ul { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* The filter bar's Clear: words on wide screens, a ✕ on phones and short screens (the words stay its name). */
+.fbar #fbClear { display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
+.fbar .fbx { display: none; }
+.fbar .fbx svg { width: 18px; height: 18px; display: block; }
+/* Who is you and the nickname list: the name search stays at the top while the list scrolls under it. */
+/* Its shadows paint the sheet's colour around it and over the body's top padding, so rows don't show through. */
+.sheet .body > .mefilter { position: sticky; top: 0; z-index: 2; box-shadow: 0 0 0 8px var(--panel), 0 -16px 0 8px var(--panel); }
+@media (pointer: coarse) {
+  .nicklist .nickrow input, .merow.ed input, .sheet .body > .mefilter { height: 44px; }
+  .nicklist .nickrow .nkreset { height: 44px; }
+}
+:root[lang="ur"] .samplebar { line-height: 1.7; }
+@media (max-width: 640px), (max-height: 500px) {
+  /* One line: what is filtered (cut with … , the whole text is its tooltip) and a ✕ to clear. */
+  .fbar { flex-wrap: nowrap; gap: 8px; padding-block: 2px; padding-inline: 12px 4px; }
+  .fbar #fText { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fbar #fbClear { justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%; color: var(--enc-ink); }
+  .fbar .fbx { display: block; }
+  .fbar .fbl { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* The sample note steps aside while a filter or search is on, so the chat keeps the room. */
+  .main:has(> #filterbar:not([hidden])) > #samplebar, .main:has(> #sstrip:not([hidden])) > #samplebar { display: none; }
+}
+@media (max-height: 500px) {
+  .chat-head, .sb-top, .starpanel header { height: 48px; }
+  .chat-head .av { width: 32px; height: 32px; font-size: 13px; }
+  .chat-head .who { gap: 10px; padding: 0; }
+  .chat-head .t { font-size: 15px; }
+  .chat-head .s { font-size: 12px; }
+  #moreMenu { top: 44px; max-height: calc(100dvh - 50px); padding-block: 4px; }
+  #moreMenu [role^="menuitem"] { padding-block: 7px; }
+  #moreMenu .msep { margin-block: 3px; }
+  /* The sample note on one line, its button beside it. */
+  .samplebar { flex-wrap: nowrap; justify-content: flex-start; gap: 10px; padding: 2px 8px 2px 16px; font-size: 12.5px; line-height: 1.35; text-align: start; }
+  .samplebar > span:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .samplebar > button { flex: none; white-space: nowrap; }
+  .sstrip { padding-block: 3px; }
+  .sstrip .searchbox, .sopts { height: 34px; }
+  .fab { width: 36px; height: 36px; }
+  /* Side panel: the chat's avatar beside its name, and a shorter list of chats. */
+  .chatcard { grid-template-columns: 48px minmax(0, 1fr); column-gap: 12px; row-gap: 0; align-items: center; text-align: start; padding: 12px 16px; }
+  .chatcard .av { grid-row: 1 / span 2; width: 48px; height: 48px; font-size: 18px; margin: 0; }
+  .chatcard h2 { margin: 0; font-size: 17px; align-self: end; text-wrap: wrap; }
+  .chatcard .sub { align-self: start; }
+  .chatcard .facts, .chatcard .btn-row { grid-column: 1 / -1; }
+  .chatcard .facts { margin-top: 10px; }
+  .chatcard .btn-row { margin-top: 10px; }
+  .chatlist { max-height: 40vh; }
+}
+/* A phone on its side: sheets use the whole height, Settings and Media, links and docs the whole screen. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal { padding: 0; }
+  .sheet, .sheet.narrow { max-height: 100vh; max-height: 100dvh; border-radius: 0; }
+  .sheet header { padding-block: 4px; }
+  .sheet header h2 { font-size: 16px; }
+  .sheet .body { padding: 12px 20px 14px; gap: 14px; }
+  .sheet .foot { padding: 8px 16px; }
+  .sheet .lead { font-size: 13px; line-height: 1.45; }
+  :root[lang="ur"] .sheet .lead { line-height: 1.8; }
+  /* Who is you: one scroller (the sheet's body) instead of a short list scrolling inside it. */
+  .melist { max-height: none; overflow: visible; }
+  .tw .body { gap: 10px; }
+  .tw-opt { padding: 10px 14px; }
+  #setModal { place-items: stretch; }
+  .sheet.settings { width: 100%; height: 100%; max-height: none; }
+  .sheet.settings header { min-height: 0; }
+  .sheet.settings .set-body { gap: 12px; padding-block: 12px; padding-inline: max(12px, calc((100% - 640px) / 2)); }
+  /* Media, links and docs: the title, the chips and the buttons in one row; more tiles per row. */
+  #galModal { place-items: stretch; }
+  .sheet.gal { width: 100%; height: 100%; max-height: none; display: grid; grid-template-columns: auto minmax(0, 1fr) repeat(6, auto); grid-template-rows: auto minmax(0, 1fr); align-items: center; background: var(--header); }
+  .sheet.gal header { display: contents; }
+  .sheet.gal header > * { grid-row: 1; order: 2; }
+  .sheet.gal header > h2 { order: 0; padding-inline: 16px 4px; white-space: nowrap; }
+  .sheet.gal .gchips { grid-row: 1; order: 1; padding-block: 8px; background: transparent; border-bottom: 0; }
+  .sheet.gal .gbody { grid-row: 2; grid-column: 1 / -1; align-self: stretch; background: var(--panel); }
+  .sheet.gal .ibtn:last-child { margin-inline-end: 4px; }
+  .ggrid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 0 2px; }
 }

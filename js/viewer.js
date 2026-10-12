@@ -787,12 +787,35 @@ const PdfView = {
     if (!$('pdfv').hidden) closePdf();
   }
 };
-const PV = { name: '', z: 1, obs: null, gen: 0 };
+// z: zoom as a share of the page width. fit: 'width' or 'page' (the whole page on screen); ratio: page width / height.
+const PV = { name: '', z: 1, obs: null, gen: 0, fit: 'width', ratio: 0 };
+// A phone on its side opens a PDF on the whole page; everywhere else it opens on the page width.
+function pdfDefaultFit() { return matchMedia('(max-height: 500px) and (orientation: landscape)').matches ? 'page' : 'width'; }
+// The zoom that fits the page width (1) or the whole page in the viewer.
+function pdfFitZ(mode) {
+  if (mode !== 'page' || !PV.ratio) return 1;
+  const box = $('pdfPages'), cs = getComputedStyle(box);
+  const w = Math.min(900, box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+  const h = box.clientHeight - parseFloat(cs.paddingTop) - 12;
+  return w > 0 && h > 0 ? Math.max(0.2, Math.min(1, h * PV.ratio / w)) : 1;
+}
+// The Fit button (and 0) switches between fit width and fit page; after zooming it first goes back to the current fit.
+function pdfFit() {
+  if (Math.abs(PV.z - pdfFitZ(PV.fit)) < 0.001) PV.fit = PV.fit === 'page' ? 'width' : 'page';
+  pdfZoom(0);
+}
+// The button names what it will do next.
+function pdfFitLabel() {
+  const atFit = Math.abs(PV.z - pdfFitZ(PV.fit)) < 0.001, next = atFit ? (PV.fit === 'page' ? 'width' : 'page') : PV.fit;
+  const b = $('pdfFit');
+  b.setAttribute('aria-label', t('pdf.fit_' + next)); b.title = t('pdf.fit_' + next + '_0');
+}
+document.addEventListener('langchange', () => { if (!$('pdfv').hidden) pdfFitLabel(); });
 async function openPdf(name, title) {
   const e = Media.get(name);
   if (!e) return;
   pauseVideos(); AudioCtl.pause();
-  PV.name = name; PV.z = 1; PV.gen++;
+  PV.name = name; PV.z = 1; PV.gen++; PV.fit = pdfDefaultFit(); PV.ratio = 0;
   $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
@@ -802,6 +825,7 @@ async function openPdf(name, title) {
     const doc = await PdfView.doc(name);
     if (gen !== PV.gen) return;
     const v1 = (await doc.getPage(1)).getViewport({ scale: 1 });
+    PV.ratio = v1.width / v1.height;
     $('pdfInfo').textContent = t('doc.pages', { n: doc.numPages });
     PdfView.pages.set(name, doc.numPages);
     let html = '';
@@ -816,7 +840,7 @@ async function openPdf(name, title) {
   }
 }
 function pdfZoom(d) {
-  PV.z = d === 0 ? 1 : Math.min(3, Math.max(0.5, PV.z * (d > 0 ? 1.25 : 0.8)));
+  PV.z = d === 0 ? pdfFitZ(PV.fit) : Math.min(3, Math.max(0.2, PV.z * (d > 0 ? 1.25 : 0.8)));
   const box = $('pdfPages');
   // Keep the point in the middle of the view where it is, so zooming doesn't jump to a page edge.
   const fx = (box.scrollLeft + box.clientWidth / 2) / (box.scrollWidth || 1), fy = (box.scrollTop + box.clientHeight / 2) / (box.scrollHeight || 1);
@@ -824,6 +848,7 @@ function pdfZoom(d) {
   box.scrollLeft = fx * box.scrollWidth - box.clientWidth / 2;
   box.scrollTop = fy * box.scrollHeight - box.clientHeight / 2;
   $('pdfZoom').textContent = Math.round(PV.z * 100) + '%';
+  pdfFitLabel();
   if (PV.obs) PV.obs.disconnect();
   PV.obs = new IntersectionObserver(ents => { for (const en of ents) if (en.isIntersecting) renderPdfPage(en.target); }, { root: box, rootMargin: '600px 0px' });
   box.querySelectorAll('.pdfpage').forEach(p => { p.dataset.z = ''; PV.obs.observe(p); });

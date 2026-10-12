@@ -89,7 +89,7 @@ const KEY_LIST = [
   { id: 'lbNext', group: 'viewer', label: 'viewer.next_photo', keys: ['ArrowRight'], where: ['lb'], run: () => lbStep(I18N.rtl() ? -1 : 1) },
   { id: 'zoomIn', group: 'viewer', label: 'common.zoom_in', keys: ['+'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(Z.s * 1.5, undefined, undefined, true) : pdfZoom(1) },
   { id: 'zoomOut', group: 'viewer', label: 'common.zoom_out', keys: ['-'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(Z.s / 1.5, undefined, undefined, true) : pdfZoom(-1) },
-  { id: 'fit', group: 'viewer', label: 'viewer.fit_to_screen', keys: ['0'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(1, undefined, undefined, true) : pdfZoom(0) },
+  { id: 'fit', group: 'viewer', label: 'viewer.fit_to_screen', keys: ['0'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(1, undefined, undefined, true) : pdfFit() },
   { id: 'rotate', group: 'viewer', label: 'viewer.rotate_photo', keys: ['R'], where: ['lb'], run: () => zRotate() },
   { id: 'lbVideo', group: 'viewer', label: 'keys.play_video', keys: ['Space'], where: ['lb'], when: () => !$('lbVid').hidden && !$('lbVid').loop,
     run: () => { const v = $('lbVid'); if (v.paused) v.play().catch(() => {}); else v.pause(); } },

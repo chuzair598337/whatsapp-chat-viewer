@@ -47,6 +47,13 @@ const SHist = {
       '<button class="shx" data-x="' + k + '" aria-label="' + esc(t('shist.remove', { q: x })) + '" title="' + esc(t('shist.remove_short')) + '">' + ICON.close + '</button></li>').join('');
     $('shist').hidden = false;
     q2.setAttribute('aria-expanded', 'true');
+    this.fit();
+  },
+  // Keeps the list above the bottom of the screen (and above an on-screen keyboard); the rest scrolls.
+  fit() {
+    const el = $('shist'); if (el.hidden) return;
+    const vv = window.visualViewport, bottom = vv ? vv.offsetTop + vv.height : innerHeight;
+    el.style.maxHeight = Math.max(96, Math.floor(bottom - el.getBoundingClientRect().top - 8)) + 'px';
   },
   close() {
     if ($('shist').hidden) return;
@@ -112,3 +119,4 @@ for (const el of [q2, $('shist')]) el.addEventListener('focusout', e => {
   if (!to || (to !== q2 && !$('shist').contains(to))) SHist.close();
 });
 document.addEventListener('pointerdown', e => { if (SHist.isOpen() && e.target !== q2 && !$('shist').contains(e.target)) SHist.close(); });
+(window.visualViewport || window).addEventListener('resize', () => SHist.fit());
