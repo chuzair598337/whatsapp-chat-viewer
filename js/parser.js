@@ -45,6 +45,10 @@ function parserModule() {
     const lat = +m[1], lng = +m[2];
     return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : {};
   }
+  // "Waiting for this message" in the export languages we're sure of, alone or followed by
+  // WhatsApp's own second sentence ("This may take a while.", "Check your phone." and their translations). Case-sensitive and whole-line, so a person's
+  // own message that starts the same way stays text. See whatsapp-parser-skill for the list.
+  const WAITING = new RegExp('^(?:Waiting for this message(?:\\. (?:This may take a while|Check your phone))?|Esperando (?:el|este) mensaje(?:\\. Esto puede tardar un poco)?|Aguardando (?:a |esta )?mensagem(?:\\. Isso pode levar alguns instantes)?|En attente de ce message(?:\\. Cela peut prendre du temps)?|Warte(?:n)? auf diese Nachricht(?:\\. Dies kann etwas dauern)?|In attesa (?:del|di questo) messaggio|Menunggu pesan ini)[.…]?$');
   function classify(raw) {
     let t = raw.replace(INV, '').replace(SP, ' ');
     let edited = false;
@@ -53,8 +57,11 @@ function parserModule() {
     let m;
     // Android writes "null" for view-once media and some other messages it can't export.
     if (one && t.trim() === 'null') return { kind: 'unsupported', text: '', att: [], edited };
-    if (one && /^(This message was deleted\.?|You deleted this message\.?|This message was deleted by (an )?admin.*|Waiting for this message.*)$/i.test(t))
+    if (one && /^(This message was deleted\.?|You deleted this message\.?|This message was deleted by (an )?admin.*)$/i.test(t))
       return { kind: 'deleted', text: t, att: [], edited };
+    // A message that never finished loading on the exporting phone ("Waiting for this message. This may
+    // take a while."). Its content isn't in the export, so it keeps no text; the line itself goes in extra.raw.
+    if (one && WAITING.test(t.trim())) return { kind: 'waiting', text: '', att: [], edited, extra: { raw: t.trim() } };
     if (one && (m = /^(Missed |Silenced |Declined )?(group )?(voice|video) call(?:,\s*(.*))?$/i.exec(t)))
       return { kind: 'call', text: t, att: [], edited, extra: { missed: !!m[1], video: /video/i.test(m[3]), group: !!m[2], label: (m[1] || '') + (m[2] || '') + m[3] + ' call', detail: (m[4] || '').replace(/(Tap|Click) to call back/i, '').replace(/^[\s,.]+|[\s,.]+$/g, '') } };
     // iOS: the file tag can follow a caption of any length, on the same line or after several lines

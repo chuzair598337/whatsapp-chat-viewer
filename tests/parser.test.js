@@ -67,6 +67,38 @@ const tests = {
   'A forced date order that fits is used': async () => {
     const r = await parse('03/01/2021, 10:00 - A: x', { order: 'mdy' });
     assert.strictEqual(r.order, 'mdy'); assert.strictEqual(r.rejected, false);
+  },
+  'iPhone: "Waiting for this message" is its own kind, with or without the U+200E mark': async () => {
+    const L = '\u200e';
+    const r = await parse(['[11/07/2025, 3:07:12 PM] A: ' + L + 'Waiting for this message. This may take a while.',
+      '[11/07/2025, 3:08:00 PM] B: Waiting for this message. Check your phone.',
+      '[11/07/2025, 3:09:00 PM] C: ' + L + 'Waiting for this message', '[11/07/2025, 3:10:00 PM] C: ok'].join('\n'));
+    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['waiting', 'waiting', 'waiting', 'text']);
+    const m = r.messages[0];
+    assert.strictEqual(m.sender, 'A'); assert.strictEqual(m.isSystem, false); assert.strictEqual(m.message, '');
+    assert.strictEqual(m.extra.raw, 'Waiting for this message. This may take a while.');
+    assert.strictEqual(r.participants.length, 3); // still counted as a message from its sender
+  },
+  'Android: "Waiting for this message" in 12- and 24-hour exports': async () => {
+    const r = await parse(['11/07/2025, 15:07 - A: Waiting for this message. This may take a while.',
+      '7/11/25, 4:03 PM - B: Waiting for this message'].join('\n'));
+    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['waiting', 'waiting']);
+    assert.strictEqual(r.messages[1].sender, 'B');
+  },
+  'Translated "Waiting for this message" lines': async () => {
+    const r = await parse(['11/07/2025, 15:07 - A: Esperando el mensaje. Esto puede tardar un poco.',
+      '11/07/2025, 15:08 - A: Aguardando mensagem. Isso pode levar alguns instantes.',
+      '11/07/2025, 15:09 - A: En attente de ce message. Cela peut prendre du temps.',
+      '11/07/2025, 15:10 - A: Warten auf diese Nachricht. Dies kann etwas dauern.'].join('\n'));
+    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['waiting', 'waiting', 'waiting', 'waiting']);
+  },
+  'A normal message that starts like the notice stays text': async () => {
+    const r = await parse(['11/07/2025, 15:07 - A: Waiting for this message to arrive before I reply to everyone in the group, it is taking a while today and I am bored.',
+      '11/07/2025, 15:08 - A: Waiting for this message\nand another line',
+      '11/07/2025, 15:09 - A: This message was deleted',
+      '11/07/2025, 15:10 - A: Waiting for this message. Call me when you get it!',
+      '11/07/2025, 15:11 - A: waiting for this message!!'].join('\n'));
+    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['text', 'text', 'deleted', 'text', 'text']);
   }
 };
 (async () => {

@@ -1,5 +1,109 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+From the responsive UI audit of 1.11.0 (`/mnt/project-files/audit/responsive-audit.md` in the project) and the maintainer's follow-ups.
+
+### Search counts every match; pages fit small iPhones
+
+- **Search counts every match, not every message.** Searching "Develop" in the sample chat showed "1 of 1" for one message with five highlighted matches; it now shows "1 of 5", and ↑ ↓, `Enter` / `Shift+Enter` and `F3` / `Ctrl+G` step one match at a time, through every match in a message before the next message. Only the current match is a darker orange (with a ring), and the chat scrolls to it, also inside a long message. A message found only by its sender, nickname or file name counts once. Still one pass with no layout reads, so a 60,000-message chat searches as fast as before.
+- **Fixed on iPhone:** focusing the search field, a nickname or a date filter zoomed the page in and left it shifted and cut off at the left (for example "articipants and nicknames"). Fields on touch screens now use 16 px text, so Safari doesn't zoom; pinch zoom is still allowed.
+- **Fixed on phones:** opening Starred messages made the page 30 px wider for a moment, so phone browsers zoomed out or let the page pan. The page now never scrolls sideways, and closing a dialog or the tour resets any page scroll left behind.
+- **Fixed on small phones:** the tour's last card (and any long one) ran off the bottom of the screen with its buttons cut off. The card now fits the visible area, its text scrolls and the buttons stay in view.
+
+### Media types with no items
+
+- **Media, links and docs** in the side panel shows a tile only for the kinds the chat has: no more "Videos 0", "Audio 0" or "Contacts 0". All shows only when something does, and the tiles wrap into full rows with no gaps.
+- The gallery's chips leave out kinds with nothing in them too. If the open chip's kind has nothing in the next chat, it goes back to All. `1` to `8` pick the first to eighth chip shown.
+- A chat with no media, links or docs (a text-only chat, or a .txt export without its files) says so in the side panel instead of showing empty tiles, and hides **View all**. The gallery, still in the ⋮ menu and on `M`, shows an empty state with no chips or Sort button. Text in English, Urdu and Arabic.
+
+### Messages that never loaded
+
+- **Clearer card for "Waiting for this message":** when a message never finished loading on the phone that exported the chat, WhatsApp writes "Waiting for this message. This may take a while." in its place. The viewer showed that line as a grey, italic bubble with a ⊘ icon, which looked like the viewer itself was stuck. It now shows a card like the one for events: an hourglass, **Message wasn't loaded** and "This message never finished loading on the phone that exported the chat, so its content isn't in the export.", in English, Urdu and Arabic, with the sender's name, avatar and time kept.
+- The parser treats these lines as their own kind (`waiting`) on iPhone and Android, with or without the invisible U+200E mark, for "… This may take a while.", "… Check your phone." and the bare line, and for the Spanish, Portuguese, French, German, Italian and Indonesian wording.
+- Search no longer matches the notice's wording; a starred one is listed as "Message wasn't loaded"; Copy still copies the line as exported. It counts as a message (with no words) in Statistics.
+- The sample chat has one (14 March, 8:17 AM), and the tour's "Edited, deleted and replies" card mentions it.
+
+### Phone viewer header
+
+- **Photo viewer on phones:** the header is now a Back arrow, the sender with a one-line date and the position, and a ⋮ button. ⋮ opens a sheet from the bottom with Go to message, Rotate, Fit (while zoomed in), Star, Copy caption, Download and Share, so the header is no longer crowded. This replaces the bottom bar with Rotate and Download. Tablets and computers keep the full header with ✕, and every keyboard shortcut works as before.
+- **PDF viewer on phones:** the same Back, title and page count, and ⋮ with Zoom out, Zoom in, Fit and Download, instead of the zoom buttons along the bottom.
+
+### Notched phones, keyboard focus and contrast
+
+- **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.
+- **Keyboard and the drawer (tablets and phones):** the closed drawer can no longer be reached with Tab or Shift+Tab, and the chat behind an open drawer is out of reach too. Opening the drawer moves focus to its ✕; closing it, from ✕, `Esc`, the backdrop, or by picking a participant, a date or a chat, returns focus to ☰ instead of losing it.
+- **The ☰ button** now says whether the side panel is showing (`aria-expanded`) from the start and after every change, no longer reads "Show chat details" on a computer when the panel is already showing, and its tooltip names the `[` shortcut.
+- **Visible keyboard focus:** a green ring on items in the ⋮ menu and the message and gallery menus, and a solid green grip on the side panel's edge.
+- **Contrast:** white text on primary buttons is 4.9:1 (darker green) in light mode, and dark text on green in dark mode; the time on your own messages in dark mode goes from 2.6:1 to 4.9:1.
+- **Reduced motion:** the loading bar shows a still, full-width bar instead of freezing at about a third.
+- Side panel section headings are all green ("Jump to date" was the only green one); only the counts are grey.
+- The chat card's **Open chat** button is now **Open another chat**, as in the ⋮ menu, in English, Urdu and Arabic.
+
+### Urdu and Arabic
+
+- **Fixed in Urdu and Arabic:** the photo viewer's counter read "7 / 3" for "3 of 7" and its time read "AM 8:14"; both now read left to right, after a localized date (MODALS-5).
+- **Fixed in Urdu and Arabic:** zooming a PDF showed the blank right edge of the page. The pages are now laid out left to right, and zooming in or out keeps the middle of the view where it was, in every language (MODALS-6).
+- **Fixed in Urdu and Arabic:** shortcut keys such as `⌘O` and `⌘F` showed as "O⌘" and "F⌘" in What's new and the tour's last card. The popup and the tour now keep any key combination left to right (`ltrKeys` in `js/viewer.js`), the tour's Urdu and Arabic text isolates them itself, and the release skill tells future notes to do the same (START-7).
+- **Fixed in Urdu and Arabic:** an English chat title in the header was cut at its start ("…nd Hiking Crew"); the header and side panel titles now take their direction from their text, so it is cut at its end and still sits on the right (CROSS-10).
+- **Chats list in Urdu and Arabic:** the current chat's green bar is on the right, Latin chat and file names are cut at their end, and the File fact always shows the file's size and format, shortening only its name (SIDE-9).
+- The side panel's subtitle ("for WhatsApp exports, offline") stays on one line with an ellipsis in every language, so it no longer grows past its header in Arabic or wraps at 360 px (SIDE-8).
+
+### Touch screens
+
+- **Bigger tap targets on touch screens.** On phones and tablets, header and toolbar buttons, the floating ↓ button, dialog, footer and tour buttons and the start screen's language buttons are 44 px; search ↑ ↓ ✕ and the date and sender fields are 40 px; menu items have more room. Small buttons inside messages and tables (voice note speed, Read more, a link card's Copy, the message ⌄, View all, statistics sort headers) look the same but get an invisible 44 px tap area, so messages don't change size. Computers with a mouse look exactly as before.
+- **Search options on touch tablets** now get the labelled Match case, Whole word and Regex row under the field, as on phones (landscape phones keep the compact toggles).
+- **Media, links and docs on touch screens:** 40 px tabs, 44 px row buttons, and photo and video tiles show their ⋮ options button instead of needing a long-press.
+- **Side panel grip** is always visible on touch screens wider than 1024 px, with a wider strip to drag.
+- **Settings on touch-only phones and tablets** no longer shows the Keyboard shortcuts and Single-key shortcuts rows, and the guided tour skips its keyboard step there.
+- **Fixed:** the chat search field showed the browser's own ✕ next to the app's Close ✕; only the Close button is shown now (`Esc` clears the text).
+
+### Short screens and phones on their side
+
+- **Phones on their side and other short screens** (under 500 px tall) get a layout of their own. The chat header is 48 px, the sample chat's note is one line with its button beside it, the search bar and scroll buttons are smaller, and the sample note hides while searching, so a phone at 844×390 shows about 310 px of chat instead of 257 (CROSS-2, CHAT-2).
+- **Fixed:** the ⋮ menu ran off short screens, so Keyboard shortcuts (and in Urdu and Arabic, Help and guided tour) couldn't be reached. It now scrolls and is more compact on short screens (CROSS-1).
+- **Fixed:** Recent searches ran off short screens and covered the whole chat with an on-screen keyboard open. The list now stops above the bottom of the screen and scrolls, with its heading kept (CHAT-1).
+- **Fixed:** "Which one is you?" showed no full name on a phone on its side, so the first step couldn't be done. On short screens the sheet uses the full height and the whole sheet scrolls as one list (MODALS-1).
+- **Sheets use the whole height on a phone on its side** instead of a small floating card: Settings and Media, links and docs fill the screen, others reach top to bottom, with tighter headers and footers. The welcome dialog shows both choices without scrolling (MODALS-2, START-12).
+- **Media, links and docs on a phone on its side:** full screen, the title, chips and buttons in one row, and six tiles per row (MODALS-3).
+- **Side panel on short screens:** the chat's avatar sits beside its name and the list of chats is capped at 40% of the height, so the chat card shows (SIDE-7).
+- **PDF viewer: fit width or fit page.** The Fit button (and `0`) now switches between fitting the page width and fitting the whole page, and names what it will do next. A phone on its side opens a PDF on the whole page (MODALS-12).
+- **Filter bar on phones:** one line with … and a ✕ to clear, instead of up to three lines; the sample chat's note steps aside while a filter is on, on phones and short screens (CHAT-4).
+- The Urdu sample chat note has more line spacing (CHAT-11).
+- The name search in "Which one is you?" and Participants and nicknames stays at the top while the list scrolls, and on touch screens the nickname fields are 44 px tall (MODALS-11).
+
+### Breakpoints and large screens
+
+- **Two panes from 1024 px**, so an iPad in landscape gets the side panel beside the chat. The side panel's width now follows the window (300 px at 1024 px up to 420 px on big monitors) instead of a fixed 380 px, so the chat no longer loses 380 px at once; dragging still sets it. Widening the window closes an open drawer, so it doesn't reappear when the window narrows again.
+- **One phone breakpoint, 640 px, everywhere.** Media, links and docs, the search toggles and stickers switched at 600 px while everything else switched at 640 px.
+- **Bubbles no longer get narrower as the window gets wider** (they dropped from 504 to 350 px between 640 and 641 px). On big monitors photos and videos show at up to 400 px and link cards at 360 px, and the jump-to-first and jump-to-latest buttons sit by the message column instead of the far edge of the pane.
+- **Fixed:** in Urdu and Arabic the jump buttons moved to the left and covered the received messages; they stay on the right, as the chat is left to right.
+- **Starred messages** sits inside the app: from 1200 px it is a third column and the chat narrows beside it, narrower it slides over the chat, and on phones it fills the screen (it left a 10 px strip of chat, and on big monitors it floated outside the app). A starred location now shows "Location" instead of an empty line.
+- **Fixed:** Chat statistics was wider than 360 and 375 px phones and scrolled sideways.
+- **Fixed:** the confirmation dialog and What's new ignored their own widths (440 px instead of 380 and 480).
+- The start screen is wider (680 px) with slightly larger text from 1600 px.
+- Sample chat: no new lines; the existing Trip report message, photos, location and starred messages show these changes.
+
+### Text size
+
+- **Settings › Text size** (audit CROSS-4): Small (90%), Default (100%), Large (115%), Larger (130%) or Largest (150%). It scales the chat's text only, including messages, names, times, quotes, link cards, polls, notices, date pills and Read more, and Urdu and Arabic text with them. Photos, videos and stickers keep their size. Rows are measured again straight away, so nothing overlaps and you stay at the same place in the chat. It is remembered on this device (`cv-text-size`) and applied when the app starts. The pick sheet shows each choice at its size. In English, Urdu and Arabic.
+- **Keys:** `+` and `-` in the chat make the text one step bigger or smaller, with a notification that names the new size. They are single keys, so Settings › Single-key shortcuts turns them off. `Ctrl` / `⌘` with `+`, `-` and `0` are left to the browser's page zoom. The Text size row shows the keys on a computer, and they are in the Keyboard shortcuts list.
+- **Fixed:** the chat list measured rows in whole pixels, so at some text sizes, and with some Urdu lines, a row could overlap the next one by a pixel. Rows are now measured to the fraction.
+- The guided tour's Settings step and the Settings privacy note mention the text size, in English, Urdu and Arabic.
+- Sample chat: no new line. The setting applies to every message already in it; open the sample chat, then Settings › Text size, or press `+`.
+
+### Tour, viewers and chat polish
+
+- **The guided tour fits every screen.** The card is never taller than the screen: its text scrolls (also with `↑` `↓`) and Skip, Back and Next stay in view, so the last card's **Finish** can be reached on a phone on its side and on short phones such as an iPhone 8 in Safari (375×553 visible). On short phones the card also gets shorter, rather than covering the highlight, when there is room above or below it. The card no longer covers what it points at: it tries below, above and each side of the highlight, gets narrower (down to 260 px) to fit beside it, or sits at the top or bottom edge, and on short screens the chat steps scroll the message near the top. On tablets the sidebar steps put the card next to the open side panel instead of over it.
+- **Tour, Settings step:** the card sits next to the Settings sheet when there is room; otherwise only **You are** is highlighted, with the card below it, so the card no longer covers the Settings it describes (also with the wider two-column Settings on large screens). Highlights are cut to the box that scrolls them, so they no longer run past the bottom of the sheet.
+- **Tour, Voice notes and audio step:** it highlights the music file and the voice note just before it, instead of a 600 px stretch from the first voice note. The sample chat is unchanged (the five voice notes and the music file stay where they were), so the Autoplay run still ends at the music file.
+- **Drag and drop:** the "Drop your WhatsApp export here" box is a solid panel with a folder icon, up to 520 px wide, instead of white text over the dimmed chat.
+- **Photo viewer on phones:** the top bar keeps the sender's name and the date on one line; Rotate and Download move to a bar at the bottom, and Fit shows only while zoomed in. The position ("7 / 9") no longer reverses in Urdu and Arabic.
+- **Photo viewer:** swiping across a video now moves to the next or previous item on phones, except over the video's controls bar.
+- **Sample chat:** its video and GIF show "Loading…" while they are recorded on the device, instead of "Not in this ZIP", and the side panel no longer counts them as missing meanwhile.
+- **The time on photos and videos** sits on a small dark pill, so it reads on light photos.
+- **Chat header on phones:** the summary shows the date range first (it used to be cut off after the message count), and hovering it shows the whole line.
+
 ## 1.12.0 (2026-10-12)
 
 - **Media, links and docs uses the whole screen on a laptop or desktop.** From 1100 px wide the gallery opens wider (up to 1180 px). When it is 640 px or wider, each Links, Documents, Audio and Contacts row shows all of its options as buttons, with tooltips, instead of hiding them behind ⋮: Go to message, Open (or Open link, View contact), Star or Unstar, Copy caption, Copy contact details, Copy link, Download and Share where the browser can share. Right-click, long-press and `Shift+F10` still open the menu. From 900 px the rows sit in two columns, the audio players fill their column, and the photo grid fits as many tiles as the width allows. Phones are unchanged: rows keep only ⋮.

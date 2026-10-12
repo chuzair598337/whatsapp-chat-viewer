@@ -21,10 +21,11 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 | Online link previews (opt-in, `cv-online-links`): players and titles from the linked site only. A new site needs an `embedOf` rule and its host in the CSP in `index.html` | `js/components/link-cards.js` (`embedOf`, `LinkOnline`, `embedHTML`) |
 | iPhone `.was` stickers (Lottie in a ZIP) | `js/viewer.js` (`Was`), `js/vendor/lottie/` |
 | Files the browser can't decode: `Media.bad` / `Media.cantShow`, the "Can't show this file here" card | `js/media.js`, `js/viewer.js` (`cantShowHTML`) |
-| Media, links and docs gallery, its sorting | `js/components/media-gallery.js` |
+| Media, links and docs gallery, its sorting. `Gallery.cats()` gives the kinds that have items: the chips and the side panel's tiles (`renderMediaSummary` in `js/app.js`) show only those, and an empty chat gets an empty state | `js/components/media-gallery.js` |
 | Message menu: View photo, Open document, Download, Share | `js/components/message-menu.js` |
 | Gallery item options (Go to message, View, Star, Copy, Download, Share) and the photo viewer's Go to message button | `js/components/gallery-menu.js` |
 | Gallery layout on larger screens: inline row buttons (`galActs`, built from `GalMenu.actions`, each with an id), two columns, and the photo and video views (`Gallery.layout`, `cv-gallery-view`) | `js/components/media-gallery.js`, `css/styles.css` (`@container gal`) |
+| Phone header of the photo and PDF viewers (640 px and narrower): Back, the title and ⋮, whose bottom sheet (`VMenu`, no title) lists the other header buttons plus Star, Copy caption and Share. A new viewer button also needs a row in `VMenu.lbActions` / `pdfActions`, and the `.lb-top` hide list in the WS9 CSS block | `js/components/viewer-menu.js` |
 
 ## Lookup and lifetime
 
@@ -62,7 +63,7 @@ Never show a broken image or empty space. Never throw.
   - It never fetches fonts or CMaps.
   - Only pages near the viewport are rendered.
 - **Lightbox controls:**
-  - Buttons for zoom in and out, fit, rotate and download.
+  - Buttons for zoom in and out, fit, rotate and download. On phones they move into the ⋮ sheet (`js/components/viewer-menu.js`) and ✕ becomes a Back arrow.
   - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs, `V` for the next photo and video view, and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
   - Pinch and double-click zoom.
   - When rotated, `zFit()` scales the photo so it still fits, and `zClamp` swaps width and height so panning stays within bounds.

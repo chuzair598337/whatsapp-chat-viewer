@@ -69,7 +69,7 @@ I18N.add('en-US', {
     "and_more": "and {n} more",
     "show_only": "Show only {name}'s messages",
     "statistics": "Statistics",
-    "open_chat": "Open chat",
+    "open_chat": "Open another chat",
     "jump_to_date": "Jump to date",
     "first_message_on_or_after": "First message on or after",
     "resize": "Resize side panel",
@@ -239,6 +239,8 @@ I18N.add('en-US', {
     "pdf_viewer": "PDF viewer",
     "fit_width": "Fit width",
     "fit_width_0": "Fit width (0)",
+    "fit_page": "Fit page",
+    "fit_page_0": "Fit page (0)",
     "download_pdf": "Download PDF",
     "close_pdf_viewer": "Close PDF viewer",
     "opening": "Opening…",
@@ -300,7 +302,8 @@ I18N.add('en-US', {
     "note_none": "No media in this chat.",
     "open_photo": "Open photo",
     "note_zip_missing": "This ZIP doesn't include the {count} attached files.",
-    "note_zip_missing_one": "This ZIP doesn't include the attached file."
+    "note_zip_missing_one": "This ZIP doesn't include the attached file.",
+    "none_shown": "No media, links or docs to show"
   },
   "facts": {
     "messages": "Messages",
@@ -402,6 +405,8 @@ I18N.add('en-US', {
     "poll_votes_one": "Poll · 1 vote",
     "event_title": "Message not included in the export",
     "event_note": "Usually an event. WhatsApp leaves events out of exported chats, so the name, time and replies aren't available.",
+    "waiting_title": "Message wasn't loaded",
+    "waiting_note": "This message never finished loading on the phone that exported the chat, so its content isn't in the export.",
     "star": "Star message",
     "unstar": "Unstar message",
     "star_short": "Star",
@@ -592,7 +597,7 @@ I18N.add('en-US', {
     },
     "edited_deleted_and": {
       "title": "Edited, deleted and replies",
-      "text": "Edited messages carry an \"Edited\" tag by the time, deleted ones show \"This message was deleted\", and quoted lines appear as a reply quote."
+      "text": "Edited messages carry an \"Edited\" tag by the time, deleted ones show \"This message was deleted\", and quoted lines appear as a reply quote. A message that never loaded on the exporting phone gets a card saying so."
     },
     "reactions": {
       "title": "Reactions",
@@ -652,7 +657,7 @@ I18N.add('en-US', {
     },
     "settings": {
       "title": "Settings",
-      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you. About shows what's new in each version."
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, text size, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you. About shows what's new in each version."
     },
     "keys": {
       "title": "Keyboard shortcuts",
@@ -701,11 +706,21 @@ I18N.add('en-US', {
     "pdf_page": "Next or previous page",
     "gal_tab": "Switch to a tab (All, Photos, Videos, …)",
     "gal_tabs": "Move between tabs",
+    "text_size": "Bigger or smaller chat text",
     "gal_menu": "Options for the focused item",
     "gal_view": "Next photo and video view"
   },
   "settings": {
     "title": "Settings",
+    "text_size": "Text size",
+    "ts_small": "Small",
+    "ts_default": "Default",
+    "ts_large": "Large",
+    "ts_larger": "Larger",
+    "ts_largest": "Largest",
+    "text_size_now": "Text size: {size}",
+    "text_size_max": "The text is already at its largest",
+    "text_size_min": "The text is already at its smallest",
     "close": "Close settings",
     "you_are": "You are",
     "nobody_chosen": "Nobody chosen",
@@ -721,7 +736,7 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language, background pattern, online link previews, autoplay, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
+    "saved_note": "The theme, text size, language, background pattern, online link previews, autoplay, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
     "online_links": "Online link previews",
     "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites.",
     "autoplay": "Autoplay voice messages",

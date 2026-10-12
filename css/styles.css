@@ -10,7 +10,7 @@
   --n0: #c2357a; --n1: #1f7aec; --n2: #d3396d; --n3: #028c00; --n4: #6a52e0; --n5: #b34c00; --n6: #00806a; --n7: #c93838; --n8: #0083c2; --n9: #9a3fbf;
   --font: "Segoe UI", "Helvetica Neue", Helvetica, "Lucida Grande", Arial, Ubuntu, Cantarell, "Noto Sans", sans-serif;
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-  --sb-w: 380px;
+  --sb-w: clamp(300px, 28vw, 420px); --st-w: clamp(320px, 22vw, 420px);
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --app-bg: #0c1317; --panel: #111b21; --panel-2: #202c33; --header: #202c33; --chat-bg: #0b141a;
@@ -51,7 +51,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .sb-resize:hover .sb-grip, .sb-resize:focus-visible .sb-grip, .sb-resizing .sb-grip { opacity: .55; }
 .sb-resize:focus-visible { outline: none; }
 .sb-resizing, .sb-resizing * { cursor: col-resize !important; user-select: none !important; }
-@media (max-width: 1024px) { .sb-resize { display: none; } }
+@media (max-width: 1023px) { .sb-resize { display: none; } }
 /* The app's own chrome isn't selectable text, as in WhatsApp; messages, form fields and dialog text still are. */
 .sidebar, .chat-head, .sstrip, .samplebar, .sticky-date, .daterow, .fab, .menu, .selbar, .start-lang, button { -webkit-user-select: none; user-select: none; }
 .sidebar input, .sstrip input, .sidebar select { -webkit-user-select: text; user-select: text; }
@@ -62,7 +62,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .sb-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 0 24px; }
 .sb-sec { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
 .sb-sec > h3 { margin: 0; font-size: 13px; font-weight: 500; color: var(--accent-ink); letter-spacing: .02em; display: flex; justify-content: space-between; align-items: baseline; }
-.sb-sec > h3 span { color: var(--ink-3); font-weight: 400; }
+.sb-sec > h3 span:not([data-i18n]) { color: var(--ink-3); font-weight: 400; }
 .chatcard { text-align: center; padding: 22px 16px 16px; }
 .chatcard .av { width: 84px; height: 84px; font-size: 30px; margin: 0 auto; }
 .chatcard h2 { margin: 10px 0 2px; font-size: 19px; font-weight: 500; text-wrap: balance; overflow-wrap: anywhere; }
@@ -127,7 +127,7 @@ mark.cur { background: var(--hl-cur); }
 .chat-head .t { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .chat-head .s { font-size: 13px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* The ☰ button opens the drawer on narrow screens and hides or shows the side panel on wide ones. */
-@media (min-width: 1025px) {
+@media (min-width: 1024px) {
   .side-hidden .app { grid-template-columns: minmax(0, 1fr); }
   .side-hidden .sidebar { display: none; }
   .chat-head .menu-btn { margin-inline-start: -6px; }
@@ -149,7 +149,7 @@ mark.cur { background: var(--hl-cur); }
 @media (hover: hover) { .sopt:hover { background: var(--quote); color: var(--ink); } }
 .sopt[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-ink); }
 .sopt:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   .sstrip { flex-wrap: wrap; row-gap: 6px; }
   .sstrip .searchbox { min-width: 0; border-radius: 8px; }
   .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
@@ -162,6 +162,7 @@ mark.cur { background: var(--hl-cur); }
 .shh { display: flex; align-items: center; gap: 8px; padding-block: 2px; padding-inline: 16px 10px; font-size: 12.5px; font-weight: 600; color: var(--accent-ink); }
 .shh .shclr { margin-inline-start: auto; font-size: 12.5px; padding: 6px; border-radius: 6px; }
 .shh .shclr:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sheet.narrow { width: min(440px, 100%); } /* before .sheet.confirm, .sheet.wn and the others, so their own widths win */
 /* Confirmation dialog (confirmDialog in app.js) */
 .sheet.confirm { width: min(380px, 100%); }
 .sheet.confirm .body { gap: 10px; padding: 22px 22px 14px; }
@@ -201,7 +202,7 @@ mark.cur { background: var(--hl-cur); }
 .scroller { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .spacer { position: relative; max-width: 1040px; margin: 0 auto; }
 .layer { position: absolute; inset: 0 0 auto 0; padding: 0 clamp(12px, 5%, 64px); }
-.row { position: absolute; inset-inline-start: clamp(12px, 5%, 64px); inset-inline-end: clamp(12px, 5%, 64px); top: 0; display: flex; padding: 2px 0 0; will-change: transform; }
+.row { position: absolute; inset-inline-start: clamp(10px, 10% - 54px, 64px); inset-inline-end: clamp(10px, 10% - 54px, 64px); top: 0; display: flex; padding: 2px 0 0; will-change: transform; }
 .row.first { padding-top: 10px; }
 .row.out { justify-content: flex-end; }
 .daterow, .sysrow { justify-content: center; padding: 12px 0 4px; }
@@ -210,7 +211,7 @@ mark.cur { background: var(--hl-cur); }
 .pill.enc { background: var(--enc); color: var(--enc-ink); line-height: 1.45; }
 .pill.enc svg { width: 13px; height: 13px; vertical-align: -2px; margin-inline-end: 5px; }
 
-.bubble { position: relative; max-width: min(65%, 620px); min-width: 0; padding: 6px 7px 8px 9px; border-radius: 7.5px; background: var(--in); box-shadow: 0 1px .5px var(--shadow); overflow-wrap: anywhere; }
+.bubble { position: relative; max-width: min(620px, max(65%, min(86%, 533px))); min-width: 0; padding: 6px 7px 8px 9px; border-radius: 7.5px; background: var(--in); box-shadow: 0 1px .5px var(--shadow); overflow-wrap: anywhere; }
 .out .bubble { background: var(--out); }
 .first.in .bubble { border-start-start-radius: 0; }
 .first.out .bubble { border-start-end-radius: 0; }
@@ -282,7 +283,7 @@ mark.cur { background: var(--hl-cur); }
 .sticky-date { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 3; pointer-events: none; opacity: 0; transition: opacity .4s; }
 .sticky-date.on { opacity: 1; transition-duration: .1s; }
 .sticky-date .pill { text-transform: uppercase; letter-spacing: .02em; white-space: nowrap; display: block; }
-.fab { position: absolute; inset-inline-end: 18px; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--pill); color: var(--ink-2); box-shadow: 0 1px 3px var(--shadow), 0 2px 8px var(--shadow); display: grid; place-items: center; cursor: pointer; z-index: 4; }
+.fab { position: absolute; right: max(18px, calc((100% - 1040px) / 2 - 2px)); left: auto; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); width: 42px; height: 42px; border-radius: 50%; border: 0; background: var(--pill); color: var(--ink-2); box-shadow: 0 1px 3px var(--shadow), 0 2px 8px var(--shadow); display: grid; place-items: center; cursor: pointer; z-index: 4; }
 .fab:hover { color: var(--accent-ink); }
 .fab.top { bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
 
@@ -292,7 +293,7 @@ mark.cur { background: var(--hl-cur); }
 .mb .txt { padding: 4px 4px 4px 6px; }
 .mimg { display: block; width: 330px; max-width: 100%; border: 0; padding: 0; margin: 0; border-radius: 6px; overflow: hidden; cursor: zoom-in; background: var(--quote); }
 .mimg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.mvid { width: 330px; max-width: 100%; border-radius: 6px; overflow: hidden; background: #000; }
+.mvid { width: min(330px, calc(400px * var(--vr, 9))); max-width: 100%; border-radius: 6px; overflow: hidden; background: #000; }
 .mvid video { width: 100%; height: 100%; display: block; object-fit: contain; background: #000; }
 .meta.ov { color: #fff; text-shadow: 0 1px 3px rgba(0, 0, 0, .7); inset-inline-end: 10px; bottom: 8px; }
 .stk .bubble { background: transparent; box-shadow: none; padding: 0; }
@@ -465,10 +466,9 @@ mark.cur { background: var(--hl-cur); }
 @media (prefers-reduced-motion: reduce) { .notyf__toast, .notyf__toast *, .notyf__message, .notyf__dismiss { animation-duration: .01s !important; animation-delay: 0s !important; } }
 .modal { position: fixed; inset: 0; z-index: 70; display: grid; place-items: center; background: var(--overlay); padding: 16px; }
 .sheet { background: var(--panel); border-radius: 12px; width: min(860px, 100%); max-height: min(88vh, 900px); max-height: min(88dvh, 900px); display: flex; flex-direction: column; box-shadow: 0 12px 40px var(--shadow); overflow: hidden; }
-.sheet.narrow { width: min(440px, 100%); }
 .sheet header { display: flex; align-items: center; gap: 8px; padding: 10px 8px 10px 20px; background: var(--header); flex: none; }
 .sheet header h2 { margin: 0; font-size: 17px; font-weight: 500; flex: 1; }
-.sheet .body { overflow-y: auto; padding: 18px 20px 22px; display: grid; gap: 22px; overscroll-behavior: contain; }
+.sheet .body { overflow-y: auto; padding: 18px 20px 22px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; overscroll-behavior: contain; }
 .sheet .foot { display: flex; justify-content: flex-end; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); flex: none; }
 .tiles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 900px) { .tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -530,14 +530,14 @@ mark.cur { background: var(--hl-cur); }
 .lead { margin: 0; color: var(--ink-2); }
 
 /* ---------- Responsive ---------- */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   .app { grid-template-columns: minmax(0, 1fr); }
-  .sidebar { position: fixed; top: 0; bottom: 0; inset-inline-start: 0; width: min(var(--sb-w), 88vw); transform: translateX(-105%); transition: transform .22s ease; box-shadow: 4px 0 24px var(--shadow); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .sidebar { position: fixed; top: 0; bottom: 0; inset-inline-start: 0; width: min(380px, 88vw); transform: translateX(-105%); transition: transform .22s ease; box-shadow: 4px 0 24px var(--shadow); padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   .drawer-open .sidebar { transform: none; }
   .menu-btn { display: grid; }
   .chat-head { padding-inline-start: 4px; border-inline-start: 0; }
 }
-@media (min-width: 1025px) { .scrim, .sb-close { display: none !important; } }
+@media (min-width: 1024px) { .scrim, .sb-close { display: none !important; } }
 @media (max-width: 640px) {
   .bubble { max-width: 86%; }
   .chat-head { height: 56px; gap: 0; }
@@ -548,7 +548,7 @@ mark.cur { background: var(--hl-cur); }
   .sheet, .sheet.narrow { width: 100%; max-height: 92vh; max-height: 92dvh; border-radius: 16px 16px 0 0; padding-bottom: env(safe-area-inset-bottom, 0px); }
   .sheet .body { padding: 16px; }
   .sgrid { grid-template-columns: minmax(0, 1fr); }
-  .fab { inset-inline-end: 12px; }
+  .fab { right: 12px; }
   /* The sample note is long: smaller on phones so the chat keeps the room. */
   .samplebar { font-size: 12.5px; line-height: 1.35; padding: 6px 12px; gap: 2px 10px; }
 }
@@ -618,7 +618,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 
 /* ---------- Stickers: WhatsApp size ---------- */
 .sticker { width: 190px; height: 190px; }
-@media (max-width: 600px) { .sticker { width: 150px; height: 150px; } }
+@media (max-width: 640px) { .sticker { width: 150px; height: 150px; } }
 
 /* ---------- Chats found in the opened files ---------- */
 .chatlist { display: grid; margin: 0 -16px -14px; max-height: 260px; overflow: auto; }
@@ -675,7 +675,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 #starBtn { position: relative; }
 .sbadge { position: absolute; top: 4px; inset-inline-end: 2px; min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 600; line-height: 16px; text-align: center; }
 .sbadge[hidden] { display: none; }
-.starpanel { position: fixed; top: 0; inset-inline-end: 0; bottom: 0; width: min(380px, 100%); background: var(--panel); border-inline-start: 1px solid var(--line); box-shadow: -4px 0 18px rgba(0, 0, 0, .18); z-index: 60; display: flex; flex-direction: column; animation: slidein .18s ease; }
+.starpanel { position: absolute; top: 0; inset-inline-end: 0; bottom: 0; width: min(380px, 100%); background: var(--panel); border-inline-start: 1px solid var(--line); box-shadow: -4px 0 18px rgba(0, 0, 0, .18); z-index: 60; display: flex; flex-direction: column; animation: slidein .18s ease; }
 .starpanel[hidden] { display: none; }
 .starpanel header { height: 59px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 16px; background: var(--header); }
 .starpanel h2 { flex: 1; margin: 0; font-size: 16px; font-weight: 500; color: var(--ink); }
@@ -904,7 +904,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gempty svg { width: 44px; height: 44px; opacity: .7; }
 .gempty b { color: var(--ink-2); font-weight: 500; font-size: 15px; }
 .gmore { padding: 18px; text-align: center; color: var(--ink-3); font-size: 13px; }
-/* Item options (js/components/gallery-menu.js): a ⋮ button on each row, and on grid tiles on hover or focus; long-press and right-click open it too. */
+/* Item options (js/components/gallery-menu.js): a ⋮ button on each row, and on grid tiles on hover or focus (always on touch screens, see the WS2 block at the end); long-press and right-click open it too. */
 .gcell { position: relative; min-width: 0; }
 .gtile { -webkit-touch-callout: none; }
 .gcell .gopt { position: absolute; top: 4px; inset-inline-end: 4px; z-index: 1; width: 28px; height: 28px; border-radius: 50%; background: rgba(0, 0, 0, .5); color: #fff; opacity: 0; transition: opacity .12s; }
@@ -919,7 +919,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .grow.gm-on { background: var(--panel-2); }
 .gmenu { z-index: 95; }
 /* Phones: each row shows only its ⋮ button; copy, open and download are in its options. */
-@media (max-width: 600px) { .gacts > :not(.gopt) { display: none; } }
+@media (max-width: 640px) { .gacts > :not(.gopt) { display: none; } }
 /* Wider screens. The breakpoints follow the list's own width (the sheet), so phones never reach them:
    640 px and up, every option is a button on the row (.gx) instead of the quick buttons and ⋮;
    900 px and up, rows sit in two columns and the medium grid fits as many tiles as the width allows. */
@@ -943,7 +943,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gmed .gtile.gbad small { display: none; }
 .gmed .gdur { padding: 10px 4px 3px; font-size: 11px; }
 .gmed .gtxt b { font-size: 14px; }
-@media (max-width: 600px) {
+@media (max-width: 640px) {
   #galModal { padding: 0; }
   .sheet.gal { width: 100%; height: 100%; max-height: none; border-radius: 0; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
   .ggrid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 2px; padding: 0 2px; }
@@ -1013,7 +1013,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 [dir="rtl"] .starpanel { box-shadow: 4px 0 18px rgba(0, 0, 0, .18); animation-name: slidein-rtl; }
 @keyframes slidein-rtl { from { transform: translateX(-30px); opacity: 0; } }
 [dir="rtl"] :is(.lb-nav, #sClose, #setBack, .gacts .gfwd) svg { transform: scaleX(-1); }
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
   [dir="rtl"] .sidebar { transform: translateX(105%); box-shadow: -4px 0 24px var(--shadow); }
   [dir="rtl"] .drawer-open .sidebar { transform: none; }
 }
@@ -1063,3 +1063,330 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 .start-keys kbd { min-width: 0; }
 @media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
 @media (max-width: 640px) { .krow dd { max-width: 55%; } }
+
+/* ---- Responsive audit WS5: Safe areas, focus, contrast and drawer accessibility ---- */
+/* Safe areas (the page uses viewport-fit=cover): the notch, the rounded corners and the home indicator.
+   The insets are physical (left and right never swap in right-to-left). They live in custom properties
+   so they are written once and can be faked for testing. */
+:root { --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); }
+.app { padding: var(--sat) var(--sar) 0 var(--sal); background: var(--header); }
+.scroller { padding-bottom: var(--sab); }
+.sidebar { padding-bottom: var(--sab); }
+.modal { padding: max(16px, var(--sat)) max(16px, var(--sar)) max(16px, var(--sab)) max(16px, var(--sal)); }
+.lb { padding: var(--sat) var(--sar) var(--sab) var(--sal); }
+.starpanel { padding: var(--sat) var(--sar) var(--sab) 0; }
+[dir="rtl"] .starpanel { padding-left: var(--sal); padding-right: 0; }
+.start { padding-left: max(16px, var(--sal)); padding-right: max(16px, var(--sar)); }
+@media (max-width: 1023px) {
+  .sidebar { padding-left: var(--sal); }
+  [dir="rtl"] .sidebar { padding-left: 0; padding-right: var(--sar); }
+}
+@media (max-width: 640px) {
+  .modal { padding: var(--sat) var(--sar) 0 var(--sal); }
+  .sheet.settings { padding-left: var(--sal); padding-right: var(--sar); }
+}
+@media (max-width: 640px) { .sheet.gal { padding-left: var(--sal); padding-right: var(--sar); } }
+/* Dark mode: the time and ticks on your own green bubbles, 4.9:1 instead of 2.6:1. */
+:root[data-theme="dark"] .out .meta:not(.ov) { color: rgba(233, 237, 239, .8); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .out .meta:not(.ov) { color: rgba(233, 237, 239, .8); } }
+/* Keyboard focus that can be seen: a ring on menu items, and a solid green grip on the side panel's edge. */
+.menu [role^="menuitem"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sb-resize:focus-visible .sb-grip { opacity: 1; width: 6px; background: var(--accent); }
+/* Primary buttons: white on a darker green in light mode (4.9:1), dark text on the green in dark mode. */
+.btn.primary, .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+:root[data-theme="dark"] .btn.primary, :root[data-theme="dark"] .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #111b21; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary, :root:not([data-theme="light"]) .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #111b21; } }
+/* Reduced motion: the "working" bar can't slide, so it fills the track at half strength instead of freezing at a third. */
+@media (prefers-reduced-motion: reduce) { .prog.indet i { width: 100% !important; transform: none; opacity: .5; } }
+
+/* ---- Responsive audit WS4: Right-to-left and bidi ---- */
+/* Chat titles and chat list labels have dir="auto", so an English title in Urdu or Arabic is cut at its
+   end, not its start; they still line up with the interface, on the right. */
+:root[dir="rtl"] #headTitle, :root[dir="rtl"] .lb-who, :root[dir="rtl"] .chatrow b, :root[dir="rtl"] .chatrow small { text-align: right; }
+.chatrow .cr-t { flex: 1; }
+/* The current chat's green bar sits on the start side, the right in Urdu and Arabic. */
+:root[dir="rtl"] .chatrow.cur { box-shadow: inset -3px 0 0 var(--accent); }
+/* The File fact: the file name shrinks with an ellipsis, its size and format always stay in view. */
+.facts dd.fact-file { display: flex; gap: .3em; }
+.facts dd.fact-file > bdi:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.facts dd.fact-file > span { flex: none; }
+/* The brand subtitle stays on one line in every language and size; the header keeps its height. */
+.brand > div { min-width: 0; }
+.brand > div, .brand small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- Responsive audit WS2: touch targets ---- */
+/* The search field's own clear ✕ looked like the Close search ✕ beside it; Esc (or selecting the text) clears it. */
+#q2::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+/* Touch screens (a finger, not a mouse): every control gets about 44 px to tap, as Apple and Google ask.
+   Buttons in the app's chrome simply grow; small buttons inside messages and tables keep their look and get
+   an invisible ::before hit area around them instead, so bubbles and rows don't change size. */
+@media (pointer: coarse) {
+  .ibtn, .fab { width: 44px; height: 44px; }
+  .ibtn.sm { width: 40px; height: 40px; }
+  .btn, .tour-nav .btn { height: 44px; }
+  .tour-nav .linkbtn { min-height: 44px; padding-inline: 8px; }
+  .field select, .field input[type="date"] { height: 40px; }
+  .menu [role^="menuitem"] { padding-block: 12px; }
+  .samplebar button { min-height: 44px; padding: 4px 10px; margin-block: -8px; }
+  .start-lang button { min-height: 44px; padding-inline: 16px; }
+  .shx { width: 44px; height: 44px; margin-inline-end: 2px; }
+  .sstrip .searchbox, .sopts { height: 40px; }
+  .sopt { min-width: 40px; height: 36px; }
+  /* The side panel's resize grip shows all the time where there is no hover, with a wider strip to drag. */
+  .sb-resize { width: 24px; inset-inline-end: -12px; }
+  .sb-grip { opacity: .55; }
+  /* Media, links and docs: 40 px chips, 44 px row buttons (also PR #11's inline .gx buttons), and a ⋮ on photo tiles. */
+  .chip { height: 40px; }
+  .gacts { gap: 4px; }
+  .gacts .ibtn, .gacts .ibtn.sm { width: 44px; height: 44px; }
+  .gcell .gopt { display: grid; opacity: 1; width: 32px; height: 32px; top: 4px; }
+  /* Invisible hit areas: the control looks the same, the tappable box is about 44 px. */
+  :is(.linkbtn, .read-more-btn, .aspeed, .psort, .lcard .lcopy, .gacts .lcopy) { position: relative; }
+  :where(.linkbtn, .read-more-btn, .aspeed, .psort, .lcopy, .mmore, .gcell .gopt)::before { content: ""; position: absolute; inset: -12px -6px; }
+  .tour-nav .linkbtn::before { inset: 0; }
+  .read-more-btn::before { inset: -13px -4px; }
+  .aspeed::before { inset: -8px -10px -16px; } /* mostly downwards, away from the waveform above it */
+  .psort::before { inset: -10px -4px; }
+  .lcopy::before { inset: -4px; }
+  .gacts .lcopy::before { inset: 0; }
+  .mmore::before { inset: -10px -9px -12px; }
+  .bubble.mb .mmore::before, .row.stk .mmore::before { inset: -10px; }
+  .gcell .gopt::before { inset: -6px; }
+}
+/* Search toggles get their labelled row under the field on touch tablets too, not just on phones
+   (but not on a landscape phone, where the extra row would cost too much height). */
+@media (pointer: coarse) and (min-height: 501px) {
+  .sstrip { flex-wrap: wrap; row-gap: 6px; }
+  .sstrip .searchbox { min-width: 0; border-radius: 8px; }
+  .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
+  .sopt { height: 40px; padding: 0 12px; border-color: var(--line); background: var(--input); }
+  .sopt .sl { display: inline; }
+}
+
+/* ---- Responsive audit WS1: short screens and landscape phones ----
+   Every rule above sizes by width only, so a phone on its side (844×390) got the desktop chrome and
+   small floating sheets. Here: the ⋮ menu and recent searches scroll instead of running off the screen,
+   the filter bar is one line on phones, and under 500 px of height the header, banners and search strip
+   get compact and sheets use the whole height. */
+#moreMenu { max-height: calc(100dvh - 60px); overflow-y: auto; overscroll-behavior: contain; }
+.shist { display: flex; flex-direction: column; max-height: calc(100dvh - 130px); }
+.shist .shh { flex: none; }
+.shist ul { min-height: 0; overflow-y: auto; overscroll-behavior: contain; }
+/* The filter bar's Clear: words on wide screens, a ✕ on phones and short screens (the words stay its name). */
+.fbar #fbClear { display: inline-flex; align-items: center; gap: 4px; flex: none; white-space: nowrap; }
+.fbar .fbx { display: none; }
+.fbar .fbx svg { width: 18px; height: 18px; display: block; }
+/* Who is you and the nickname list: the name search stays at the top while the list scrolls under it. */
+/* Its shadows paint the sheet's colour around it and over the body's top padding, so rows don't show through. */
+.sheet .body > .mefilter { position: sticky; top: 0; z-index: 2; box-shadow: 0 0 0 8px var(--panel), 0 -16px 0 8px var(--panel); }
+@media (pointer: coarse) {
+  .nicklist .nickrow input, .merow.ed input, .sheet .body > .mefilter { height: 44px; }
+  .nicklist .nickrow .nkreset { height: 44px; }
+}
+:root[lang="ur"] .samplebar { line-height: 1.7; }
+@media (max-width: 640px), (max-height: 500px) {
+  /* One line: what is filtered (cut with … , the whole text is its tooltip) and a ✕ to clear. */
+  .fbar { flex-wrap: nowrap; gap: 8px; padding-block: 2px; padding-inline: 12px 4px; }
+  .fbar #fText { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .fbar #fbClear { justify-content: center; width: 36px; height: 36px; padding: 0; border-radius: 50%; color: var(--enc-ink); }
+  .fbar .fbx { display: block; }
+  .fbar .fbl { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  /* The sample note steps aside while a filter or search is on, so the chat keeps the room. */
+  .main:has(> #filterbar:not([hidden])) > #samplebar, .main:has(> #sstrip:not([hidden])) > #samplebar { display: none; }
+}
+@media (max-height: 500px) {
+  .chat-head, .sb-top, .starpanel header { height: 48px; }
+  .chat-head .av { width: 32px; height: 32px; font-size: 13px; }
+  .chat-head .who { gap: 10px; padding: 0; }
+  .chat-head .t { font-size: 15px; }
+  .chat-head .s { font-size: 12px; }
+  #moreMenu { top: 44px; max-height: calc(100dvh - 50px); padding-block: 4px; }
+  #moreMenu [role^="menuitem"] { padding-block: 7px; }
+  #moreMenu .msep { margin-block: 3px; }
+  /* The sample note on one line, its button beside it. */
+  .samplebar { flex-wrap: nowrap; justify-content: flex-start; gap: 10px; padding: 2px 8px 2px 16px; font-size: 12.5px; line-height: 1.35; text-align: start; }
+  .samplebar > span:first-child { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .samplebar > button { flex: none; white-space: nowrap; }
+  .sstrip { padding-block: 3px; }
+  .sstrip .searchbox, .sopts { height: 34px; }
+  .fab { width: 36px; height: 36px; }
+  /* Side panel: the chat's avatar beside its name, and a shorter list of chats. */
+  .chatcard { grid-template-columns: 48px minmax(0, 1fr); column-gap: 12px; row-gap: 0; align-items: center; text-align: start; padding: 12px 16px; }
+  .chatcard .av { grid-row: 1 / span 2; width: 48px; height: 48px; font-size: 18px; margin: 0; }
+  .chatcard h2 { margin: 0; font-size: 17px; align-self: end; text-wrap: wrap; }
+  .chatcard .sub { align-self: start; }
+  .chatcard .facts, .chatcard .btn-row { grid-column: 1 / -1; }
+  .chatcard .facts { margin-top: 10px; }
+  .chatcard .btn-row { margin-top: 10px; }
+  .chatlist { max-height: 40vh; }
+}
+/* A phone on its side: sheets use the whole height, Settings and Media, links and docs the whole screen. */
+@media (max-height: 500px) and (orientation: landscape) {
+  .modal { padding: 0; }
+  /* Full-width sheets reach the screen's sides, so they keep clear of the notch and the home indicator. */
+  .sheet:not(.narrow) { padding: 0 var(--sar) var(--sab) var(--sal); }
+  .sheet, .sheet.narrow { max-height: 100vh; max-height: 100dvh; border-radius: 0; }
+  .sheet header { padding-block: 4px; }
+  .sheet header h2 { font-size: 16px; }
+  .sheet .body { padding: 12px 20px 14px; gap: 14px; }
+  .sheet .foot { padding: 8px 16px; }
+  .sheet .lead { font-size: 13px; line-height: 1.45; }
+  :root[lang="ur"] .sheet .lead { line-height: 1.8; }
+  /* Who is you: one scroller (the sheet's body) instead of a short list scrolling inside it. */
+  .melist { max-height: none; overflow: visible; }
+  .tw .body { gap: 10px; }
+  .tw-opt { padding: 10px 14px; }
+  #setModal { place-items: stretch; }
+  .sheet.settings { width: 100%; height: 100%; max-height: none; padding: 0 var(--sar) var(--sab) var(--sal); }
+  .sheet.settings header { min-height: 0; }
+  .sheet.settings .set-body { gap: 12px; padding-block: 12px; padding-inline: max(12px, calc((100% - 640px) / 2)); }
+  /* Media, links and docs: the title, the chips and the buttons in one row; more tiles per row. */
+  #galModal { place-items: stretch; }
+  .sheet.gal { width: 100%; height: 100%; max-height: none; display: grid; grid-template-columns: auto minmax(0, 1fr) repeat(6, auto); grid-template-rows: auto minmax(0, 1fr); align-items: center; background: var(--header); }
+  .sheet.gal header { display: contents; }
+  .sheet.gal header > * { grid-row: 1; order: 2; }
+  .sheet.gal header > h2 { order: 0; padding-inline: 16px 4px; white-space: nowrap; }
+  .sheet.gal .gchips { grid-row: 1; order: 1; padding-block: 8px; background: transparent; border-bottom: 0; }
+  .sheet.gal .gbody { grid-row: 2; grid-column: 1 / -1; align-self: stretch; background: var(--panel); }
+  .sheet.gal .ibtn:last-child { margin-inline-end: 4px; }
+  .ggrid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 2px; padding: 0 2px; }
+}
+
+/* ---- Responsive audit WS3: Breakpoints and large screens ----
+   Breakpoints: phones are 640 px and narrower everywhere; two panes from 1024 px (iPad landscape), where the side
+   panel's width follows the window (--sb-w, 300 to 420 px) until it is dragged. */
+.app { position: relative; }
+/* Starred messages: anchored to the app, never to the window. From 1200 px it is a third column and the chat
+   narrows beside it; below that it slides over the chat; on phones it fills the width. */
+@media (min-width: 1200px) {
+  .stars-open .app { grid-template-columns: var(--sb-w) minmax(0, 1fr) var(--st-w); }
+  .stars-open.side-hidden .app { grid-template-columns: minmax(0, 1fr) var(--st-w); }
+  .stars-open .starpanel { position: relative; inset: auto; width: auto; min-height: 0; box-shadow: none; animation: none; }
+  [dir="rtl"] .stars-open .starpanel { box-shadow: none; }
+}
+@media (max-width: 640px) { .starpanel { width: 100%; border-inline-start: 0; } }
+/* Wide chat rows (about 900 px and wider): photos and videos up to 400 px, link cards up to 360 px. */
+.layer { container: chat / inline-size; }
+@container chat (min-width: 900px) {
+  .mimg { width: 400px; }
+  .mvid { width: min(400px, calc(480px * var(--vr, 9))); }
+  .lcard { width: 360px; }
+}
+/* Start screen on big monitors: a wider column with slightly larger type. */
+@media (min-width: 1600px) {
+  .start-in { width: min(680px, 100%); gap: 22px; }
+  .start-brand h1 { font-size: 28px; }
+  .start-brand p, .start-drop p { font-size: 15.5px; }
+  .start-drop h2 { font-size: 20px; }
+  .start-drop p { max-width: 460px; }
+  .start-demo b { font-size: 16px; }
+  .start-demo small, .start-how, .start-trust { font-size: 14px; }
+}
+
+/* ---- Responsive audit WS7: text size ---- */
+/* Settings › Text size (js/app.js, applyTextSize) sets --chat-fs on <html>: 0.9, 1, 1.15, 1.3 or 1.5.
+   It scales the chat's text only: message text, names, times, quotes, code, cards, polls, notices, date
+   pills and Read more. Photos, videos, stickers, icons and buttons keep their size. Urdu and Arabic runs
+   (.s-ur / .s-ar) are sized in em, so they follow. estimate() in js/viewer.js scales with it too. */
+:root { --chat-fs: 1; }
+#layer { font-size: calc(14.2px * var(--chat-fs)); }
+#layer .txt { font-size: calc(14.2px * var(--chat-fs)); line-height: calc(19px * var(--chat-fs)); }
+#layer .txt.jumbo { font-size: calc(38px * var(--chat-fs)); line-height: calc(46px * var(--chat-fs)); }
+#layer .txt code { font-size: calc(13px * var(--chat-fs)); }
+#layer .name { font-size: calc(12.8px * var(--chat-fs)); line-height: calc(22px * var(--chat-fs)); }
+#layer .meta { font-size: calc(11px * var(--chat-fs)); line-height: calc(15px * var(--chat-fs)); }
+#layer .stard svg { width: calc(12px * var(--chat-fs)); height: calc(12px * var(--chat-fs)); }
+#layer .mspace { width: calc(62px * var(--chat-fs)); }
+#layer .mspace.e { width: calc(106px * var(--chat-fs)); }
+#layer .pill, .sticky-date .pill { font-size: calc(12.5px * var(--chat-fs)); }
+#layer :is(.att, .mdoc, .unsup) b { font-size: calc(14px * var(--chat-fs)); }
+#layer :is(.att, .mdoc, .poll) small { font-size: calc(12px * var(--chat-fs)); }
+#layer :is(.call, .loc, .unsup, .vc-main) small { font-size: calc(12.5px * var(--chat-fs)); }
+#layer .po .pol, #layer .ltxt b, #layer .lplay, #layer .afname { font-size: calc(13.5px * var(--chat-fs)); }
+#layer .ldet { font-size: calc(12.5px * var(--chat-fs)); }
+#layer .ltxt small, #layer .lmore { font-size: calc(12px * var(--chat-fs)); }
+#layer .arow { font-size: calc(11.5px * var(--chat-fs)); }
+#layer .vc-main b { font-size: calc(15px * var(--chat-fs)); }
+#layer .vc-acts > * { font-size: calc(14px * var(--chat-fs)); }
+
+/* ---- Responsive audit WS6: Tour, viewers and chat polish ---- */
+/* Tour card: never taller than the screen (js/tour-controller.js also caps it to the room it has); the text scrolls, the buttons stay. */
+.tour-pop { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.tour-pop > * { flex: none; }
+.tour-pop .tour-text { flex: 0 1 auto; min-height: 3em; overflow-y: auto; overscroll-behavior: contain; }
+.tour-nav .linkbtn { white-space: nowrap; }
+.tour-pop.narrow .tour-dots { display: none; } /* a card squeezed beside its target (js/tour-controller.js) */
+@media (max-height: 520px) {
+  .tour-pop { padding: 12px 14px 10px; }
+  .tour-pop h2 { margin: 2px 0 4px; font-size: 16px; }
+  .tour-text { margin-bottom: 10px; }
+}
+/* Drag-and-drop overlay: a solid panel with an icon, so the words never sit on the dimmed chat. */
+.dropzone > div { box-sizing: border-box; width: min(520px, 80vw); max-width: none; padding: 32px 24px; background: var(--panel); color: var(--ink); border-color: var(--accent); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); line-height: 1.5; }
+.dropzone > div::before { content: ""; display: block; width: 56px; height: 56px; margin: 0 auto 12px; background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'/%3E%3Cpath d='M12 16.5v-5M9.5 14L12 11.5l2.5 2.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'/%3E%3Cpath d='M12 16.5v-5M9.5 14L12 11.5l2.5 2.5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.dropzone small { color: var(--ink-3); font-size: 15px; }
+.lb-pos { direction: ltr; unicode-bidi: isolate; } /* "7 / 9" reads the same in Urdu and Arabic */
+/* Photo viewer on phones: the top bar keeps the name and a one-line date (its other buttons: WS9 block at the end). */
+@media (max-width: 640px) {
+  .lb-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+/* The time on a photo or video sits on a soft dark pill, so it stays readable on light pictures. */
+.meta.ov { padding: 1px 7px; border-radius: 9px; background: rgba(11, 20, 26, .5); text-shadow: none; inset-inline-end: 8px; bottom: 7px; }
+/* Header subtitle: phones put the date range first (js/app.js), so the part that gets cut off is the counts. */
+.chat-head .s .hs-narrow { display: none; }
+@media (max-width: 640px) { .chat-head .s .hs-wide { display: none; } .chat-head .s .hs-narrow { display: inline; } }
+
+/* ---- Media types with no items (WS11) ---- */
+/* The side panel lists only the types the chat has (js/app.js renderMediaSummary sets data-n), so the tiles wrap
+   into rows that fill the width: up to 4 a row (3 when there are 5 or 6), and a short last row stretches. */
+.mgrid { display: flex; flex-wrap: wrap; --cols: 4; }
+.mgrid[data-n="1"] { --cols: 1; }
+.mgrid[data-n="2"] { --cols: 2; }
+.mgrid[data-n="3"], .mgrid[data-n="5"], .mgrid[data-n="6"] { --cols: 3; }
+.mgrid > .mt { flex: 1 1 calc((100% - (var(--cols) - 1) * 6px) / var(--cols)); }
+/* No media, links or docs at all: one line in place of the tiles. */
+.mempty { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--panel-2); color: var(--ink-2); font-size: 13.5px; }
+.mempty > span:first-child { display: grid; flex: none; color: var(--ink-3); }
+
+/* ---- Phone viewer header (WS9) ---- */
+/* Photo and PDF viewers (js/components/viewer-menu.js): 640 px and narrower, the header is Back, the title and ⋮.
+   Every other button moves into a sheet from the bottom with no title; larger screens keep the full header with ✕. */
+.lb-top .vback, .lb-top .vmore { display: none; }
+[dir="rtl"] .vback svg { transform: scaleX(-1); }
+.vsheet[hidden] { display: none; }
+@media (max-width: 640px) {
+  .lb-top { gap: 2px; padding-block: 6px; padding-inline: 4px; }
+  .lb-top .vback, .lb-top .vmore { display: grid; flex: none; }
+  .lb-top .lb-who { padding-inline-start: 4px; }
+  .lb-top .lb-tools, #lbGo, #lbDl, #lbClose, #pdfDl, #pdfClose { display: none; }
+  .lb-top .lb-pos { margin-inline-end: 0; }
+  .menu.ctxmenu.vsheet { inset: auto 0 0 0; width: auto; min-width: 0; max-width: none; max-height: min(75dvh, calc(100dvh - 72px)); padding-block: 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    border-radius: 16px 16px 0 0; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .5); overscroll-behavior: contain; animation: vsheetin .18s ease-out; }
+  .vsheet [role="menuitem"] { min-height: 48px; padding-inline: 20px; }
+}
+@keyframes vsheetin { from { transform: translateY(100%); } to { transform: none; } }
+
+/* ---- iPhone 8 report (WS8) ---- */
+/* The page never scrolls or pans sideways: <html> hides overflow and <body>, now the containing block of
+   the absolutely placed panels (same box as the viewport), clips it. Before, the Starred panel's slide-in
+   (translateX 30px) made the page wider for a moment, and phone browsers then zoomed the whole page out
+   or let it pan, so it no longer fitted the screen. clip (Safari 16+) can't be scrolled by script either;
+   hidden is the fallback. */
+html { overflow: hidden; }
+body { position: relative; overflow: hidden; overflow: clip; }
+/* iOS Safari zooms in when a field with text under 16 px gets focus, and doesn't zoom back out, which
+   leaves the page shifted and cut off at the edge (the search bar, Participants and nicknames, the date
+   filters). Touch screens get 16 px text in fields; their heights are fixed, so they keep their size.
+   User zoom stays allowed (no maximum-scale in the viewport tag). */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"]), select, textarea { font-size: 16px !important; }
+}
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"]), select, textarea { font-size: 16px !important; }
+}
+/* Search steps hit by hit: only the current hit is orange, with a ring so it stands out from the others. */
+mark.cur { box-shadow: 0 0 0 2px var(--hl-cur); }
+/* A tour card whose text scrolls can be scrolled from the keyboard (Tour.place() gives it a tabindex). */
+.tour-pop .tour-text:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

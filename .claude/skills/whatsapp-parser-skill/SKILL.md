@@ -43,9 +43,12 @@ A line that matches neither regex continues the previous message.
 
 ## Message kinds (`classify`)
 
-`text`, `deleted`, `call`, `media`, `poll`, `location`, `unsupported` and `system`.
+`text`, `deleted`, `waiting`, `call`, `media`, `poll`, `location`, `unsupported` and `system`.
 
-- **Deleted:** "This message was deleted", "You deleted this message", the admin variants, and "Waiting for this message".
+- **Deleted:** "This message was deleted", "You deleted this message" and the admin variants.
+- **Waiting:** a message that never finished loading on the exporting phone. The whole line is the `WAITING` regex: "Waiting for this message", optionally followed by WhatsApp's own second sentence ("This may take a while.", "Check your phone." or its translation). It is case-sensitive and lists each tail exactly, so a person's own message such as "Waiting for this message. Call me!" stays text; add a tail only from a real export line; iPhone puts U+200E in front, which `INV` strips. It returns `text: ''` and `extra.raw` (the line as exported), so search skips the wording and Copy (`copyable` in `js/components/message-menu.js`) gives the raw line. The viewer draws a "Message wasn't loaded" card (`case 'waiting'` in `makeRow`, height in `estimate`).
+  - Translations are matched only by their opening phrase: Spanish "Esperando el/este mensaje", Portuguese "Aguardando mensagem", French "En attente de ce message", German "Warte(n) auf diese Nachricht", Italian "In attesa del/di questo messaggio", Indonesian "Menunggu pesan ini". These come from memory of WhatsApp's wording, not from real exports, so the exact phrasing (and the second sentence) may differ; widen the regex only with a real export line. Urdu, Arabic and Hindi are left out because their wording isn't known for sure; such lines stay plain text.
+  - A line that only starts like the notice ("Waiting for this message to arrive…") or has more than one line stays `text`.
 - **Edited:** a trailing `<This message was edited>` is removed and sets `edited: true`. It isn't a separate kind.
 - **Attachments:**
   - iPhone: `<attached: NAME>`. The text before it can be a document title with a page count (`Report.pdf • 2 pages`); see `docInfo`.

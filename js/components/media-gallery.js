@@ -68,6 +68,8 @@ const Gallery = {
     this.items = items; this.counts = counts;
   },
   count(cat) { this.index(); return this.counts[cat] || 0; },
+  // The categories that have items, as chips and sidebar tiles: a type with none is left out, and All only shows when something does.
+  cats() { this.index(); return GAL_CATS.filter(([c]) => this.counts[c] > 0); },
 
   /* ---------- Opening and filtering ---------- */
   open(cat) {
@@ -97,8 +99,11 @@ const Gallery = {
   show(cat) {
     this.index();
     if (window.GalMenu) GalMenu.close(false);
+    const cats = this.cats();
+    if (!cats.some(c => c[0] === cat)) cat = 'all'; // its type has no items (another chat, or links turned off): back to All
     this.cat = cat; this.shownKey = S.media;
-    $('galChips').innerHTML = GAL_CATS.map(([c, label]) => '<button class="chip' + (c === cat ? ' on' : '') + '" role="tab" aria-selected="' + (c === cat) + '" data-cat="' + c + '">' +
+    $('galChips').hidden = !cats.length; $('galSort').hidden = !cats.length;
+    $('galChips').innerHTML = cats.map(([c, label]) => '<button class="chip' + (c === cat ? ' on' : '') + '" role="tab" aria-selected="' + (c === cat) + '" data-cat="' + c + '">' +
       t(label) + ' <span class="cc">' + nf(this.counts[c]) + '</span></button>').join('');
     const on = $('galChips').querySelector('.on');
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -111,9 +116,10 @@ const Gallery = {
     galBody.scrollTop = 0;
     galBody.innerHTML = '';
     if (!this.list.length) {
-      const none = cat === 'all' ? 'media_gallery.no_items' : GAL_CATS.find(c => c[0] === cat)[1].replace('.', '.no_');
+      // Only All can be empty now: the chat has no media, links or docs, or its files aren't in this export.
       const txtOnly = cat !== 'links' && !S.media.files && (S.media.missing || S.media.omitted);
-      galBody.innerHTML = '<div class="gempty">' + ICON[GAL_ICON[cat]] + '<b>' + t(none) + '</b><small>' +
+      const none = cat !== 'all' ? GAL_CATS.find(c => c[0] === cat)[1].replace('.', '.no_') : txtOnly || S.media.missing ? 'media.none_shown' : 'media_gallery.no_items';
+      galBody.innerHTML = '<div class="gempty gnone">' + ICON[GAL_ICON[cat]] + '<b>' + t(none) + '</b><small>' +
         t(cat === 'links' ? 'media_gallery.links_hint' : txtOnly ? 'media_gallery.text_only_hint' : 'media_gallery.files_hint') + '</small></div>';
       return;
     }
@@ -310,6 +316,7 @@ galBody.addEventListener('loadedmetadata', e => {
 
 $('galBtn').onclick = () => Gallery.open('all');
 $('miGal').innerHTML = ICON.image;
+$('mediaEmptyIc').innerHTML = galSm('image'); // the side panel's line for a chat with no media, links or docs
 ICON.sort = ic('<path d="M7 4v16M3.5 16.5L7 20l3.5-3.5M17 20V4M13.5 7.5L17 4l3.5 3.5"/>');
 $('galSort').innerHTML = ICON.sort;
 ICON.grid = ic('<rect x="4" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2"/>');

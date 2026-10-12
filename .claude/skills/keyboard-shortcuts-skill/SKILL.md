@@ -29,7 +29,7 @@ Every shortcut is one entry in `js/components/shortcuts-list.js` (`KEY_LIST`). `
 3. **Name it in all three dictionaries** under `keys.*` in `js/i18n/en.js`, `ur.js` and `ar.js` (or reuse the action's existing label, such as `menu.settings`). Key names stay Latin (`Ctrl`, `⌘`, `M`) in every language.
 4. **Show it where the action is.**
    - A ⋮ menu item gets `<span class="mk" data-key="id" aria-hidden="true"></span>` after its label. A message menu row gets it through the fourth item.
-   - A button gets a `KEY_HINTS` row: `[element id, shortcut id, dictionary key of its tooltip]`. `Keys.decorate()` writes the tooltip and `aria-keyshortcuts`, and runs again after a language change.
+   - A button gets a `KEY_HINTS` row: `[element id, shortcut id, dictionary key of its tooltip]`. `Keys.decorate()` writes the tooltip and `aria-keyshortcuts`, and runs again after a language change. When the button's name changes with its state (☰ says Show or Hide chat details), the third item is a function that returns the key, and the code that changes the name calls `Keys.hint(id)`.
 5. **Docs and checks.**
    - Add the shortcut to docs/features.md section 18, and to the feature's own section if it mentions keys.
    - Add a CHANGELOG line.

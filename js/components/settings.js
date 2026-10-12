@@ -2,11 +2,11 @@
 /* =====================================================================
    Settings screen, laid out like WhatsApp's: opened from "Settings" in
    the header's ⋮ menu. Every preference lives here (PROJECT_RULES.md,
-   "Settings"): who you are, theme, language, background pattern and the
+   "Settings"): who you are, theme, text size, language, background pattern and the
    date format, plus shortcuts to statistics, the tour and About (What's new).
 
-   - Theme, language and background pattern are kept in localStorage
-     (cv-theme, app_language, cv-doodle, cv-online-links, cv-autoplay, cv-gallery-view, cv-single-keys). Who you are and the date format
+   - Theme, text size, language and background pattern are kept in localStorage
+     (cv-theme, app_language, cv-text-size, cv-doodle, cv-online-links, cv-autoplay, cv-gallery-view, cv-single-keys). Who you are and the date format
      belong to the open chat and are not stored.
    - Participants and nicknames opens its own sheet
      (js/components/nicknames.js); nicknames are kept per chat.
@@ -22,6 +22,7 @@ Object.assign(ICON, {
   palette: ic('<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6h1.9a4.7 4.7 0 0 0 4.7-4.7c0-3.6-4-6.6-9-6.6z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7.5" r="1"/><circle cx="14.5" cy="7.5" r="1"/>'),
   calendar: ic('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
   info: ic('<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.6v.1"/>'),
+  textsize: ic('<path d="M3 19l5.5-14 5.5 14M5 14h7M14.5 19l3.5-9 3.5 9M15.7 16h4.6"/>'),
   doodle: ic('<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M7.5 9.5l2-2 2 2 2-2 2 2M8 15.5h.1M12 15.5h.1M16 15.5h.1"/>')
 });
 
@@ -47,6 +48,7 @@ const Settings = {
     const chev = '<span class="sx" aria-hidden="true">' + ICON.next + '</span>';
     const row = (act, icon, title, sub, extra) =>
       '<button class="set-row" data-set="' + act + '"' + (extra || '') + '><span class="si">' + ICON[icon] + '</span><span class="st"><b>' + title + '</b>' + (sub ? '<small>' + sub + '</small>' : '') + '</span>' + chev + '</button>';
+    const tsKeys = Keys.text('textSize'); // + or −, hidden on touch screens (css/settings.css)
     const me = S.me, themeName = t({ light: 'menu.light', dark: 'menu.dark', system: 'menu.match_system' }[theme]);
     const orderName = { dmy: 'DD/MM/YYYY', mdy: 'MM/DD/YYYY', ymd: 'YYYY-MM-DD' }[res.order];
     const orderVal = t({ auto: 'sidebar.automatic', dmy: 'sidebar.day_month', mdy: 'sidebar.month_day' }[S.order] || 'sidebar.automatic');
@@ -58,6 +60,7 @@ const Settings = {
         '<span class="st"><small>' + t('settings.you_are') + '</small><b dir="auto">' + esc(me ? nick(me) : t('settings.nobody_chosen')) + '</b><small>' + t(me ? 'settings.your_messages_right' : 'settings.everyone_left') + '</small></span>' + chev + '</button>' +
       '<section class="set-grp" aria-labelledby="setG1"><h3 id="setG1">' + t('settings.chats') + '</h3>' +
         row('theme', 'palette', t('menu.theme'), esc(themeName)) +
+        row('textsize', 'textsize', t('settings.text_size'), esc(textSizeName(textSize)) + (tsKeys ? '<span class="set-key"> · <bdi>' + esc(tsKeys) + '</bdi></span>' : ''), tsKeys ? ' aria-keyshortcuts="' + esc(Keys.aria('textSize')) + '"' : '') +
         row('lang', 'globe', t('common.language'), '<bdi>' + esc(I18N.info().name) + '</bdi>') +
         '<label class="set-row"><span class="si">' + ICON.doodle + '</span><span class="st"><b>' + t('sidebar.background_pattern') + '</b><small>' + t('settings.pattern_sub') + '</small></span><input type="checkbox" class="switch" id="doodle"' + (doodleOn ? ' checked' : '') + '></label>' +
         '<label class="set-row"><span class="si">' + ICON.link + '</span><span class="st"><b>' + t('settings.online_links') + '</b><small>' + t('settings.online_links_sub') + '</small></span><input type="checkbox" class="switch" id="onlineLinks"' + (onlineLinks ? ' checked' : '') + '></label>' +
@@ -81,6 +84,7 @@ const Settings = {
   act(a) {
     if (a === 'me') openMeModal(true); // optional here: ✕, Cancel, Esc and a tap outside close it
     else if (a === 'theme') pickSheet(t('menu.theme'), [['light', t('menu.light')], ['dark', t('menu.dark')], ['system', t('menu.match_system')]], theme, v => { setTheme(v); this.render(); });
+    else if (a === 'textsize') pickSheet(t('settings.text_size'), TEXT_SIZES.map(([v, f]) => [v, '<span class="ts-opt" style="--ts:' + f + '">' + esc(t('settings.ts_' + v)) + '</span> <small class="ts-pct">' + esc(f.toLocaleString(I18N.locale(), { style: 'percent' })) + '</small>']), textSize, v => { setTextSize(v); this.render(); });
     else if (a === 'lang') pickSheet(t('common.language'), LANGS.map(l => [l.code, '<span lang="' + l.code + '">' + esc(l.name) + '</span>']), I18N.lang, v => I18N.set(v));
     else if (a === 'order') pickSheet(t('sidebar.date_format'), [['auto', t('sidebar.automatic')], ['dmy', t('sidebar.day_month') + ' <bdi dir="ltr">(DD/MM/YYYY)</bdi>'], ['mdy', t('sidebar.month_day') + ' <bdi dir="ltr">(MM/DD/YYYY)</bdi>']], S.order, v => setOrder(v));
     else if (a === 'gview') Gallery.pickLayout(); // also the View button on Photos and Videos (js/components/media-gallery.js)
@@ -118,7 +122,7 @@ $('pickList').addEventListener('keydown', e => {
 });
 
 $('setBody').addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b && !b.disabled) Settings.act(b.dataset.set); });
-$('setBody').addEventListener('change', e => { if (e.target.id === 'doodle') setDoodle(e.target.checked); else if (e.target.id === 'onlineLinks') LinkOnline.set(e.target.checked); else if (e.target.id === 'autoplay') Autoplay.set(e.target.checked); else if (e.target.id === 'singleKeys') Keys.setSingle(e.target.checked); });
+$('setBody').addEventListener('change', e => { if (e.target.id === 'doodle') setDoodle(e.target.checked); else if (e.target.id === 'onlineLinks') LinkOnline.set(e.target.checked); else if (e.target.id === 'autoplay') Autoplay.set(e.target.checked); else if (e.target.id === 'singleKeys') { Keys.setSingle(e.target.checked); Settings.render(); } });
 $('setBack').innerHTML = ICON.back;
 $('setBack').onclick = () => Settings.close();
 $('miSet').innerHTML = ICON.gear;

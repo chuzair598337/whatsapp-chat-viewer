@@ -68,7 +68,7 @@ const Stars = {
     const m = S.msgs[i], out = m.isOutgoing, who = out ? t('common.you') : nick(m.sender);
     const to = S.isGroup || !S.me ? S.title : out ? S.title : t('common.you');
     const date = shortFmt.format(dkToT(m.dateKey));
-    const text = m.kind === 'poll' || m.kind === 'call' || m.kind === 'deleted' || m.kind === 'location' ? '' : m.message;
+    const text = m.kind === 'poll' || m.kind === 'call' || m.kind === 'deleted' || m.kind === 'location' || m.kind === 'waiting' ? '' : m.message;
     const label = t('stars.go_to', { name: who, date, time: m.formattedTime });
     return '<div class="sit ' + (out ? 'out' : 'in') + '" role="listitem">' +
       '<div class="shd"><span class="av c' + colorIdx(m.sender) + '" aria-hidden="true">' + esc(initials(nick(m.sender))) + '</span>' +
@@ -85,6 +85,7 @@ const Stars = {
     if (m.kind === 'call' && m.extra) return chip(m.extra.video ? 'video' : 'phone', capFirst(m.extra.label) + (m.extra.detail ? ' · ' + m.extra.detail : ''));
     if (m.kind === 'location') return chip('pin', t('stars.location'));
     if (m.kind === 'deleted') return chip('ban', m.message);
+    if (m.kind === 'waiting') return chip('timer', t('msg.waiting_title'));
     return m.attachments.map(a => {
       const e = a.url ? Media.get(a.name) : null, ok = e && !Media.cantShow(e.name), src = ok && (e.view || (isHeic(e.name) ? '' : e.url));
       const vid = ok && (a.type === 'video' || (a.type === 'gif' && VIDEO_EXT.test(extOf(e.name))));
@@ -207,7 +208,8 @@ $('starList').addEventListener('click', e => {
     return;
   }
   const b = e.target.closest('.sbub'); if (!b) return;
-  jumpToMsg(+b.dataset.i); if (isNarrow()) Stars.close();
+  // From 1200 px the panel is a column beside the chat and stays open; narrower, it covers the chat, so it closes (css/styles.css).
+  jumpToMsg(+b.dataset.i); if (window.matchMedia('(max-width: 1199px)').matches) Stars.close();
 });
 // Stars that were never exported are lost when the tab closes, so the browser asks first.
 window.addEventListener('beforeunload', e => { if (S.msgs.length && Stars.dirty()) { e.preventDefault(); e.returnValue = ''; } });

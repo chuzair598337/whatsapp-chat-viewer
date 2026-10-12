@@ -6,6 +6,10 @@ const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nf = n => n.toLocaleString(I18N.locale());
+/* Shortcut keys such as ⌘F, Ctrl+O or ⇧⌘K read left to right in Urdu and Arabic text too; without this,
+   ⌘F shows as F⌘. Takes HTML, wraps each key combination in its text (not in tags) in <bdi dir="ltr">. */
+const KEY_COMBO = /(?:(?:Ctrl|Alt|Shift|Cmd|Option|Win) ?\+ ?|[⌘⌥⇧⌃])+(?:[A-Za-z0-9]+|[\/?=\-\[\]\\]|[←→↑↓])/g;
+const ltrKeys = html => String(html).split(/(<[^>]*>)/).map(p => p[0] === '<' ? p : p.replace(KEY_COMBO, '<bdi dir="ltr">$&</bdi>')).join('');
 /* Search folding: the index, the query and the highlights all go through fold(), so spelling variants
    match. NFKC and lower case, then Arabic vowel marks (harakat), the superscript alef, the tatweel and
    zero-width joiners are dropped, and Arabic letters map to the Urdu ones (ي ى → ی, ك → ک, ه ة → ہ). */
@@ -86,13 +90,20 @@ function markHTML(html, sq, cls) {
     return out + part.slice(p);
   }).join('');
 }
+/* The app fills the screen and only its panels scroll, never the page. Focusing a field or scrollIntoView
+   can still scroll <html> or <body> (iOS Safari does this when the keyboard opens), which leaves the whole
+   app shifted; dialogs and the tour put it back when they close. */
+function resetPageScroll() {
+  for (const el of [document.scrollingElement, document.documentElement, document.body]) if (el && (el.scrollTop || el.scrollLeft)) { el.scrollTop = 0; el.scrollLeft = 0; }
+  const app = document.getElementById('app'); if (app && (app.scrollTop || app.scrollLeft)) { app.scrollTop = 0; app.scrollLeft = 0; }
+}
 /* Dialogs: while one is open, everything else on the page is inert, so Tab, the screen reader and
    clicks stay inside it. They stack: a contact card opened from the gallery sits on top of it. */
 const Dialogs = {
   stack: [],
   SKIP: new Set(['toasts', 'toastLive', 'loading', 'drop', 'tour', 'tourWelcome']),
   open(el) { if (!this.stack.includes(el)) this.stack.push(el); this.apply(); },
-  close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); },
+  close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); resetPageScroll(); },
   any() { return this.stack.length > 0; },
   apply() {
     const top = this.stack[this.stack.length - 1], start = document.getElementById('start');
@@ -156,6 +167,7 @@ const ICON = {
   group: ic('<circle cx="9" cy="9" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 6.2a3 3 0 0 1 0 5.6M17 13.6a5.5 5.5 0 0 1 3.5 5.4"/>'),
   more: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="5.5" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="18.5" r="1.9" fill="currentColor"/></svg>',
   help: ic('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17h.01"/>'),
+  hourglass: ic('<path d="M7 3.5h10M7 20.5h10M8 3.5v3.2a4 4 0 0 0 1.6 3.2L12 12l2.4-2.1A4 4 0 0 0 16 6.7V3.5M8 20.5v-3.2a4 4 0 0 1 1.6-3.2L12 12l2.4 2.1a4 4 0 0 1 1.6 3.2v3.2"/>'),
   event: ic('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h3"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
@@ -289,7 +301,10 @@ function isJumbo(t) {
 const S = {
   source: null, res: null, msgs: [], items: [], m2i: null, dateIdx: null,
   me: null, title: '', isGroup: false, order: 'auto',
-  q: '', sq: null, sqErr: '', matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
+  // Search: matches = the messages with a hit, in order; mc[k] = how many hits message matches[k] shows,
+  // mBase[k] = the hits before it, total = all hits; cur = the current message (index into matches),
+  // sub = the current hit inside it (js/app.js runSearch).
+  q: '', sq: null, sqErr: '', matches: [], matchSet: new Set(), cur: -1, sub: 0, mc: [], mBase: [], total: 0, lc: null, stats: null,
 };
 // Date labels follow the interface language (js/i18n/i18n.js); makeFormats() runs again when it changes.
 // The date rows in the chat are chat content, so they use streamFmt, which is always English.
@@ -366,14 +381,19 @@ const VL = {
   remeasure(i) { // a row changed height after render (a photo or video learned its size)
     const el = this.nodes.get(i);
     if (!el || !this.fw) return;
-    const hh = el.offsetHeight;
-    if (Math.abs(hh - this.h[i]) < 0.5) return;
+    const hh = rowH(el);
+    if (Math.abs(hh - this.h[i]) < 0.05) return;
     const st = scroller.scrollTop, a = this.fw.find(st), aOff = st - this.fw.sum(a);
     this.fw.add(i, hh - this.h[i]); this.h[i] = hh;
     for (const [k, n] of this.nodes) n.style.transform = 'translateY(' + this.fw.sum(k) + 'px)';
     spacer.style.height = this.fw.sum(this.items.length) + END_PAD + 'px';
     if (i < a) scroller.scrollTop = this.fw.sum(a) + aOff;
     this.schedule();
+    // A photo above or at the current search match grew just after jumping to it: bring the match back into view.
+    if (S.cur >= 0 && S.hitAt && performance.now() - S.hitAt < 1500 && typeof showCurHit === 'function') {
+      const ci = S.m2i[S.matches[S.cur]];
+      if (ci >= i) requestAnimationFrame(() => showCurHit(this.nodes.get(ci)));
+    }
   },
   schedule() { if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.update(); }); },
   scrollTo(i, how) { this.target = { i, center: how === 'center' }; this.update(); },
@@ -387,7 +407,7 @@ const VL = {
       const tg = this.target;
       if (tg) {
         let top;
-        if (tg.bottom) top = fw.sum(n) + END_PAD - vh;
+        if (tg.bottom) top = scroller.scrollHeight - vh; // includes the room kept clear of the home indicator
         else if (tg.center) top = fw.sum(tg.i) - (vh - h[tg.i]) / 2;
         else if (tg.frac !== undefined) top = fw.sum(tg.i) + tg.frac * h[tg.i];
         else top = fw.sum(tg.i) + (tg.off || 0);
@@ -400,7 +420,7 @@ const VL = {
       const fresh = [];
       for (let i = start; i <= end; i++) if (!this.nodes.has(i)) { const el = makeRow(this.items[i], i); el.dataset.i = i; layer.appendChild(el); this.nodes.set(i, el); fresh.push(i); }
       let changed = false;
-      for (const i of fresh) { const hh = this.nodes.get(i).offsetHeight; if (Math.abs(hh - h[i]) > 0.5) { fw.add(i, hh - h[i]); h[i] = hh; changed = true; } }
+      for (const i of fresh) { const hh = rowH(this.nodes.get(i)); if (Math.abs(hh - h[i]) > 0.05) { fw.add(i, hh - h[i]); h[i] = hh; changed = true; } }
       for (const [i, el] of this.nodes) el.style.transform = 'translateY(' + fw.sum(i) + 'px)';
       spacer.style.height = fw.sum(n) + END_PAD + 'px';
       if (!tg && changed) { const want = fw.sum(anchor) + aOff; if (Math.abs(want - scroller.scrollTop) > 1) scroller.scrollTop = want; }
@@ -410,37 +430,44 @@ const VL = {
     afterRender();
   }
 };
+// Mirrors the CSS: rows are inset 10 px on phones (640 px and narrower) and clamp(10px, 10% - 54px, 64px) elsewhere; a bubble is
+// at most min(620px, max(65%, min(86%, 533px))) of its row; when the layer's content box is 900 px or wider, media go up to 400 px.
+// A row's real height, with its fraction: offsetHeight rounds, and at the larger text sizes (or with Urdu
+// and Arabic lines) the lost fractions add up until a row overlaps the next one by a pixel.
+const rowH = el => el.getBoundingClientRect().height;
 function estimate(it, W) {
-  const bw = Math.max(120, Math.min(W * (W < 600 ? 0.86 : 0.65), 620) - 18);
-  const cw = 7.4;
-  if (it.type === 'date') return 44;
+  const rw = W - 2 * (innerWidth <= 640 ? 10 : Math.max(10, Math.min(W * 0.1 - 54, 64))), wide = W - 2 * Math.max(12, Math.min(W * 0.05, 64)) >= 900;
+  const bw = Math.max(120, Math.min(620, Math.max(rw * 0.65, Math.min(rw * 0.86, 533))) - 18);
+  const f = textScale, cw = 7.4 * f, lh = 19 * f; // Settings › Text size (js/app.js) scales the text, not the media
+  if (it.type === 'date') return 27 + 17 * f;
   const m = it.m;
-  if (it.type === 'sys') return 16 + 24 + Math.floor(m.message.length * 6.6 / Math.min(560, W * 0.9)) * 18;
+  if (it.type === 'sys') return 16 + 24 * f + Math.floor(m.message.length * 6.6 * f / Math.min(560, W * 0.9)) * 18 * f;
   let h = (it.first ? 10 : 2) + 14 + (m.reactions && m.reactions.length ? 16 : 0);
-  if (it.showName) h += 19;
+  if (it.showName) h += 19 * f;
   if (m.kind === 'media') {
-    const a = m.attachments[0], w2 = Math.min(330, bw);
+    const a = m.attachments[0], w2 = Math.min(wide ? 400 : 330, bw);
     if (a && a.url) {
       const d = Media.dims.get((Media.get(a.name) || a).name);
       if (a.type === 'image' || a.type === 'gif') h += w2 / (d ? clampR(d.w / d.h) : 4 / 3) - (m.message ? 0 : 14);
-      else if (a.type === 'video') { const r = d ? clampV(d.w / d.h) : 16 / 9; h += Math.min(w2, 400 * r) / r; }
-      else if (a.type === 'sticker') h += W <= 600 ? 150 : 190;
+      else if (a.type === 'video') { const r = d ? clampV(d.w / d.h) : 16 / 9; h += Math.min(w2, (wide ? 480 : 400) * r) / r; }
+      else if (a.type === 'sticker') h += innerWidth <= 640 ? 150 : 190;
       else if (a.type === 'audio') h += isVoice(a.name) ? 58 : 72;
       else if (a.type === 'contact') h += 108;
       else { const e = Media.get(a.name); h += extOf(a.name) === 'pdf' && !PdfView.failed.has(e ? e.name : a.name) ? 66 + 146 : 66; } // failed is keyed by the ZIP's file name
     } else h += 74;
   }
   if (it.hasLink) h += linkCardsH(m.message, it.i);
-  else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
+  else if (m.kind === 'poll') h += (50 + (m.extra.options.length * 33)) * f;
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
   else if (m.kind === 'unsupported') h += 64;
-  else if (m.kind === 'deleted') return h + 19;
+  else if (m.kind === 'waiting') h += 64 + (W <= 480 ? 51 : 34) * f; // a longer note than the event card's: 3 lines, 4 on phones
+  else if (m.kind === 'deleted') return h + lh;
   if (m.message) {
-    if (it.jumbo) return h + 46;
+    if (it.jumbo) return h + 46 * f;
     const sv = shownText(it), ls = sv.text.split('\n');
-    if (sv.state === 'expanded') h += 21;
-    for (let k = 0; k < ls.length; k++) h += 19 * Math.max(1, Math.ceil((ls[k].length * cw + (k === ls.length - 1 ? 64 : 0)) / bw));
+    if (sv.state === 'expanded') h += 21 * f;
+    for (let k = 0; k < ls.length; k++) h += lh * Math.max(1, Math.ceil((ls[k].length * cw + (k === ls.length - 1 ? 64 * f : 0)) / bw));
   } else if (m.kind !== 'text') h += 8;
   return h;
 }
@@ -448,7 +475,18 @@ function estimate(it, W) {
 /* ---------- Row rendering ---------- */
 function hl(html, i) {
   if (!S.sq || !S.matchSet.has(i)) return html;
-  return markHTML(html, S.sq, S.matches[S.cur] === i ? 'cur' : '');
+  return markHTML(html, S.sq, '');
+}
+// The hits search steps through in a row, in order: every <mark> except the ones in the sender's name
+// (a name is counted once per message, not per row it shows on; see hitCount in js/app.js).
+const hitMarks = el => [...el.querySelectorAll('mark')].filter(x => !x.closest('.name'));
+// Gives the current hit its own colour when the row of the current message is drawn.
+function curHit(el, i) {
+  if (!S.sq || S.cur < 0 || S.matches[S.cur] !== i) return;
+  let ms = hitMarks(el);
+  if (!ms.length) ms = [...el.querySelectorAll('mark')]; // the only hit is in the name
+  for (const x of ms) x.classList.remove('cur');
+  if (ms.length) ms[Math.min(S.sub, ms.length - 1)].classList.add('cur');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -556,7 +594,8 @@ function audioHTML(e, m) {
 // With reduced motion turned on, GIFs start paused: a tap plays them (in the chat) or the photo viewer does.
 const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null, reducedMotion = () => !!(RM && RM.matches);
 const clampV = r => Math.min(1.9, Math.max(0.5625, r));
-const vBox = r => 'aspect-ratio:' + r + ';width:' + Math.min(330, Math.round(400 * r)) + 'px';
+// The width comes from the CSS (.mvid: 330 px, or 400 px on wide rows), narrower for tall videos so they stay at most 400 (480) px high.
+const vBox = r => 'aspect-ratio:' + r + ';--vr:' + r;
 function videoHTML(e, gif) {
   const d = Media.dims.get(e.name), r = d ? (gif ? clampR(d.w / d.h) : clampV(d.w / d.h)) : 16 / 9;
   if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '"' + (reducedMotion() ? '' : ' autoplay') + ' muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
@@ -783,21 +822,45 @@ const PdfView = {
     if (!$('pdfv').hidden) closePdf();
   }
 };
-const PV = { name: '', z: 1, obs: null, gen: 0 };
+// z: zoom as a share of the page width. fit: 'width' or 'page' (the whole page on screen); ratio: page width / height.
+const PV = { name: '', z: 1, obs: null, gen: 0, fit: 'width', ratio: 0 };
+// A phone on its side opens a PDF on the whole page; everywhere else it opens on the page width.
+function pdfDefaultFit() { return matchMedia('(max-height: 500px) and (orientation: landscape)').matches ? 'page' : 'width'; }
+// The zoom that fits the page width (1) or the whole page in the viewer.
+function pdfFitZ(mode) {
+  if (mode !== 'page' || !PV.ratio) return 1;
+  const box = $('pdfPages'), cs = getComputedStyle(box);
+  const w = Math.min(900, box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+  const h = box.clientHeight - parseFloat(cs.paddingTop) - 12;
+  return w > 0 && h > 0 ? Math.max(0.2, Math.min(1, h * PV.ratio / w)) : 1;
+}
+// The Fit button (and 0) switches between fit width and fit page; after zooming it first goes back to the current fit.
+function pdfFit() {
+  if (Math.abs(PV.z - pdfFitZ(PV.fit)) < 0.001) PV.fit = PV.fit === 'page' ? 'width' : 'page';
+  pdfZoom(0);
+}
+// The button names what it will do next.
+function pdfFitLabel() {
+  const atFit = Math.abs(PV.z - pdfFitZ(PV.fit)) < 0.001, next = atFit ? (PV.fit === 'page' ? 'width' : 'page') : PV.fit;
+  const b = $('pdfFit');
+  b.setAttribute('aria-label', t('pdf.fit_' + next)); b.title = t('pdf.fit_' + next + '_0');
+}
+document.addEventListener('langchange', () => { if (!$('pdfv').hidden) pdfFitLabel(); });
 async function openPdf(name, title) {
   const e = Media.get(name);
   if (!e) return;
   pauseVideos(); AudioCtl.pause();
-  PV.name = name; PV.z = 1; PV.gen++;
+  PV.name = name; PV.z = 1; PV.gen++; PV.fit = pdfDefaultFit(); PV.ratio = 0;
   $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
-  $('pdfv').hidden = false; Dialogs.open($('pdfv')); $('pdfClose').focus();
+  $('pdfv').hidden = false; Dialogs.open($('pdfv')); vFocus('pdf');
   const gen = PV.gen;
   try {
     const doc = await PdfView.doc(name);
     if (gen !== PV.gen) return;
     const v1 = (await doc.getPage(1)).getViewport({ scale: 1 });
+    PV.ratio = v1.width / v1.height;
     $('pdfInfo').textContent = t('doc.pages', { n: doc.numPages });
     PdfView.pages.set(name, doc.numPages);
     let html = '';
@@ -812,10 +875,15 @@ async function openPdf(name, title) {
   }
 }
 function pdfZoom(d) {
-  PV.z = d === 0 ? 1 : Math.min(3, Math.max(0.5, PV.z * (d > 0 ? 1.25 : 0.8)));
+  PV.z = d === 0 ? pdfFitZ(PV.fit) : Math.min(3, Math.max(0.2, PV.z * (d > 0 ? 1.25 : 0.8)));
   const box = $('pdfPages');
+  // Keep the point in the middle of the view where it is, so zooming doesn't jump to a page edge.
+  const fx = (box.scrollLeft + box.clientWidth / 2) / (box.scrollWidth || 1), fy = (box.scrollTop + box.clientHeight / 2) / (box.scrollHeight || 1);
   box.style.setProperty('--pz', PV.z);
+  box.scrollLeft = fx * box.scrollWidth - box.clientWidth / 2;
+  box.scrollTop = fy * box.scrollHeight - box.clientHeight / 2;
   $('pdfZoom').textContent = Math.round(PV.z * 100) + '%';
+  pdfFitLabel();
   if (PV.obs) PV.obs.disconnect();
   PV.obs = new IntersectionObserver(ents => { for (const en of ents) if (en.isIntersecting) renderPdfPage(en.target); }, { root: box, rootMargin: '600px 0px' });
   box.querySelectorAll('.pdfpage').forEach(p => { p.dataset.z = ''; PV.obs.observe(p); });
@@ -838,6 +906,7 @@ async function renderPdfPage(el) {
 }
 function closePdf() {
   PV.gen++; if (PV.obs) PV.obs.disconnect();
+  if (typeof VMenu !== 'undefined') VMenu.close(false);
   $('pdfv').hidden = true; Dialogs.close($('pdfv')); $('pdfPages').innerHTML = '';
 }
 // A file card for media the browser can't show: what it is, its size and a download button.
@@ -1064,6 +1133,7 @@ function makeRow(it, idx) {
     const k = sysKind(m.message);
     el.className = 'row sysrow';
     el.innerHTML = '<span dir="auto" class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(scriptHTML(m.message), it.i) + '</span>';
+    curHit(el, it.i);
     return el;
   }
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
@@ -1090,6 +1160,9 @@ function makeRow(it, idx) {
     }
     case 'unsupported':
       body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>' + t('msg.event_title') + '</b><small>' + t('msg.event_note') + '</small></span></div>';
+      break;
+    case 'waiting': // a message that never loaded on the exporting phone: say so instead of WhatsApp's "Waiting for this message"
+      body += '<div class="unsup wait"><span class="atti">' + ICON.hourglass + '</span><span class="attt"><b>' + t('msg.waiting_title') + '</b><small>' + t('msg.waiting_note') + '</small></span></div>';
       break;
     case 'location':
       body += locHTML(m.extra);
@@ -1133,6 +1206,7 @@ function makeRow(it, idx) {
     el.classList.add('selable'); if (on) el.classList.add('sel');
     el.insertAdjacentHTML('afterbegin', '<span class="selbox" role="checkbox" tabindex="0" aria-checked="' + on + '" aria-label="' + esc(t('sel.select_message')) + '">' + ICON.tick + '</span>');
   }
+  curHit(el, it.i);
   return el;
 }
 
@@ -1309,6 +1383,8 @@ document.addEventListener('click', async ev => {
 // list: what Previous and Next step through. The chat passes its photos; the media gallery passes
 // the items in its current filter, which can include videos and stickers.
 const LB = { k: -1, start: -1, list: [] };
+// Focus ✕ on opening, or Back on phones, where the header shows Back instead (js/components/viewer-menu.js).
+function vFocus(v) { const x = $(v + 'Close'); (x.offsetParent ? x : $(v + 'Back')).focus(); }
 function openLightbox(name, list) {
   const chat = !list;
   list = (list || (S.images || []).filter(x => S.m2i[x.i] >= 0)).filter(x => !Media.cantShow(x.name) && !isWas(x.name)); // the chat's photos, without ones a filter hides or the browser can't show
@@ -1316,7 +1392,7 @@ function openLightbox(name, list) {
   if (k < 0) return;
   LB.list = list; LB.chat = chat;
   LB.k = LB.start = k; LB.focus = document.activeElement;
-  $('lb').hidden = false; Dialogs.open($('lb')); showLb(); $('lbClose').focus();
+  $('lb').hidden = false; Dialogs.open($('lb')); showLb(); vFocus('lb');
 }
 function showLb() {
   const x = LB.list[LB.k], m = S.msgs[x.i], e = Media.get(x.name);
@@ -1335,8 +1411,9 @@ function showLb() {
   }
   lbImg.alt = m.message || (TYPE_LABEL[x.type] ? typeLabel(x.type) : t('common.photo_alt'));
   $('lbWho').textContent = m.isOutgoing ? t('common.you') : nick(m.sender);
-  $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;
-  $('lbPos').textContent = (LB.k + 1) + ' / ' + LB.list.length;
+  // The date follows the interface direction; the time and the "3 / 7" counter always read left to right.
+  $('lbWhen').innerHTML = '<bdi>' + esc(dateLabel(m.dateKey)) + '</bdi>' + (I18N.rtl() ? '، ' : ', ') + '<bdi dir="ltr">' + esc(m.formattedTime) + '</bdi>';
+  $('lbPos').textContent = nf(LB.k + 1) + ' / ' + nf(LB.list.length);
   $('lbCap').innerHTML = m.message ? formatText(m.message) : ''; $('lbCap').hidden = !m.message;
   const dl = $('lbDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   zReset();
@@ -1346,6 +1423,7 @@ function lbStep(d) { const k = LB.k + d; if (k < 0 || k >= LB.list.length) retur
 function closeLightbox(silent) {
   const lb = $('lb');
   if (!lb || lb.hidden) return;
+  if (typeof VMenu !== 'undefined') VMenu.close(false); // the phone header's ⋮ sheet (js/components/viewer-menu.js)
   lb.hidden = true; Dialogs.close(lb); $('lbImg').removeAttribute('src');
   const v = $('lbVid'); v.pause(); v.removeAttribute('src'); v.load();
   if (silent) return;
@@ -1392,6 +1470,20 @@ lbImg.addEventListener('dblclick', e => zTo(Z.s > 1.001 ? 1 : 2.5, e.clientX, e.
 lbImg.addEventListener('dragstart', e => e.preventDefault());
 const ptrs = new Map();
 let gest = null, moved = false;
+// A finger swipe across a video moves to the next or previous item, like on a photo. It starts anywhere but the
+// controls bar along the video's bottom (a GIF has none), and the video keeps its own taps (no pointer capture).
+let vSwipe = null;
+stage.addEventListener('pointerdown', e => {
+  if (e.target.tagName !== 'VIDEO') return;
+  const b = e.target.getBoundingClientRect();
+  vSwipe = e.isPrimary && e.pointerType !== 'mouse' && (!e.target.controls || e.clientY < b.bottom - 56) ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+});
+stage.addEventListener('pointerup', e => {
+  if (!vSwipe || vSwipe.id !== e.pointerId) return;
+  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y; vSwipe = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) lbStep((dx < 0) !== I18N.rtl() ? 1 : -1);
+});
+stage.addEventListener('pointercancel', () => { vSwipe = null; });
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('.lb-nav') || e.target.tagName === 'VIDEO') return; // leave the video's own controls alone
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });

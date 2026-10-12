@@ -60,6 +60,10 @@
   .pickopt { padding: 14px 12px; font-size: 16px; }
 }
 
+/* Touch-only devices (no mouse and no hover): the Keyboard shortcuts row and the Single-key shortcuts switch
+   are hidden, since there is no keyboard to use them with. The ⋮ menu hides its key hints the same way. */
+@media (hover: none) and (pointer: coarse) { .set-row[data-set="keys"], .set-row:has(> #singleKeys) { display: none; } }
+
 /* Participants and nicknames (js/components/nicknames.js): one row per person, with the exported name
    above a nickname field and a Reset button when a nickname is set. */
 .sheet.nicks .body { gap: 14px; }
@@ -78,3 +82,9 @@
 .nickrow .nkreset { flex: none; height: 34px; padding: 0 12px; }
 .nickrow .nkreset[hidden] { display: none; }
 :root[lang="ur"] .nickrow label, :root[lang="ur"] .nickrow .nkreset { line-height: 1.8; }
+
+/* Text size: each choice is drawn at its own size; the key hint (+ or −) shows only with a mouse. */
+.pickopt .ts-opt { font-size: calc(1em * var(--ts, 1)); }
+.pickopt .ts-pct { color: var(--ink-3); font-size: .85em; margin-inline-start: 6px; }
+.set-row .set-key bdi { white-space: nowrap; }
+@media (any-hover: none) { .set-row .set-key { display: none; } }

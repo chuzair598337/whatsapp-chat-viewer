@@ -2,7 +2,8 @@
 /* =====================================================================
    Options for one item in Media, links and docs, like the message menu
    in the chat: long-press an item on a phone, right-click it on a
-   computer, press its ⋮ button, or use Shift+F10 / the menu key on a
+   computer, press its ⋮ button (always shown on photo tiles on touch
+   screens, on hover or focus elsewhere), or use Shift+F10 / the menu key on a
    focused item. On phones the rows show only the ⋮ button; small
    tablets also keep the quick copy, open and download buttons, and wider
    screens show every option below as the row's own buttons instead.

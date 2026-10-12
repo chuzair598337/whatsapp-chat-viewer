@@ -164,7 +164,7 @@ function renderLibrary() {
   sec.hidden = lib.length < 2;
   if (lib.length < 2) return;
   $('chatsCount').textContent = nf(lib.length);
-  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b>' + esc(c.label) + '</b><small>' + esc(c.inner ? t('chats.zip_inside', { name: c.file.name }) : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
+  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b dir="auto">' + esc(c.label) + '</b><small dir="auto">' + esc(c.inner ? t('chats.zip_inside', { name: c.file.name }) : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
 }
 $('chatList').addEventListener('click', async e => {
   const b = e.target.closest('.chatrow'); if (!b) return;
@@ -261,7 +261,11 @@ function linkMedia() {
 function renderMediaSummary() {
   const md = S.media, c = md.c, sm = ic => ic.replace('width="22" height="22"', 'width="14" height="14"');
   // Each tile opens the media gallery on that category (js/components/media-gallery.js), so the counts come from it.
-  $('mediaGrid').innerHTML = GAL_CATS.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + esc(t('media.tile_label', { label: t(label), n: nf(Gallery.count(k)) })) + '">' +
+  // Only the types the chat has get a tile; with none at all, a short line takes the grid's place (and View all goes).
+  const cats = Gallery.cats(), none = !cats.length && !Media.loading;
+  $('mediaGrid').dataset.n = cats.length;
+  $('mediaGrid').hidden = !cats.length; $('mediaAll').hidden = !cats.length;
+  $('mediaGrid').innerHTML = cats.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + esc(t('media.tile_label', { label: t(label), n: nf(Gallery.count(k)) })) + '">' +
     '<i>' + sm(ICON[GAL_ICON[k]]) + '</i><b>' + nf(Gallery.count(k)) + '</b><span>' + esc(k === 'docs' ? t('media.docs_short') : t(label)) + '</span></button>').join('');
   const total = c.image + c.gif + c.video + c.audio + c.sticker + c.document + c.contact + c.media;
   $('mediaTotal').textContent = nf(Gallery.count('all'));
@@ -272,6 +276,10 @@ function renderMediaSummary() {
   else if (md.files || md.found) note.textContent = [t('media.note_found', { found: nf(md.found) }), md.missing && t('media.note_missing', { n: nf(md.missing) }), md.omitted && t('media.note_omitted', { n: nf(md.omitted) })].filter(Boolean).join(' · ') + '.';
   else if (md.missing) note.textContent = t(S.source && S.source.zip ? 'media.note_zip_missing' : 'media.note_text_only', { n: md.missing, count: nf(md.missing) });
   else note.textContent = total ? t('media.note_no_media_export') : t('media.note_none');
+  const empty = $('mediaEmpty'), why = md.missing || md.omitted; // attachments the export doesn't include: the note says why
+  empty.hidden = !none;
+  if (none) $('mediaEmptyTx').textContent = t(why ? 'media.none_shown' : 'media_gallery.no_items');
+  note.hidden = none && !why && !total; // "No media in this chat" would only repeat the line above
 }
 function computeTitle() {
   const names = S.res.participants.map(p => p.name);
@@ -327,7 +335,10 @@ function renderChrome() {
   avatar($('headAv'), S.title); avatar($('cardAv'), S.title);
   $('headTitle').innerHTML = scriptHTML(S.title); $('cardTitle').innerHTML = scriptHTML(S.title);
   const pN = res.participants.length;
-  $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
+  // Phones show the date range first, since the end of the line is cut off there; the tooltip has it all.
+  const counts = [S.isGroup && t('chat.participants_sub', { n: nf(pN) }), t('chat.messages_sub', { n: nf(real) })].filter(Boolean), sub = counts.concat(range).join(' · ');
+  $('headSub').title = sub;
+  $('headSub').innerHTML = '<span class="hs-wide">' + esc(sub) + '</span><span class="hs-narrow">' + esc([range].concat(counts).join(' · ')) + '</span>';
   $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: nick(res.participants[0].name), b: nick(res.participants[1].name) }) : t('chat.chat');
   const srcName = S.source.sample ? t('facts.sample_chat') : S.source.name;
   $('facts').innerHTML =
@@ -335,7 +346,7 @@ function renderChrome() {
     '<div><dt>' + t('facts.media') + '</dt><dd>' + nf(mediaN) + '</dd></div>' +
     '<div><dt>' + t('facts.first') + '</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
     '<div><dt>' + t('facts.last') + '</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
-    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
+    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd class="fact-file" title="' + esc(srcName) + '"><bdi dir="auto">' + esc(srcName) + '</bdi><span>· <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</span></dd></div>';
   // Who you are and the date format are shown in Settings (js/components/settings.js).
   if (typeof Settings !== 'undefined' && Settings.isOpen()) Settings.render();
   // jump date
@@ -377,7 +388,7 @@ function renderFilterBar() {
   if (f.from && f.to) parts.push(shortFmt.format(dkToT(f.from)) + ' – ' + shortFmt.format(dkToT(f.to)));
   else if (f.from) parts.push(t('filter.since', { date: shortFmt.format(dkToT(f.from)) }));
   else if (f.to) parts.push(t('filter.until', { date: shortFmt.format(dkToT(f.to)) }));
-  $('fText').textContent = S.shown ? t('filter.showing', { shown: nf(S.shown), total: nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length), what: parts.join(' · ') }) : t('filter.none', { what: parts.join(' · ') });
+  $('fText').textContent = $('fText').title = S.shown ? t('filter.showing', { shown: nf(S.shown), total: nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length), what: parts.join(' · ') }) : t('filter.none', { what: parts.join(' · ') });
 }
 function applyFilter() {
   let from = $('fFrom').value, to = $('fTo').value;
@@ -401,7 +412,7 @@ $('people').addEventListener('click', e => {
   const name = S.res.participants[+b.dataset.k].name;
   pickSender((S.filter || {}).sender === name ? '' : name);
 });
-$('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
+$('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters; $('fbClearIc').innerHTML = ICON.close;
 
 /* ---------- Starred messages: in memory only; the panel, export and import are in js/components/starred.js ---------- */
 function toggleStar(i) {
@@ -438,45 +449,93 @@ function searchIndex(key) {
   const lc = S.lc || (S.lc = {}), fn = key === 'keep' ? foldKeep : fold;
   return lc[key] || (lc[key] = S.msgs.map(m => fn(m.message + (m.sender ? '\u0002' + m.sender + (Nick.has(m.sender) ? '\u0002' + nick(m.sender) : '') : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join(''))));
 }
+/* How many hits message i shows, so the counter and ↑ / ↓ go hit by hit ("2 of 5"), not message by message.
+   ranges are the hits in its index text f (searchIndex). Hits in the message text count one each; a poll
+   counts its question and options (what the bubble highlights); a call or deleted message shows no text.
+   A message found only by its sender, nickname or file name counts once. No layout reads: this runs over
+   every matching message of a 60,000-message chat. */
+// WhatsApp formatting (*bold*, lists, quotes, `code`) changes the text a bubble shows, so a message that has
+// any is counted the way the bubble marks it (formatText + markHTML); plain text counts straight from the index.
+const RE_MARKUP = /[*_~`]|^(?:>|[-•] |\d{1,3}\. )/m;
+const shownHits = (s, sq) => RE_MARKUP.test(s) ? (markHTML(formatText(s), sq, '').match(/<mark>/g) || []).length : searchRanges(sq, sq.fn(s)).length;
+function hitCount(i, ranges, f, sq) {
+  const m = S.msgs[i];
+  let n = 0;
+  if (m.kind === 'poll' && m.extra && m.extra.options) {
+    n = (m.extra.q ? shownHits(m.extra.q, sq) : 0) + m.extra.options.reduce((a, o) => a + (o.label ? searchRanges(sq, sq.fn(o.label)).length : 0), 0);
+  } else if (m.kind !== 'call' && m.kind !== 'deleted' && m.message) {
+    // The index is the message text, then \u0002 and the sender (searchIndex), so hits before it are in the text.
+    const cut = f.indexOf('\u0002'), end = cut < 0 ? f.length : cut;
+    if (m.sender && RE_MARKUP.test(m.message)) n = shownHits(m.message, sq); // system lines (no sender) show plain text
+    else for (const r of ranges) if (r[1] <= end) n++;
+  }
+  return n || 1;
+}
 function runSearch(q) {
   S.q = q; const sq = makeSearch(q, SOPT);
-  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.sq = null; S.sqErr = sq && sq.error || '';
+  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.sub = 0; S.mc = []; S.mBase = []; S.total = 0; S.sq = null; S.sqErr = sq && sq.error || '';
   if (sq && sq.re) {
     const lc = searchIndex(sq.key);
-    for (let i = 0; i < lc.length; i++) if (S.m2i[i] >= 0 && searchRanges(sq, lc[i], 1).length) S.matches.push(i);
-    S.matchSet = new Set(S.matches); S.sq = sq;
-    if (S.matches.length) {
-      // start from the first match at or below the top of the screen
-      const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
-      let k = S.matches.findIndex(i => S.m2i[i] >= topItem);
-      S.cur = k < 0 ? S.matches.length - 1 : k;
+    for (let i = 0; i < lc.length; i++) {
+      if (S.m2i[i] < 0) continue;
+      const r = searchRanges(sq, lc[i]);
+      if (!r.length) continue;
+      const c = hitCount(i, r, lc[i], sq);
+      S.matches.push(i); S.mBase.push(S.total); S.mc.push(c); S.total += c;
     }
+    S.matchSet = new Set(S.matches); S.sq = sq;
+  }
+  let first = -1;
+  if (S.matches.length) {
+    // start from the first match at or below the top of the screen
+    const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
+    first = S.matches.findIndex(i => S.m2i[i] >= topItem);
+    if (first < 0) first = S.matches.length - 1;
   }
   VL.refresh();
-  if (S.cur >= 0) jumpToMatch(S.cur);
+  if (first >= 0) jumpToMatch(first, 0);
   updateCounts();
 }
 function clearSearch() { q2.value = ''; runSearch(''); }
 function updateCounts() {
-  const n = S.matches.length, bad = !!S.sqErr && !!S.q.trim();
-  const txt = !S.q.trim() ? '' : bad ? t('search.invalid_pattern') : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
+  const n = S.total, bad = !!S.sqErr && !!S.q.trim();
+  const txt = !S.q.trim() ? '' : bad ? t('search.invalid_pattern') : n ? t('search.n_of_m', { i: nf(S.mBase[S.cur] + S.sub + 1), n: nf(n) }) : t('search.no_matches');
   const c = $('count2'); c.textContent = txt; c.classList.toggle('bad', bad);
   if (bad) c.title = S.sqErr; else c.removeAttribute('title');
   if (bad) q2.setAttribute('aria-invalid', 'true'); else q2.removeAttribute('aria-invalid');
   for (const id of ['prev2', 'next2']) $(id).disabled = n === 0;
 }
+// d = 1 or -1: the next or previous hit, inside the same message first, wrapping round at the ends.
 function step(d) {
-  if (!S.matches.length) return;
-  S.cur = (S.cur + d + S.matches.length) % S.matches.length;
-  jumpToMatch(S.cur);
+  const L = S.matches.length;
+  if (!L) return;
+  let k = S.cur, s = S.sub + d;
+  if (s >= S.mc[k]) { k = (k + 1) % L; s = 0; }
+  else if (s < 0) { k = (k - 1 + L) % L; s = S.mc[k] - 1; }
+  jumpToMatch(k, s);
 }
-function jumpToMatch(k) {
-  S.cur = k;
+// Scrolls the chat just enough to show the current hit (the middle of a long message may be off screen).
+function showCurHit(el) {
+  const mk = el && el.querySelector('mark.cur');
+  if (!mk) return;
+  const r = mk.getBoundingClientRect(), b = scroller.getBoundingClientRect(), pad = 56; // clear of the floating date
+  if (r.top >= b.top + pad && r.bottom <= b.bottom - 16) return;
+  scroller.scrollTop += (r.top + r.bottom) / 2 - (b.top + b.bottom) / 2;
+  VL.update();
+}
+function jumpToMatch(k, sub) {
+  const prev = S.cur >= 0 ? S.matches[S.cur] : -1;
+  S.cur = k; S.sub = sub || 0; S.hitAt = performance.now();
   const i = S.matches[k];
-  VL.clear();
-  VL.scrollTo(S.m2i[i], 'center');
-  const el = VL.nodes.get(S.m2i[i]);
-  if (el) el.classList.add('flash');
+  let el = VL.nodes.get(S.m2i[i]);
+  if (i === prev && el && el.isConnected) curHit(el, i); // another hit in the same message: no redraw, no flash
+  else {
+    VL.clear();
+    VL.scrollTo(S.m2i[i], 'center');
+    el = VL.nodes.get(S.m2i[i]);
+    if (el) el.classList.add('flash');
+  }
+  showCurHit(el);
   updateCounts();
 }
 q2.addEventListener('input', onSearchInput);
@@ -510,7 +569,9 @@ q2.addEventListener('focus', () => { if (q2.value && q2.value === S.q) selectSea
 q2.addEventListener('mouseup', e => { if (q2Tap && q2.value && q2.value === S.q) e.preventDefault(); q2Tap = false; });
 $('prev2').onclick = () => step(-1);
 $('next2').onclick = () => step(1);
-const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
+// Narrow: one pane, the side panel is a drawer (css/styles.css: max-width 1023px). Two panes from 1024 px, so iPad landscape gets them.
+const NARROW_MQ = '(max-width: 1023px)';
+const isNarrow = () => window.matchMedia(NARROW_MQ).matches;
 // Search is a bar under the chat header on every screen size, like WhatsApp.
 function openSearch() { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
 function closeSearch() { SHist.close(); $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
@@ -724,6 +785,32 @@ function applyTheme() {
 function setTheme(v) { theme = v; store('cv-theme', v); applyTheme(); }
 applyTheme();
 
+/* ---------- Text size (Settings › Text size, cv-text-size) ----------
+   Scales the chat's text only (messages, names, times, quotes, cards, polls, notices, date pills, Read more)
+   through one CSS variable, --chat-fs (css/styles.css, "text size"). Media keeps its size. estimate() in
+   viewer.js reads textScale, and a change re-lays out the virtual list so every row is measured again. */
+const TEXT_SIZES = [['small', 0.9], ['default', 1], ['large', 1.15], ['larger', 1.3], ['largest', 1.5]];
+let textSize = TEXT_SIZES.some(s => s[0] === store('cv-text-size')) ? store('cv-text-size') : 'default';
+let textScale = 1;
+function applyTextSize() {
+  textScale = TEXT_SIZES.find(s => s[0] === textSize)[1];
+  root.style.setProperty('--chat-fs', textScale);
+  if (VL.fw) VL.relayout();
+}
+function setTextSize(v) { if (!TEXT_SIZES.some(s => s[0] === v)) return; textSize = v; store('cv-text-size', v); applyTextSize(); }
+const textSizeName = v => t('settings.ts_' + v) + ' (' + TEXT_SIZES.find(s => s[0] === v)[1].toLocaleString(I18N.locale(), { style: 'percent' }) + ')';
+// The + and - keys in the chat (js/components/shortcuts-list.js): one step bigger or smaller, with a notification.
+function stepTextSize(d) {
+  const k = TEXT_SIZES.findIndex(s => s[0] === textSize), n = Math.max(0, Math.min(TEXT_SIZES.length - 1, k + d));
+  if (n === k) { toast.info(t(d > 0 ? 'settings.text_size_max' : 'settings.text_size_min')); return; }
+  const focused = Keys.row() ? Keys.msg() : -1; // the re-layout replaces the rows: keep J / K's place
+  setTextSize(TEXT_SIZES[n][0]);
+  if (focused >= 0) Keys.refocus(focused);
+  toast.success(t('settings.text_size_now', { size: textSizeName(textSize) }));
+  if (Settings.isOpen()) Settings.render();
+}
+applyTextSize();
+
 /* ---------- Interface language (js/i18n) ---------- */
 // The picker sits in Settings and on the start screen. Switching redraws everything the app built
 // in JavaScript; the chat itself (messages, names, file names, system notices, call logs, deleted and
@@ -779,8 +866,24 @@ moreMenu.addEventListener('keydown', e => {
 moreBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' && moreMenu.hidden) { e.preventDefault(); openMenu(); } });
 
 /* ---------- Drawer ---------- */
-function openDrawer() { if (!isNarrow()) return; document.body.classList.add('drawer-open'); $('scrim').hidden = false; }
-function closeDrawer() { document.body.classList.remove('drawer-open'); $('scrim').hidden = true; }
+// Narrow screens: the closed drawer is inert (Tab never reaches it off screen), and while it is open the chat
+// behind the backdrop is. Opening it moves the keyboard to its ✕; closing it hands the keyboard back to ☰.
+function openDrawer() {
+  if (!isNarrow()) return;
+  document.body.classList.add('drawer-open'); $('scrim').hidden = false; syncMenuBtn();
+  // Only take focus from the chat itself, not from the guided tour's card, which opens the drawer to point into it.
+  const a = document.activeElement; if (!a || a === document.body || $('app').contains(a)) $('sbClose').focus();
+}
+function closeDrawer() {
+  const was = document.body.classList.contains('drawer-open'), a = document.activeElement;
+  document.body.classList.remove('drawer-open'); $('scrim').hidden = true; syncMenuBtn();
+  if (was && isNarrow() && (!a || a === document.body || $('sidebar').contains(a))) $('menuBtn').focus();
+}
+function syncDrawer() {
+  const narrow = isNarrow(), open = narrow && document.body.classList.contains('drawer-open');
+  $('sidebar').inert = narrow && !open;
+  for (const el of document.querySelectorAll('#app > .main, #starPanel')) el.inert = open;
+}
 // Wide screens: the side panel can be hidden for a wider chat (not remembered: it is back next time).
 function toggleSide() {
   const hide = document.body.classList.toggle('side-hidden');
@@ -823,11 +926,15 @@ function syncMenuBtn() {
   $('menuBtn').setAttribute('aria-expanded', open);
   $('menuBtn').setAttribute('aria-label', t(open && wide ? 'chat.hide_chat_details' : 'chat.show_chat_details'));
   $('menuBtn').title = $('menuBtn').getAttribute('aria-label');
+  if (typeof Keys !== 'undefined') Keys.hint('menuBtn'); // adds the [ shortcut to the tooltip
+  syncDrawer();
 }
 $('menuBtn').onclick = () => isNarrow() ? openDrawer() : toggleSide();
-window.matchMedia('(max-width: 1024px)').addEventListener('change', syncMenuBtn);
+// Becoming wide closes the drawer, so it doesn't come back unasked when the window narrows again.
+window.matchMedia(NARROW_MQ).addEventListener('change', e => { if (!e.matches) closeDrawer(); syncMenuBtn(); });
 document.addEventListener('langchange', syncMenuBtn); $('whoBtn').onclick = () => isNarrow() ? openDrawer() : openStats();
 $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
+syncMenuBtn();
 
 /* ---------- File input + drag and drop ---------- */
 const fileInput = $('file');
@@ -855,7 +962,7 @@ $('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="
 $('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.open_chat">' + t('sidebar.open_chat') + '</span>';
 for (const b of document.querySelectorAll('[data-close]')) b.innerHTML = ICON.close;
 $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('pdfIn').innerHTML = ICON.plus; $('pdfOut').innerHTML = ICON.minus; $('pdfFit').innerHTML = ICON.fit;
-$('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
+$('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = pdfFit;
 $('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
 $('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
 $('lbRot').innerHTML = ICON.rotate;
@@ -866,14 +973,17 @@ function refreshMedia() {
 }
 /* Loads the made-up sample chat (js/demo-data.js). Used at start-up and by the guided tour. */
 let sampleVideo = null;
+const SAMPLE_VIDEOS = ['00000017-VIDEO-2026-03-15-11-48-22.mp4', '00000016-GIF-2026-03-15-11-47-50.mp4'];
 async function loadSample() {
   const my = ++loadSeq;
   showLoading(t('load.preparing_sample')); setProgress(-1);
   let staged = new Map();
   try { staged = await makeSampleMedia(); } catch (e) { console.warn('Sample media could not be generated', e); }
   if (my !== loadSeq) { Media.discard(staged); return false; }
-  if (sampleVideo) for (const n of ['00000017-VIDEO-2026-03-15-11-48-22.mp4', '00000016-GIF-2026-03-15-11-47-50.mp4']) Media.stage(staged, n, sampleVideo);
+  if (sampleVideo) for (const n of SAMPLE_VIDEOS) Media.stage(staged, n, sampleVideo);
   Media.adopt(staged);
+  // Still being recorded: show the video and GIF as loading, not as missing from the ZIP, and leave them out of the missing count.
+  if (!sampleVideo) for (const n of SAMPLE_VIDEOS) Media.pending.add(Media.key(n));
   S.library = []; renderLibrary();
   S.source = { blob: new Blob([SAMPLE], { type: 'text/plain' }), name: 'Sample chat', size: SAMPLE.length, hint: 'Weekend Hiking Crew', sample: true, zip: true };
   try { await parseAndShow(false, my); } catch (e) { if (!isStale(e)) toast.error(e.message); return false; }
@@ -882,14 +992,11 @@ async function loadSample() {
   return true;
 }
 async function recordSampleVideo() {
-  try {
-    const vid = await makeSampleVideo();
-    if (vid) sampleVideo = vid;
-    if (vid && S.source.sample) {
-      Media.stage(Media.map, '00000017-VIDEO-2026-03-15-11-48-22.mp4', vid);
-      Media.stage(Media.map, '00000016-GIF-2026-03-15-11-47-50.mp4', vid);
-      refreshMedia();
-    }
-  } catch (e) { console.warn('Sample video could not be recorded', e); }
+  let vid = null;
+  try { vid = await makeSampleVideo(); } catch (e) { console.warn('Sample video could not be recorded', e); }
+  if (vid) sampleVideo = vid;
+  if (!S.source || !S.source.sample) return; // another chat was opened meanwhile
+  for (const n of SAMPLE_VIDEOS) { if (vid) Media.stage(Media.map, n, vid); Media.pending.delete(Media.key(n)); }
+  refreshMedia();
 }
 let sampleReady = null; // the sample loads only when asked for, from the start screen or the tour

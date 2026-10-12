@@ -50,6 +50,8 @@ const KEY_LIST = [
   { id: 'nicks', group: 'general', label: 'nick.title', keys: ['P'], where: CHAT, single: true, run: () => NickUI.open() },
   { id: 'date', group: 'general', label: 'sidebar.jump_to_date', keys: ['D'], where: CHAT, single: true,
     run: () => { if (isNarrow()) openDrawer(); else if (document.body.classList.contains('side-hidden')) toggleSide(); $('jumpDate').focus(); } },
+  // Settings › Text size, one step at a time. Never Ctrl/⌘ with + - 0: those are the browser's page zoom.
+  { id: 'textSize', group: 'general', label: 'keys.text_size', keys: ['+', '-'], where: CHAT, single: true, run: (e, k) => stepTextSize(k === '+' ? 1 : -1) },
   { id: 'panel', group: 'general', label: 'keys.toggle_panel', keys: ['['], where: CHAT, single: true, run: () => $('menuBtn').click() },
   { id: 'nextMsg', group: 'general', label: 'keys.next_message', keys: ['J'], where: CHAT, single: true, run: () => Keys.move(1) },
   { id: 'prevMsg', group: 'general', label: 'keys.prev_message', keys: ['K'], where: CHAT, single: true, run: () => Keys.move(-1) },
@@ -91,7 +93,7 @@ const KEY_LIST = [
   { id: 'lbNext', group: 'viewer', label: 'viewer.next_photo', keys: ['ArrowRight'], where: ['lb'], run: () => lbStep(I18N.rtl() ? -1 : 1) },
   { id: 'zoomIn', group: 'viewer', label: 'common.zoom_in', keys: ['+'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(Z.s * 1.5, undefined, undefined, true) : pdfZoom(1) },
   { id: 'zoomOut', group: 'viewer', label: 'common.zoom_out', keys: ['-'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(Z.s / 1.5, undefined, undefined, true) : pdfZoom(-1) },
-  { id: 'fit', group: 'viewer', label: 'viewer.fit_to_screen', keys: ['0'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(1, undefined, undefined, true) : pdfZoom(0) },
+  { id: 'fit', group: 'viewer', label: 'viewer.fit_to_screen', keys: ['0'], where: ['lb', 'pdf'], run: () => Keys.inLb() ? zTo(1, undefined, undefined, true) : pdfFit() },
   { id: 'rotate', group: 'viewer', label: 'viewer.rotate_photo', keys: ['R'], where: ['lb'], run: () => zRotate() },
   { id: 'lbVideo', group: 'viewer', label: 'keys.play_video', keys: ['Space'], where: ['lb'], when: () => !$('lbVid').hidden && !$('lbVid').loop,
     run: () => { const v = $('lbVid'); if (v.paused) v.play().catch(() => {}); else v.pause(); } },
@@ -103,7 +105,7 @@ const KEY_LIST = [
 
   /* ---------- Media, links and docs ---------- */
   { id: 'galTab', group: 'gallery', label: 'keys.gal_tab', keys: ['1', '2', '3', '4', '5', '6', '7', '8'], where: ['gallery'],
-    run: (e, k) => { const c = GAL_CATS[+k - 1]; if (!c) return false; Gallery.show(c[0]); $('galChips').querySelector('.on').focus(); } },
+    run: (e, k) => { const c = Gallery.cats()[+k - 1]; /* the Nth chip shown: types with no items have none */ if (!c) return false; Gallery.show(c[0]); $('galChips').querySelector('.on').focus(); } },
   { id: 'galTabs', group: 'gallery', label: 'keys.gal_tabs', keys: ['ArrowLeft', 'ArrowRight'] }, // media-gallery.js, on the tabs
   { id: 'galView', group: 'gallery', label: 'keys.gal_view', keys: ['V'], where: ['gallery'], single: true, when: () => GAL_VIEWABLE.has(Gallery.cat), run: () => Gallery.nextLayout() },
   { id: 'galMenu', group: 'gallery', label: 'keys.gal_menu', keys: ['Shift+F10'] }, // gallery-menu.js
