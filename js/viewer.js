@@ -6,6 +6,10 @@ const $ = id => document.getElementById(id);
 const root = document.documentElement;
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const nf = n => n.toLocaleString(I18N.locale());
+/* Shortcut keys such as ⌘F, Ctrl+O or ⇧⌘K read left to right in Urdu and Arabic text too; without this,
+   ⌘F shows as F⌘. Takes HTML, wraps each key combination in its text (not in tags) in <bdi dir="ltr">. */
+const KEY_COMBO = /(?:(?:Ctrl|Alt|Shift|Cmd|Option|Win) ?\+ ?|[⌘⌥⇧⌃])+(?:[A-Za-z0-9]+|[\/?=\-\[\]\\]|[←→↑↓])/g;
+const ltrKeys = html => String(html).split(/(<[^>]*>)/).map(p => p[0] === '<' ? p : p.replace(KEY_COMBO, '<bdi dir="ltr">$&</bdi>')).join('');
 /* Search folding: the index, the query and the highlights all go through fold(), so spelling variants
    match. NFKC and lower case, then Arabic vowel marks (harakat), the superscript alef, the tatweel and
    zero-width joiners are dropped, and Arabic letters map to the Urdu ones (ي ى → ی, ك → ک, ه ة → ہ). */
@@ -814,7 +818,11 @@ async function openPdf(name, title) {
 function pdfZoom(d) {
   PV.z = d === 0 ? 1 : Math.min(3, Math.max(0.5, PV.z * (d > 0 ? 1.25 : 0.8)));
   const box = $('pdfPages');
+  // Keep the point in the middle of the view where it is, so zooming doesn't jump to a page edge.
+  const fx = (box.scrollLeft + box.clientWidth / 2) / (box.scrollWidth || 1), fy = (box.scrollTop + box.clientHeight / 2) / (box.scrollHeight || 1);
   box.style.setProperty('--pz', PV.z);
+  box.scrollLeft = fx * box.scrollWidth - box.clientWidth / 2;
+  box.scrollTop = fy * box.scrollHeight - box.clientHeight / 2;
   $('pdfZoom').textContent = Math.round(PV.z * 100) + '%';
   if (PV.obs) PV.obs.disconnect();
   PV.obs = new IntersectionObserver(ents => { for (const en of ents) if (en.isIntersecting) renderPdfPage(en.target); }, { root: box, rootMargin: '600px 0px' });
@@ -1335,8 +1343,9 @@ function showLb() {
   }
   lbImg.alt = m.message || (TYPE_LABEL[x.type] ? typeLabel(x.type) : t('common.photo_alt'));
   $('lbWho').textContent = m.isOutgoing ? t('common.you') : nick(m.sender);
-  $('lbWhen').textContent = dateLabel(m.dateKey) + ', ' + m.formattedTime;
-  $('lbPos').textContent = (LB.k + 1) + ' / ' + LB.list.length;
+  // The date follows the interface direction; the time and the "3 / 7" counter always read left to right.
+  $('lbWhen').innerHTML = '<bdi>' + esc(dateLabel(m.dateKey)) + '</bdi>' + (I18N.rtl() ? '، ' : ', ') + '<bdi dir="ltr">' + esc(m.formattedTime) + '</bdi>';
+  $('lbPos').textContent = nf(LB.k + 1) + ' / ' + nf(LB.list.length);
   $('lbCap').innerHTML = m.message ? formatText(m.message) : ''; $('lbCap').hidden = !m.message;
   const dl = $('lbDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   zReset();

@@ -87,7 +87,7 @@ const WhatsNew = {
           const items = r.items.filter(it => it.kind === k);
           if (!items.length) return '';
           return '<div class="wn-grp"><span class="wn-badge wn-' + k + '">' + esc(t(label)) + '</span><ul>' +
-            items.map(it => '<li>' + esc(it[lang] || it.en) + '</li>').join('') + '</ul></div>';
+            items.map(it => '<li>' + ltrKeys(esc(it[lang] || it.en)) + '</li>').join('') + '</ul></div>';
         }).join('') +
       '</section>').join('');
   }

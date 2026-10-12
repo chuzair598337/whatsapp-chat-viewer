@@ -20,6 +20,7 @@ Every release shows its users a **What's new** popup once (`js/components/whats-
 
    Leave out lines users won't notice: docs, tests, the sample chat, agent files, refactors. Merge bullets about the same feature into one item. Keep the most important items first, and keep it to about eight items. Check the commits since the last release (`git log main..development`) for user-facing changes the changelog missed, and add them to CHANGELOG.md too.
 4. **Write each item as one short sentence** a user understands without the changelog: what they can do now, or what works now, and where to find it. Use the same names the interface uses ("Media, links and docs", "Settings", "Which one is you?"). Then write the same sentence in Urdu and Arabic, reusing the wording of `js/i18n/ur.js` and `js/i18n/ar.js` for those names. Plain text only (it's escaped), no chat content.
+   In the Urdu and Arabic sentences, wrap every shortcut key (`⌘F`, `Ctrl+O`, `⇧⌘S`) in the isolate marks U+2066 … U+2069 (`'\u2066⌘F\u2069'`), as `js/i18n/ur.js` does for `.zip`, or a bare `⌘F` shows as `F⌘` in right-to-left text. The popup also isolates the key combinations it recognises (`ltrKeys` in `js/viewer.js`), but don't rely on that alone.
 5. **Edit three files, all with the same version and today's date:**
    - `CHANGELOG.md`: rename `## Unreleased (on development)` to `## X.Y.Z (YYYY-MM-DD)`.
    - `js/components/settings.js`: `const APP_VERSION = 'X.Y.Z';`.

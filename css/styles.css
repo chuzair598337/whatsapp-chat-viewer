@@ -1009,3 +1009,18 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary, :root:not([data-theme="light"]) .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #111b21; } }
 /* Reduced motion: the "working" bar can't slide, so it fills the track at half strength instead of freezing at a third. */
 @media (prefers-reduced-motion: reduce) { .prog.indet i { width: 100% !important; transform: none; opacity: .5; } }
+
+/* ---- Responsive audit WS4: Right-to-left and bidi ---- */
+/* Chat titles and chat list labels have dir="auto", so an English title in Urdu or Arabic is cut at its
+   end, not its start; they still line up with the interface, on the right. */
+:root[dir="rtl"] #headTitle, :root[dir="rtl"] .chatrow b, :root[dir="rtl"] .chatrow small { text-align: right; }
+.chatrow .cr-t { flex: 1; }
+/* The current chat's green bar sits on the start side, the right in Urdu and Arabic. */
+:root[dir="rtl"] .chatrow.cur { box-shadow: inset -3px 0 0 var(--accent); }
+/* The File fact: the file name shrinks with an ellipsis, its size and format always stay in view. */
+.facts dd.fact-file { display: flex; gap: .3em; }
+.facts dd.fact-file > bdi:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.facts dd.fact-file > span { flex: none; }
+/* The brand subtitle stays on one line in every language and size; the header keeps its height. */
+.brand > div { min-width: 0; }
+.brand > div, .brand small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
