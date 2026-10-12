@@ -1237,18 +1237,30 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
           mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'/%3E%3Cpath d='M12 16.5v-5M9.5 14L12 11.5l2.5 2.5'/%3E%3C/svg%3E") center / contain no-repeat; }
 .dropzone small { color: var(--ink-3); font-size: 15px; }
 .lb-pos { direction: ltr; unicode-bidi: isolate; } /* "7 / 9" reads the same in Urdu and Arabic */
-/* Photo viewer on phones: the top bar keeps the name and a one-line date; Rotate and Download move to a bar at the bottom,
-   and Fit only shows while it does something (zoomed in). */
+/* Photo viewer on phones: the top bar keeps the name and a one-line date (its other buttons: WS9 block at the end). */
 @media (max-width: 640px) {
-  .lb { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 56px); }
   .lb-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .lb-tools, #lbDl { position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); }
-  .lb-tools { inset-inline-start: 8px; }
-  #lbDl { inset-inline-end: 8px; }
-  #lbFit:disabled { display: none; }
 }
 /* The time on a photo or video sits on a soft dark pill, so it stays readable on light pictures. */
 .meta.ov { padding: 1px 7px; border-radius: 9px; background: rgba(11, 20, 26, .5); text-shadow: none; inset-inline-end: 8px; bottom: 7px; }
 /* Header subtitle: phones put the date range first (js/app.js), so the part that gets cut off is the counts. */
 .chat-head .s .hs-narrow { display: none; }
 @media (max-width: 640px) { .chat-head .s .hs-wide { display: none; } .chat-head .s .hs-narrow { display: inline; } }
+
+/* ---- Phone viewer header (WS9) ---- */
+/* Photo and PDF viewers (js/components/viewer-menu.js): 640 px and narrower, the header is Back, the title and ⋮.
+   Every other button moves into a sheet from the bottom with no title; larger screens keep the full header with ✕. */
+.lb-top .vback, .lb-top .vmore { display: none; }
+[dir="rtl"] .vback svg { transform: scaleX(-1); }
+.vsheet[hidden] { display: none; }
+@media (max-width: 640px) {
+  .lb-top { gap: 2px; padding-block: 6px; padding-inline: 4px; }
+  .lb-top .vback, .lb-top .vmore { display: grid; flex: none; }
+  .lb-top .lb-who { padding-inline-start: 4px; }
+  .lb-top .lb-tools, #lbGo, #lbDl, #lbClose, #pdfDl, #pdfClose { display: none; }
+  .lb-top .lb-pos { margin-inline-end: 0; }
+  .menu.ctxmenu.vsheet { inset: auto 0 0 0; width: auto; min-width: 0; max-width: none; max-height: min(75dvh, calc(100dvh - 72px)); padding-block: 8px calc(8px + env(safe-area-inset-bottom, 0px));
+    border-radius: 16px 16px 0 0; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .5); overscroll-behavior: contain; animation: vsheetin .18s ease-out; }
+  .vsheet [role="menuitem"] { min-height: 48px; padding-inline: 20px; }
+}
+@keyframes vsheetin { from { transform: translateY(100%); } to { transform: none; } }

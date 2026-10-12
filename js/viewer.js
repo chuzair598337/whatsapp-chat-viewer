@@ -826,7 +826,7 @@ async function openPdf(name, title) {
   $('pdfTitle').textContent = title || e.name; $('pdfInfo').textContent = t('pdf.opening');
   const dl = $('pdfDl'); dl.href = e.url; dl.setAttribute('download', e.name);
   const box = $('pdfPages'); box.innerHTML = ''; box.scrollTop = 0;
-  $('pdfv').hidden = false; Dialogs.open($('pdfv')); $('pdfClose').focus();
+  $('pdfv').hidden = false; Dialogs.open($('pdfv')); vFocus('pdf');
   const gen = PV.gen;
   try {
     const doc = await PdfView.doc(name);
@@ -878,6 +878,7 @@ async function renderPdfPage(el) {
 }
 function closePdf() {
   PV.gen++; if (PV.obs) PV.obs.disconnect();
+  if (typeof VMenu !== 'undefined') VMenu.close(false);
   $('pdfv').hidden = true; Dialogs.close($('pdfv')); $('pdfPages').innerHTML = '';
 }
 // A file card for media the browser can't show: what it is, its size and a download button.
@@ -1349,6 +1350,8 @@ document.addEventListener('click', async ev => {
 // list: what Previous and Next step through. The chat passes its photos; the media gallery passes
 // the items in its current filter, which can include videos and stickers.
 const LB = { k: -1, start: -1, list: [] };
+// Focus ✕ on opening, or Back on phones, where the header shows Back instead (js/components/viewer-menu.js).
+function vFocus(v) { const x = $(v + 'Close'); (x.offsetParent ? x : $(v + 'Back')).focus(); }
 function openLightbox(name, list) {
   const chat = !list;
   list = (list || (S.images || []).filter(x => S.m2i[x.i] >= 0)).filter(x => !Media.cantShow(x.name) && !isWas(x.name)); // the chat's photos, without ones a filter hides or the browser can't show
@@ -1356,7 +1359,7 @@ function openLightbox(name, list) {
   if (k < 0) return;
   LB.list = list; LB.chat = chat;
   LB.k = LB.start = k; LB.focus = document.activeElement;
-  $('lb').hidden = false; Dialogs.open($('lb')); showLb(); $('lbClose').focus();
+  $('lb').hidden = false; Dialogs.open($('lb')); showLb(); vFocus('lb');
 }
 function showLb() {
   const x = LB.list[LB.k], m = S.msgs[x.i], e = Media.get(x.name);
@@ -1387,6 +1390,7 @@ function lbStep(d) { const k = LB.k + d; if (k < 0 || k >= LB.list.length) retur
 function closeLightbox(silent) {
   const lb = $('lb');
   if (!lb || lb.hidden) return;
+  if (typeof VMenu !== 'undefined') VMenu.close(false); // the phone header's ⋮ sheet (js/components/viewer-menu.js)
   lb.hidden = true; Dialogs.close(lb); $('lbImg').removeAttribute('src');
   const v = $('lbVid'); v.pause(); v.removeAttribute('src'); v.load();
   if (silent) return;
