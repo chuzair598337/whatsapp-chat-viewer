@@ -51,6 +51,10 @@
   .pickopt { padding: 14px 12px; font-size: 16px; }
 }
 
+/* Touch-only devices (no mouse and no hover): the Keyboard shortcuts row and the Single-key shortcuts switch
+   are hidden, since there is no keyboard to use them with. The ⋮ menu hides its key hints the same way. */
+@media (hover: none) and (pointer: coarse) { .set-row[data-set="keys"], .set-row:has(> #singleKeys) { display: none; } }
+
 /* Participants and nicknames (js/components/nicknames.js): one row per person, with the exported name
    above a nickname field and a Reset button when a nickname is set. */
 .sheet.nicks .body { gap: 14px; }

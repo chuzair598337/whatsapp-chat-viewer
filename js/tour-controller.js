@@ -58,6 +58,7 @@ const Tour = {
     },
     {
       sec: 'finding', key: 'keys', settings: true,
+      hide: touchOnly, // Settings hides these rows on touch-only devices (css/settings.css), so the step goes too
       // Settings › Help › Keyboard shortcuts and the Single-key shortcuts switch under it (js/components/shortcuts.js).
       prep: () => { closeDrawer(); Settings.open(); const r = keysRows()[1]; if (r) r.scrollIntoView({ block: 'center' }); },
       target: () => keysRows().map(visEl)
@@ -174,11 +175,12 @@ const Tour = {
     $('tour').hidden = false;
     document.body.classList.add('touring');
     if (document.scrollingElement) document.scrollingElement.scrollTop = 0;
+    this.list = this.steps.filter(st => !st.hide || !st.hide());
     this.go(0);
   },
   go(i) {
-    this.i = Math.max(0, Math.min(this.steps.length - 1, i));
-    const st = this.steps[this.i], last = this.i === this.steps.length - 1, n = this.steps.length;
+    this.i = Math.max(0, Math.min(this.list.length - 1, i));
+    const st = this.list[this.i], last = this.i === this.list.length - 1, n = this.list.length;
     if (!st.settings) Settings.close(true); // only the Settings step shows the Settings screen
     if (st.prep) st.prep();
     const w = f => t('tour_steps.' + st.key + '.' + f), narrow = I18N.look('en-US', 'tour_steps.' + st.key + '.textNarrow');
@@ -193,7 +195,7 @@ const Tour = {
     // Let the virtual list render the scrolled-to row before measuring it.
     requestAnimationFrame(() => requestAnimationFrame(() => { this.place(); $('tourNext').focus({ preventScroll: true }); }));
   },
-  next() { if (this.i === this.steps.length - 1) this.end(true); else this.go(this.i + 1); },
+  next() { if (this.i === this.list.length - 1) this.end(true); else this.go(this.i + 1); },
   back() { if (this.i > 0) this.go(this.i - 1); },
   end() {
     this.i = -1;
@@ -210,7 +212,7 @@ const Tour = {
   schedule() { if (this.active() && !this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.place(); }); },
   place() {
     if (!this.active()) return;
-    const st = this.steps[this.i];
+    const st = this.list[this.i];
     let t = st.target();
     t = (Array.isArray(t) ? t : [t]).filter(Boolean);
     // The visual viewport is what the reader actually sees (it excludes on-screen keyboards and app bars on phones).
@@ -253,6 +255,8 @@ const Tour = {
   }
 };
 function vis(id) { return visEl($(id)); }
+// A phone or tablet with no mouse or trackpad (same test as css/settings.css uses for the keyboard rows).
+function touchOnly() { return matchMedia('(hover: none) and (pointer: coarse)').matches; }
 // Settings › Keyboard shortcuts and the Single-key shortcuts switch under it.
 function keysRows() { const r = document.querySelector('#setModal [data-set="keys"]'), sw = $('singleKeys'); return [r, sw && sw.closest('.set-row')].filter(Boolean); }
 function visEl(el) {
