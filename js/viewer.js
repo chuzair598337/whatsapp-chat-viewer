@@ -90,13 +90,20 @@ function markHTML(html, sq, cls) {
     return out + part.slice(p);
   }).join('');
 }
+/* The app fills the screen and only its panels scroll, never the page. Focusing a field or scrollIntoView
+   can still scroll <html> or <body> (iOS Safari does this when the keyboard opens), which leaves the whole
+   app shifted; dialogs and the tour put it back when they close. */
+function resetPageScroll() {
+  for (const el of [document.scrollingElement, document.documentElement, document.body]) if (el && (el.scrollTop || el.scrollLeft)) { el.scrollTop = 0; el.scrollLeft = 0; }
+  const app = document.getElementById('app'); if (app && (app.scrollTop || app.scrollLeft)) { app.scrollTop = 0; app.scrollLeft = 0; }
+}
 /* Dialogs: while one is open, everything else on the page is inert, so Tab, the screen reader and
    clicks stay inside it. They stack: a contact card opened from the gallery sits on top of it. */
 const Dialogs = {
   stack: [],
   SKIP: new Set(['toasts', 'toastLive', 'loading', 'drop', 'tour', 'tourWelcome']),
   open(el) { if (!this.stack.includes(el)) this.stack.push(el); this.apply(); },
-  close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); },
+  close(el) { const k = this.stack.indexOf(el); if (k >= 0) this.stack.splice(k, 1); this.apply(); resetPageScroll(); },
   any() { return this.stack.length > 0; },
   apply() {
     const top = this.stack[this.stack.length - 1], start = document.getElementById('start');
@@ -294,7 +301,10 @@ function isJumbo(t) {
 const S = {
   source: null, res: null, msgs: [], items: [], m2i: null, dateIdx: null,
   me: null, title: '', isGroup: false, order: 'auto',
-  q: '', sq: null, sqErr: '', matches: [], matchSet: new Set(), cur: -1, lc: null, stats: null,
+  // Search: matches = the messages with a hit, in order; mc[k] = how many hits message matches[k] shows,
+  // mBase[k] = the hits before it, total = all hits; cur = the current message (index into matches),
+  // sub = the current hit inside it (js/app.js runSearch).
+  q: '', sq: null, sqErr: '', matches: [], matchSet: new Set(), cur: -1, sub: 0, mc: [], mBase: [], total: 0, lc: null, stats: null,
 };
 // Date labels follow the interface language (js/i18n/i18n.js); makeFormats() runs again when it changes.
 // The date rows in the chat are chat content, so they use streamFmt, which is always English.
@@ -460,7 +470,18 @@ function estimate(it, W) {
 /* ---------- Row rendering ---------- */
 function hl(html, i) {
   if (!S.sq || !S.matchSet.has(i)) return html;
-  return markHTML(html, S.sq, S.matches[S.cur] === i ? 'cur' : '');
+  return markHTML(html, S.sq, '');
+}
+// The hits search steps through in a row, in order: every <mark> except the ones in the sender's name
+// (a name is counted once per message, not per row it shows on; see hitCount in js/app.js).
+const hitMarks = el => [...el.querySelectorAll('mark')].filter(x => !x.closest('.name'));
+// Gives the current hit its own colour when the row of the current message is drawn.
+function curHit(el, i) {
+  if (!S.sq || S.cur < 0 || S.matches[S.cur] !== i) return;
+  let ms = hitMarks(el);
+  if (!ms.length) ms = [...el.querySelectorAll('mark')]; // the only hit is in the name
+  for (const x of ms) x.classList.remove('cur');
+  if (ms.length) ms[Math.min(S.sub, ms.length - 1)].classList.add('cur');
 }
 const TYPE_LABEL = { image: 'Photo', video: 'Video', audio: 'Audio', sticker: 'Sticker', gif: 'GIF', document: 'Document', contact: 'Contact card', media: 'Media' };
 const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -1107,6 +1128,7 @@ function makeRow(it, idx) {
     const k = sysKind(m.message);
     el.className = 'row sysrow';
     el.innerHTML = '<span dir="auto" class="pill ' + k.cls + '" data-sys="' + k.kind + '">' + (k.icon ? ICON[k.icon] : '') + hl(scriptHTML(m.message), it.i) + '</span>';
+    curHit(el, it.i);
     return el;
   }
   const grp = S.isGroup && !m.isOutgoing, starred = S.starred && S.starred.has(it.i), reacts = m.reactions && m.reactions.length;
@@ -1179,6 +1201,7 @@ function makeRow(it, idx) {
     el.classList.add('selable'); if (on) el.classList.add('sel');
     el.insertAdjacentHTML('afterbegin', '<span class="selbox" role="checkbox" tabindex="0" aria-checked="' + on + '" aria-label="' + esc(t('sel.select_message')) + '">' + ICON.tick + '</span>');
   }
+  curHit(el, it.i);
   return el;
 }
 

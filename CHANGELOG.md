@@ -2,6 +2,13 @@
 
 ## Unreleased (on `development`)
 
+### iPhone 8 report (WS8)
+
+- **Search counts every match, not every message.** Searching "Develop" in the sample chat showed "1 of 1" for one message with five highlighted matches; it now shows "1 of 5", and ↑ ↓, `Enter` / `Shift+Enter` and `F3` / `Ctrl+G` step one match at a time, through every match in a message before the next message. Only the current match is a darker orange (with a ring), and the chat scrolls to it, also inside a long message. A message found only by its sender, nickname or file name counts once. Still one pass with no layout reads, so a 60,000-message chat searches as fast as before.
+- **Fixed on iPhone:** focusing the search field, a nickname or a date filter zoomed the page in and left it shifted and cut off at the left (for example "articipants and nicknames"). Fields on touch screens now use 16 px text, so Safari doesn't zoom; pinch zoom is still allowed.
+- **Fixed on phones:** opening Starred messages made the page 30 px wider for a moment, so phone browsers zoomed out or let the page pan. The page now never scrolls sideways, and closing a dialog or the tour resets any page scroll left behind.
+- **Fixed on small phones:** the tour's last card (and any long one) ran off the bottom of the screen with its buttons cut off. The card now fits the visible area, its text scrolls and the buttons stay in view.
+
 ### Media types with no items
 
 - **Media, links and docs** in the side panel shows a tile only for the kinds the chat has: no more "Videos 0", "Audio 0" or "Contacts 0". All shows only when something does, and the tiles wrap into full rows with no gaps.
