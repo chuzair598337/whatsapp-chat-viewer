@@ -48,6 +48,8 @@ const KEY_LIST = [
   { id: 'nicks', group: 'general', label: 'nick.title', keys: ['P'], where: CHAT, single: true, run: () => NickUI.open() },
   { id: 'date', group: 'general', label: 'sidebar.jump_to_date', keys: ['D'], where: CHAT, single: true,
     run: () => { if (isNarrow()) openDrawer(); else if (document.body.classList.contains('side-hidden')) toggleSide(); $('jumpDate').focus(); } },
+  // Settings › Text size, one step at a time. Never Ctrl/⌘ with + - 0: those are the browser's page zoom.
+  { id: 'textSize', group: 'general', label: 'keys.text_size', keys: ['+', '-'], where: CHAT, single: true, run: (e, k) => stepTextSize(k === '+' ? 1 : -1) },
   { id: 'panel', group: 'general', label: 'keys.toggle_panel', keys: ['['], where: CHAT, single: true, run: () => $('menuBtn').click() },
   { id: 'nextMsg', group: 'general', label: 'keys.next_message', keys: ['J'], where: CHAT, single: true, run: () => Keys.move(1) },
   { id: 'prevMsg', group: 'general', label: 'keys.prev_message', keys: ['K'], where: CHAT, single: true, run: () => Keys.move(-1) },

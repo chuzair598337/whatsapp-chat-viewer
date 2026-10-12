@@ -57,6 +57,14 @@
 - The start screen is wider (680 px) with slightly larger text from 1600 px.
 - Sample chat: no new lines; the existing Trip report message, photos, location and starred messages show these changes.
 
+### Responsive audit (WS7)
+
+- **Settings › Text size** (audit CROSS-4): Small (90%), Default (100%), Large (115%), Larger (130%) or Largest (150%). It scales the chat's text only, including messages, names, times, quotes, link cards, polls, notices, date pills and Read more, and Urdu and Arabic text with them. Photos, videos and stickers keep their size. Rows are measured again straight away, so nothing overlaps and you stay at the same place in the chat. It is remembered on this device (`cv-text-size`) and applied when the app starts. The pick sheet shows each choice at its size. In English, Urdu and Arabic.
+- **Keys:** `+` and `-` in the chat make the text one step bigger or smaller, with a notification that names the new size. They are single keys, so Settings › Single-key shortcuts turns them off. `Ctrl` / `⌘` with `+`, `-` and `0` are left to the browser's page zoom. The Text size row shows the keys on a computer, and they are in the Keyboard shortcuts list.
+- **Fixed:** the chat list measured rows in whole pixels, so at some text sizes, and with some Urdu lines, a row could overlap the next one by a pixel. Rows are now measured to the fraction.
+- The guided tour's Settings step and the Settings privacy note mention the text size, in English, Urdu and Arabic.
+- Sample chat: no new line. The setting applies to every message already in it; open the sample chat, then Settings › Text size, or press `+`.
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

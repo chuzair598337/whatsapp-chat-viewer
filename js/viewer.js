@@ -370,8 +370,8 @@ const VL = {
   remeasure(i) { // a row changed height after render (a photo or video learned its size)
     const el = this.nodes.get(i);
     if (!el || !this.fw) return;
-    const hh = el.offsetHeight;
-    if (Math.abs(hh - this.h[i]) < 0.5) return;
+    const hh = rowH(el);
+    if (Math.abs(hh - this.h[i]) < 0.05) return;
     const st = scroller.scrollTop, a = this.fw.find(st), aOff = st - this.fw.sum(a);
     this.fw.add(i, hh - this.h[i]); this.h[i] = hh;
     for (const [k, n] of this.nodes) n.style.transform = 'translateY(' + this.fw.sum(k) + 'px)';
@@ -404,7 +404,7 @@ const VL = {
       const fresh = [];
       for (let i = start; i <= end; i++) if (!this.nodes.has(i)) { const el = makeRow(this.items[i], i); el.dataset.i = i; layer.appendChild(el); this.nodes.set(i, el); fresh.push(i); }
       let changed = false;
-      for (const i of fresh) { const hh = this.nodes.get(i).offsetHeight; if (Math.abs(hh - h[i]) > 0.5) { fw.add(i, hh - h[i]); h[i] = hh; changed = true; } }
+      for (const i of fresh) { const hh = rowH(this.nodes.get(i)); if (Math.abs(hh - h[i]) > 0.05) { fw.add(i, hh - h[i]); h[i] = hh; changed = true; } }
       for (const [i, el] of this.nodes) el.style.transform = 'translateY(' + fw.sum(i) + 'px)';
       spacer.style.height = fw.sum(n) + END_PAD + 'px';
       if (!tg && changed) { const want = fw.sum(anchor) + aOff; if (Math.abs(want - scroller.scrollTop) > 1) scroller.scrollTop = want; }
@@ -416,15 +416,18 @@ const VL = {
 };
 // Mirrors the CSS: rows are inset 10 px on phones (640 px and narrower) and clamp(10px, 10% - 54px, 64px) elsewhere; a bubble is
 // at most min(620px, max(65%, min(86%, 533px))) of its row; when the layer's content box is 900 px or wider, media go up to 400 px.
+// A row's real height, with its fraction: offsetHeight rounds, and at the larger text sizes (or with Urdu
+// and Arabic lines) the lost fractions add up until a row overlaps the next one by a pixel.
+const rowH = el => el.getBoundingClientRect().height;
 function estimate(it, W) {
   const rw = W - 2 * (innerWidth <= 640 ? 10 : Math.max(10, Math.min(W * 0.1 - 54, 64))), wide = W - 2 * Math.max(12, Math.min(W * 0.05, 64)) >= 900;
   const bw = Math.max(120, Math.min(620, Math.max(rw * 0.65, Math.min(rw * 0.86, 533))) - 18);
-  const cw = 7.4;
-  if (it.type === 'date') return 44;
+  const f = textScale, cw = 7.4 * f, lh = 19 * f; // Settings › Text size (js/app.js) scales the text, not the media
+  if (it.type === 'date') return 27 + 17 * f;
   const m = it.m;
-  if (it.type === 'sys') return 16 + 24 + Math.floor(m.message.length * 6.6 / Math.min(560, W * 0.9)) * 18;
+  if (it.type === 'sys') return 16 + 24 * f + Math.floor(m.message.length * 6.6 * f / Math.min(560, W * 0.9)) * 18 * f;
   let h = (it.first ? 10 : 2) + 14 + (m.reactions && m.reactions.length ? 16 : 0);
-  if (it.showName) h += 19;
+  if (it.showName) h += 19 * f;
   if (m.kind === 'media') {
     const a = m.attachments[0], w2 = Math.min(wide ? 400 : 330, bw);
     if (a && a.url) {
@@ -438,16 +441,16 @@ function estimate(it, W) {
     } else h += 74;
   }
   if (it.hasLink) h += linkCardsH(m.message, it.i);
-  else if (m.kind === 'poll') h += 50 + (m.extra.options.length * 33);
+  else if (m.kind === 'poll') h += (50 + (m.extra.options.length * 33)) * f;
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
   else if (m.kind === 'unsupported') h += 64;
-  else if (m.kind === 'deleted') return h + 19;
+  else if (m.kind === 'deleted') return h + lh;
   if (m.message) {
-    if (it.jumbo) return h + 46;
+    if (it.jumbo) return h + 46 * f;
     const sv = shownText(it), ls = sv.text.split('\n');
-    if (sv.state === 'expanded') h += 21;
-    for (let k = 0; k < ls.length; k++) h += 19 * Math.max(1, Math.ceil((ls[k].length * cw + (k === ls.length - 1 ? 64 : 0)) / bw));
+    if (sv.state === 'expanded') h += 21 * f;
+    for (let k = 0; k < ls.length; k++) h += lh * Math.max(1, Math.ceil((ls[k].length * cw + (k === ls.length - 1 ? 64 * f : 0)) / bw));
   } else if (m.kind !== 'text') h += 8;
   return h;
 }
