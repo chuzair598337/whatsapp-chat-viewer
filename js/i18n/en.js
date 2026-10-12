@@ -208,6 +208,8 @@ I18N.add('en-US', {
     "pdf_viewer": "PDF viewer",
     "fit_width": "Fit width",
     "fit_width_0": "Fit width (0)",
+    "fit_page": "Fit page",
+    "fit_page_0": "Fit page (0)",
     "download_pdf": "Download PDF",
     "close_pdf_viewer": "Close PDF viewer",
     "opening": "Opening…",

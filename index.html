@@ -149,7 +149,7 @@
     </div>
     <div id="filterbar" class="samplebar fbar" hidden role="status">
       <span id="fText"></span>
-      <button id="fbClear" data-i18n="filter.clear_filters">Clear filters</button>
+      <button id="fbClear" title="Clear filters" data-i18n-attr="title:filter.clear_filters"><span class="fbx" id="fbClearIc" aria-hidden="true"></span><span class="fbl" data-i18n="filter.clear_filters">Clear filters</span></button>
     </div>
     <div class="thread-wrap">
       <div id="scroller" class="scroller" tabindex="0" aria-label="Messages" data-i18n-attr="aria-label:chat.messages"><div id="spacer" class="spacer"><div id="layer" class="layer" dir="ltr"></div></div></div>
@@ -237,7 +237,7 @@
   </div>
 </div>
 <div id="pdfv" class="lb pdfv" hidden role="dialog" aria-modal="true" aria-label="PDF viewer" data-i18n-attr="aria-label:pdf.pdf_viewer">
-  <div class="lb-top"><div class="lb-who"><b id="pdfTitle" dir="auto"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="pdfFit" aria-label="Fit width" title="Fit width (0)" data-i18n-attr="aria-label:pdf.fit_width;title:pdf.fit_width_0"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF" data-i18n-attr="aria-label:pdf.download_pdf;title:pdf.download_pdf"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer" data-i18n-attr="aria-label:pdf.close_pdf_viewer"></button></div>
+  <div class="lb-top"><div class="lb-who"><b id="pdfTitle" dir="auto"></b><small id="pdfInfo"></small></div><div class="lb-tools"><button class="ibtn" id="pdfOut" aria-label="Zoom out" title="Zoom out (−)" data-i18n-attr="aria-label:common.zoom_out;title:common.zoom_out_2"></button><span class="lb-zoom" id="pdfZoom">100%</span><button class="ibtn" id="pdfIn" aria-label="Zoom in" title="Zoom in (+)" data-i18n-attr="aria-label:common.zoom_in;title:common.zoom_in_2"></button><button class="ibtn" id="pdfFit" aria-label="Fit page" title="Fit page (0)"></button></div><a class="ibtn" id="pdfDl" href="#" download title="Download PDF" aria-label="Download PDF" data-i18n-attr="aria-label:pdf.download_pdf;title:pdf.download_pdf"></a><button class="ibtn" id="pdfClose" aria-label="Close PDF viewer" data-i18n-attr="aria-label:pdf.close_pdf_viewer"></button></div>
   <div class="pdf-pages" id="pdfPages"></div>
 </div>
 <div id="tourWelcome" class="modal" hidden role="dialog" aria-modal="true" aria-labelledby="twTitle" aria-describedby="twLead">

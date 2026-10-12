@@ -208,6 +208,8 @@ I18N.add('ur', {
     "pdf_viewer": "PDF ویور",
     "fit_width": "چوڑائی کے مطابق",
     "fit_width_0": "چوڑائی کے مطابق (0)",
+    "fit_page": "صفحے کے مطابق",
+    "fit_page_0": "صفحے کے مطابق (0)",
     "download_pdf": "PDF ڈاؤن لوڈ کریں",
     "close_pdf_viewer": "PDF ویور بند کریں",
     "opening": "کھولا جا رہا ہے…",

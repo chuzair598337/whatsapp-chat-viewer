@@ -372,7 +372,7 @@ function renderFilterBar() {
   if (f.from && f.to) parts.push(shortFmt.format(dkToT(f.from)) + ' – ' + shortFmt.format(dkToT(f.to)));
   else if (f.from) parts.push(t('filter.since', { date: shortFmt.format(dkToT(f.from)) }));
   else if (f.to) parts.push(t('filter.until', { date: shortFmt.format(dkToT(f.to)) }));
-  $('fText').textContent = S.shown ? t('filter.showing', { shown: nf(S.shown), total: nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length), what: parts.join(' · ') }) : t('filter.none', { what: parts.join(' · ') });
+  $('fText').textContent = $('fText').title = S.shown ? t('filter.showing', { shown: nf(S.shown), total: nf(S.msgs.length - S.msgs.filter(m => m.isSystem).length), what: parts.join(' · ') }) : t('filter.none', { what: parts.join(' · ') });
 }
 function applyFilter() {
   let from = $('fFrom').value, to = $('fTo').value;
@@ -396,7 +396,7 @@ $('people').addEventListener('click', e => {
   const name = S.res.participants[+b.dataset.k].name;
   pickSender((S.filter || {}).sender === name ? '' : name);
 });
-$('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
+$('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters; $('fbClearIc').innerHTML = ICON.close;
 
 /* ---------- Starred messages (this session only; nothing is saved) ---------- */
 function toggleStar(i) {
@@ -871,7 +871,7 @@ $('cardStats').innerHTML = ICON.stats.replace('width="22" height="22"', 'width="
 $('cardOpen').innerHTML = ICON.open.replace('width="22" height="22"', 'width="18" height="18"') + '<span data-i18n="sidebar.open_chat">' + t('sidebar.open_chat') + '</span>';
 for (const b of document.querySelectorAll('[data-close]')) b.innerHTML = ICON.close;
 $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('pdfIn').innerHTML = ICON.plus; $('pdfOut').innerHTML = ICON.minus; $('pdfFit').innerHTML = ICON.fit;
-$('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
+$('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = pdfFit;
 $('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
 $('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
 $('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;

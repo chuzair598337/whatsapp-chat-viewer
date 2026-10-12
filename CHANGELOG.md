@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS1)
+
+- **Phones on their side and other short screens** (under 500 px tall) get a layout of their own. The chat header is 48 px, the sample chat's note is one line with its button beside it, the search bar and scroll buttons are smaller, and the sample note hides while searching, so a phone at 844×390 shows about 310 px of chat instead of 257 (CROSS-2, CHAT-2).
+- **Fixed:** the ⋮ menu ran off short screens, so Keyboard shortcuts (and in Urdu and Arabic, Help and guided tour) couldn't be reached. It now scrolls and is more compact on short screens (CROSS-1).
+- **Fixed:** Recent searches ran off short screens and covered the whole chat with an on-screen keyboard open. The list now stops above the bottom of the screen and scrolls, with its heading kept (CHAT-1).
+- **Fixed:** "Which one is you?" showed no full name on a phone on its side, so the first step couldn't be done. On short screens the sheet uses the full height and the whole sheet scrolls as one list (MODALS-1).
+- **Sheets use the whole height on a phone on its side** instead of a small floating card: Settings and Media, links and docs fill the screen, others reach top to bottom, with tighter headers and footers. The welcome dialog shows both choices without scrolling (MODALS-2, START-12).
+- **Media, links and docs on a phone on its side:** full screen, the title, chips and buttons in one row, and six tiles per row (MODALS-3).
+- **Side panel on short screens:** the chat's avatar sits beside its name and the list of chats is capped at 40% of the height, so the chat card shows (SIDE-7).
+- **PDF viewer: fit width or fit page.** The Fit button (and `0`) now switches between fitting the page width and fitting the whole page, and names what it will do next. A phone on its side opens a PDF on the whole page (MODALS-12).
+- **Filter bar on phones:** one line with … and a ✕ to clear, instead of up to three lines; the sample chat's note steps aside while a filter is on, on phones and short screens (CHAT-4).
+- The Urdu sample chat note has more line spacing (CHAT-11).
+- The name search in "Which one is you?" and Participants and nicknames stays at the top while the list scrolls, and on touch screens the nickname fields are 44 px tall (MODALS-11).
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

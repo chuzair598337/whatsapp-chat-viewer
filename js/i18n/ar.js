@@ -208,6 +208,8 @@ I18N.add('ar', {
     "pdf_viewer": "عارض PDF",
     "fit_width": "ملاءمة العرض",
     "fit_width_0": "ملاءمة العرض (0)",
+    "fit_page": "ملاءمة الصفحة",
+    "fit_page_0": "ملاءمة الصفحة (0)",
     "download_pdf": "تنزيل PDF",
     "close_pdf_viewer": "إغلاق عارض PDF",
     "opening": "جارٍ الفتح…",
