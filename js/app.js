@@ -740,6 +740,32 @@ function applyTheme() {
 function setTheme(v) { theme = v; store('cv-theme', v); applyTheme(); }
 applyTheme();
 
+/* ---------- Text size (Settings › Text size, cv-text-size) ----------
+   Scales the chat's text only (messages, names, times, quotes, cards, polls, notices, date pills, Read more)
+   through one CSS variable, --chat-fs (css/styles.css, "text size"). Media keeps its size. estimate() in
+   viewer.js reads textScale, and a change re-lays out the virtual list so every row is measured again. */
+const TEXT_SIZES = [['small', 0.9], ['default', 1], ['large', 1.15], ['larger', 1.3], ['largest', 1.5]];
+let textSize = TEXT_SIZES.some(s => s[0] === store('cv-text-size')) ? store('cv-text-size') : 'default';
+let textScale = 1;
+function applyTextSize() {
+  textScale = TEXT_SIZES.find(s => s[0] === textSize)[1];
+  root.style.setProperty('--chat-fs', textScale);
+  if (VL.fw) VL.relayout();
+}
+function setTextSize(v) { if (!TEXT_SIZES.some(s => s[0] === v)) return; textSize = v; store('cv-text-size', v); applyTextSize(); }
+const textSizeName = v => t('settings.ts_' + v) + ' (' + TEXT_SIZES.find(s => s[0] === v)[1].toLocaleString(I18N.locale(), { style: 'percent' }) + ')';
+// The + and - keys in the chat (js/components/shortcuts-list.js): one step bigger or smaller, with a notification.
+function stepTextSize(d) {
+  const k = TEXT_SIZES.findIndex(s => s[0] === textSize), n = Math.max(0, Math.min(TEXT_SIZES.length - 1, k + d));
+  if (n === k) { toast.info(t(d > 0 ? 'settings.text_size_max' : 'settings.text_size_min')); return; }
+  const focused = Keys.row() ? Keys.msg() : -1; // the re-layout replaces the rows: keep J / K's place
+  setTextSize(TEXT_SIZES[n][0]);
+  if (focused >= 0) Keys.refocus(focused);
+  toast.success(t('settings.text_size_now', { size: textSizeName(textSize) }));
+  if (Settings.isOpen()) Settings.render();
+}
+applyTextSize();
+
 /* ---------- Interface language (js/i18n) ---------- */
 // The picker sits in Settings and on the start screen. Switching redraws everything the app built
 // in JavaScript; the chat itself (messages, names, file names, system notices, call logs, deleted and

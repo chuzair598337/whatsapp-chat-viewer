@@ -621,7 +621,7 @@ I18N.add('en-US', {
     },
     "settings": {
       "title": "Settings",
-      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you. About shows what's new in each version."
+      "text": "Settings, in the ⋮ menu, is where you choose which person is you, so your messages move to the right in green, and give anyone in the chat a nickname. The theme, text size, language, background pattern, date format and the Online link previews and Autoplay voice messages switches are here too. The viewer guesses who you are and the date order for you. About shows what's new in each version."
     },
     "keys": {
       "title": "Keyboard shortcuts",
@@ -668,10 +668,20 @@ I18N.add('en-US', {
     "pdf_page": "Next or previous page",
     "gal_tab": "Switch to a tab (All, Photos, Videos, …)",
     "gal_tabs": "Move between tabs",
+    "text_size": "Bigger or smaller chat text",
     "gal_menu": "Options for the focused item"
   },
   "settings": {
     "title": "Settings",
+    "text_size": "Text size",
+    "ts_small": "Small",
+    "ts_default": "Default",
+    "ts_large": "Large",
+    "ts_larger": "Larger",
+    "ts_largest": "Largest",
+    "text_size_now": "Text size: {size}",
+    "text_size_max": "The text is already at its largest",
+    "text_size_min": "The text is already at its smallest",
     "close": "Close settings",
     "you_are": "You are",
     "nobody_chosen": "Nobody chosen",
@@ -687,7 +697,7 @@ I18N.add('en-US', {
     "tour_sub": "Take the tour again or open your own chat",
     "about": "About",
     "version": "Version {v}",
-    "saved_note": "The theme, language, background pattern, online link previews, autoplay, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
+    "saved_note": "The theme, text size, language, background pattern, online link previews, autoplay, nicknames and recent searches are remembered on this device. Who you are and the date format apply to the open chat only.",
     "online_links": "Online link previews",
     "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites.",
     "autoplay": "Autoplay voice messages",

@@ -974,3 +974,29 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 .start-keys kbd { min-width: 0; }
 @media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
 @media (max-width: 640px) { .krow dd { max-width: 55%; } }
+
+/* ---- Responsive audit WS7: text size ---- */
+/* Settings › Text size (js/app.js, applyTextSize) sets --chat-fs on <html>: 0.9, 1, 1.15, 1.3 or 1.5.
+   It scales the chat's text only: message text, names, times, quotes, code, cards, polls, notices, date
+   pills and Read more. Photos, videos, stickers, icons and buttons keep their size. Urdu and Arabic runs
+   (.s-ur / .s-ar) are sized in em, so they follow. estimate() in js/viewer.js scales with it too. */
+:root { --chat-fs: 1; }
+#layer { font-size: calc(14.2px * var(--chat-fs)); }
+#layer .txt { font-size: calc(14.2px * var(--chat-fs)); line-height: calc(19px * var(--chat-fs)); }
+#layer .txt.jumbo { font-size: calc(38px * var(--chat-fs)); line-height: calc(46px * var(--chat-fs)); }
+#layer .txt code { font-size: calc(13px * var(--chat-fs)); }
+#layer .name { font-size: calc(12.8px * var(--chat-fs)); line-height: calc(22px * var(--chat-fs)); }
+#layer .meta { font-size: calc(11px * var(--chat-fs)); line-height: calc(15px * var(--chat-fs)); }
+#layer .stard svg { width: calc(12px * var(--chat-fs)); height: calc(12px * var(--chat-fs)); }
+#layer .mspace { width: calc(62px * var(--chat-fs)); }
+#layer .mspace.e { width: calc(106px * var(--chat-fs)); }
+#layer .pill, .sticky-date .pill { font-size: calc(12.5px * var(--chat-fs)); }
+#layer :is(.att, .mdoc, .unsup) b { font-size: calc(14px * var(--chat-fs)); }
+#layer :is(.att, .mdoc, .poll) small { font-size: calc(12px * var(--chat-fs)); }
+#layer :is(.call, .loc, .unsup, .vc-main) small { font-size: calc(12.5px * var(--chat-fs)); }
+#layer .po .pol, #layer .ltxt b, #layer .lplay, #layer .afname { font-size: calc(13.5px * var(--chat-fs)); }
+#layer .ldet { font-size: calc(12.5px * var(--chat-fs)); }
+#layer .ltxt small, #layer .lmore { font-size: calc(12px * var(--chat-fs)); }
+#layer .arow { font-size: calc(11.5px * var(--chat-fs)); }
+#layer .vc-main b { font-size: calc(15px * var(--chat-fs)); }
+#layer .vc-acts > * { font-size: calc(14px * var(--chat-fs)); }
