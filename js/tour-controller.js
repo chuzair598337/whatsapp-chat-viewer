@@ -184,8 +184,8 @@ const Tour = {
     const w = f => t('tour_steps.' + st.key + '.' + f), narrow = I18N.look('en-US', 'tour_steps.' + st.key + '.textNarrow');
     $('tourStep').textContent = t('tour.progress', { sec: t('tour_sec.' + st.sec), i: nf(this.i + 1), n: nf(n) });
     $('tourTitle').textContent = w('title');
-    if (st.html) $('tourText').innerHTML = w('html'); // trusted text from the dictionaries, no chat content
-    else $('tourText').textContent = isNarrow() && narrow ? w('textNarrow') : w('text');
+    // Trusted text from the dictionaries, no chat content; ltrKeys keeps keys like ⌘F the right way round.
+    $('tourText').innerHTML = ltrKeys(st.html ? w('html') : esc(isNarrow() && narrow ? w('textNarrow') : w('text')));
     $('tourPop').classList.toggle('wide', !!st.html);
     $('tourBack').hidden = this.i === 0;
     $('tourNext').textContent = last ? t('tour.finish') : t('tour.next');

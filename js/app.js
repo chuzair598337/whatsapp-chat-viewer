@@ -160,7 +160,7 @@ function renderLibrary() {
   sec.hidden = lib.length < 2;
   if (lib.length < 2) return;
   $('chatsCount').textContent = nf(lib.length);
-  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b>' + esc(c.label) + '</b><small>' + esc(c.inner ? t('chats.zip_inside', { name: c.file.name }) : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
+  $('chatList').innerHTML = lib.map((c, k) => '<button class="chatrow' + (k === S.libIdx ? ' cur' : '') + '" data-k="' + k + '"' + (k === S.libIdx ? ' aria-current="true"' : '') + '><span class="av c' + colorIdx(c.label) + '">' + esc(initials(c.label)) + '</span><span class="cr-t"><b dir="auto">' + esc(c.label) + '</b><small dir="auto">' + esc(c.inner ? t('chats.zip_inside', { name: c.file.name }) : c.path ? c.file.name : c.file.name + ' · ' + fmtSize(c.file.size)) + '</small></span></button>').join('');
 }
 $('chatList').addEventListener('click', async e => {
   const b = e.target.closest('.chatrow'); if (!b) return;
@@ -330,7 +330,7 @@ function renderChrome() {
     '<div><dt>' + t('facts.media') + '</dt><dd>' + nf(mediaN) + '</dd></div>' +
     '<div><dt>' + t('facts.first') + '</dt><dd>' + esc(shortFmt.format(dkToT(first.dateKey))) + '</dd></div>' +
     '<div><dt>' + t('facts.last') + '</dt><dd>' + esc(shortFmt.format(dkToT(last.dateKey))) + '</dd></div>' +
-    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd title="' + esc(srcName) + '"><bdi>' + esc(srcName) + '</bdi> · <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</dd></div>';
+    '<div class="wide"><dt>' + t('facts.file') + '</dt><dd class="fact-file" title="' + esc(srcName) + '"><bdi dir="auto">' + esc(srcName) + '</bdi><span>· <bdi dir="ltr">' + fmtSize(S.source.size) + '</bdi> · ' + t(res.format === 'ios' ? 'facts.format_ios' : 'facts.format_android') + '</span></dd></div>';
   // Who you are and the date format are shown in Settings (js/components/settings.js).
   if (typeof Settings !== 'undefined' && Settings.isOpen()) Settings.render();
   // jump date

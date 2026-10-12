@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS4)
+
+- **Fixed in Urdu and Arabic:** the photo viewer's counter read "7 / 3" for "3 of 7" and its time read "AM 8:14"; both now read left to right, after a localized date (MODALS-5).
+- **Fixed in Urdu and Arabic:** zooming a PDF showed the blank right edge of the page. The pages are now laid out left to right, and zooming in or out keeps the middle of the view where it was, in every language (MODALS-6).
+- **Fixed in Urdu and Arabic:** shortcut keys such as `⌘O` and `⌘F` showed as "O⌘" and "F⌘" in What's new and the tour's last card. The popup and the tour now keep any key combination left to right (`ltrKeys` in `js/viewer.js`), the tour's Urdu and Arabic text isolates them itself, and the release skill tells future notes to do the same (START-7).
+- **Fixed in Urdu and Arabic:** an English chat title in the header was cut at its start ("…nd Hiking Crew"); the header and side panel titles now take their direction from their text, so it is cut at its end and still sits on the right (CROSS-10).
+- **Chats list in Urdu and Arabic:** the current chat's green bar is on the right, Latin chat and file names are cut at their end, and the File fact always shows the file's size and format, shortening only its name (SIDE-9).
+- The side panel's subtitle ("for WhatsApp exports, offline") stays on one line with an ellipsis in every language, so it no longer grows past its header in Arabic or wraps at 360 px (SIDE-8).
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

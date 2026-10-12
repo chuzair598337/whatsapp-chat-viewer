@@ -28,7 +28,7 @@ function run(keys, opts) {
     localStorage: storage, RELEASE_NOTES: notes, APP_VERSION: (opts && opts.app) || version, setTimeout, clearTimeout,
     $: id => els[id] || (els[id] = el()), document: { addEventListener() {} },
     Dialogs: { any: () => false }, Tour: { active: () => false },
-    I18N: { lang: 'en-US', stored: (keys || {}).app_language || null, info: () => ({ locale: 'en-US' }) }, t: k => k, esc: s => String(s), openModal() {}
+    I18N: { lang: 'en-US', stored: (keys || {}).app_language || null, info: () => ({ locale: 'en-US' }) }, t: k => k, esc: s => String(s), ltrKeys: s => String(s), openModal() {}
   };
   vm.createContext(ctx);
   vm.runInContext('function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }', ctx);
