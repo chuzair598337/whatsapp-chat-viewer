@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+- **Starred messages look like the chat.** The Starred messages panel now shows each message as a chat bubble on the chat's background: your messages on the right in green, everyone else's on the left, as in the chat (also in Urdu and Arabic). Above each bubble are the sender's avatar, **Sender ▸ Recipient** and the date; inside are the text, a thumbnail of a photo, GIF, sticker or video, or an icon for voice notes, documents, polls, calls and other messages, then a star and the time. Tapping a bubble still jumps to the message, and a star button beside it unstars it.
+- **Export and import starred messages.** Stars are kept only while the tab is open, so the panel has **Export** (`E`), which saves them to a small `.json` file on your device, **Import** (`L`), which stars the same messages again when you open that chat another time, and **Save as text** for a readable copy. A note in the panel says whether the stars have been exported. A starred file can also be dropped on the chat, or opened together with the chat export. Nothing is uploaded or stored.
+- **Leaving with unsaved stars asks first.** Closing or reloading the tab with stars that were never exported shows the browser's "Leave site?" warning, and switching chats in the side panel and back keeps each chat's stars while the tab is open.
+- The guided tour's ⋮ menu step mentions Export and Import, in English, Urdu and Arabic.
+- Sample chat: a new message from Bilal Ahmed (you) on 3 April (8:32 AM) about starring, exporting and importing.
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

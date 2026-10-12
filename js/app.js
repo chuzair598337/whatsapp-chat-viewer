@@ -38,7 +38,11 @@ const isChatTxt = n => /(^|\/)_chat\.txt$/i.test(n) || (/\.txt$/i.test(n) && isC
 async function openFiles(list) {
   if (typeof Tour !== 'undefined') Tour.dismiss();
   Gallery.close();
-  const files = [...(list || [])].filter(Boolean);
+  let files = [...(list || [])].filter(Boolean);
+  // Starred messages files (js/components/starred.js) are read by the Starred panel, for the chat that is open or opens next.
+  const starFiles = files.filter(f => /\.json$/i.test(f.name) || f.type === 'application/json');
+  files = files.filter(f => !starFiles.includes(f));
+  if (starFiles.length) await Stars.importFiles(starFiles, files.length > 0); // with a chat export, for that chat
   if (!files.length) return;
   closeDrawer();
   const my = ++loadSeq;
@@ -203,7 +207,7 @@ function foldReactions(msgs) {
 }
 function applyResult(res, keepMe) {
   if (!res.folded) { res.messages = foldReactions(res.messages); res.folded = true; }
-  if (!keepMe) { S.starred = new Set(); S.filter = { from: '', to: '', sender: '' }; }
+  if (!keepMe) { Stars.leave(); S.filter = { from: '', to: '', sender: '' }; }
   if (typeof Sel !== 'undefined') Sel.stop(true); // a selection belongs to the chat it was made in
   S.res = res; S.msgs = res.messages; S.lc = null; S.stats = null;
   setScriptDefault(S.msgs);
@@ -222,6 +226,7 @@ function applyResult(res, keepMe) {
   clearSearch();
   $('samplebar').hidden = !S.source.sample;
   hideStart();
+  if (!keepMe) { Stars.arrive(); renderStars(); }
 }
 /* ---------- Start screen: shown on every launch, since nothing is kept between visits ---------- */
 function hideStart() {
@@ -398,7 +403,7 @@ $('people').addEventListener('click', e => {
 });
 $('fClear').onclick = clearFilters; $('fbClear').onclick = clearFilters;
 
-/* ---------- Starred messages (this session only; nothing is saved) ---------- */
+/* ---------- Starred messages: in memory only; the panel, export and import are in js/components/starred.js ---------- */
 function toggleStar(i) {
   if (!S.starred) S.starred = new Set();
   if (S.starred.has(i)) S.starred.delete(i); else S.starred.add(i);
@@ -406,24 +411,6 @@ function toggleStar(i) {
   renderStars();
   if (S.starred.has(i)) toast.success(t('stars.starred')); else toast.info(t('stars.removed'));
 }
-// Date and time of a search or starred result, each isolated so they keep their order in Urdu.
-function resTime(m) { return '<time><bdi>' + esc(shortFmt.format(dkToT(m.dateKey))) + '</bdi>' + t('common.list_sep') + '<bdi dir="ltr">' + m.formattedTime + '</bdi></time>'; }
-function msgSnippet(m) {
-  if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
-  const a = m.attachments[0];
-  return a ? (TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file')) + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? t('common.poll_prefix', { q: m.extra.q }) : '';
-}
-function renderStars() {
-  const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;
-  $('starBadge').hidden = !n; $('starBadge').textContent = n > 99 ? '99+' : n;
-  $('starTitle').textContent = n ? t('stars.title_n', { n: nf(n) }) : t('common.starred_messages');
-  $('starList').innerHTML = n ? list.map(i => {
-    const m = S.msgs[i];
-    return '<button class="res" data-i="' + i + '"><span class="rh"><b dir="auto">' + esc(m.isOutgoing ? t('common.you') : nick(m.sender)) + '</b>' + resTime(m) + '</span><span class="rs" dir="auto">' + esc(msgSnippet(m)) + '</span></button>';
-  }).join('') : '<p class="star-empty">' + ICON.star + '<span>' + t('stars.empty') + '</span></p>';
-}
-function openStars() { renderStars(); $('starPanel').hidden = false; document.body.classList.add('stars-open'); $('starClose').focus(); }
-function closeStars() { $('starPanel').hidden = true; document.body.classList.remove('stars-open'); }
 // focus: also move keyboard focus to the message (used after a dialog such as the media gallery closes).
 function jumpToMsg(i, focus) {
   if (S.m2i[i] < 0) clearFilters();
@@ -433,9 +420,6 @@ function jumpToMsg(i, focus) {
   el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); // restarts the flash if it just ran
   if (focus) { if (!el.hasAttribute('tabindex')) el.tabIndex = -1; el.focus({ preventScroll: true }); }
 }
-$('starBtn').onclick = () => { if ($('starPanel').hidden) openStars(); else closeStars(); };
-$('starClose').onclick = closeStars;
-$('starList').addEventListener('click', e => { const b = e.target.closest('.res'); if (!b) return; jumpToMsg(+b.dataset.i); if (isNarrow()) closeStars(); });
 
 /* =====================================================================
    Search
@@ -874,7 +858,7 @@ $('pdfClose').innerHTML = ICON.close; $('pdfDl').innerHTML = ICON.download; $('p
 $('pdfClose').onclick = closePdf; $('pdfIn').onclick = () => pdfZoom(1); $('pdfOut').onclick = () => pdfZoom(-1); $('pdfFit').onclick = () => pdfZoom(0);
 $('vcModal').querySelector('[data-close-text]').onclick = () => closeModal('vcModal');
 $('vcBody').addEventListener('click', e => { const b = e.target.closest('.vc-copy'); if (b) copyText(b.dataset.copy, b.dataset.what); });
-$('starClose').innerHTML = ICON.close; $('lbRot').innerHTML = ICON.rotate;
+$('lbRot').innerHTML = ICON.rotate;
 $('lbClose').innerHTML = ICON.close; $('lbDl').innerHTML = ICON.download; $('lbPrev').innerHTML = ICON.back; $('lbNext').innerHTML = ICON.next; $('lbIn').innerHTML = ICON.plus; $('lbOut').innerHTML = ICON.minus; $('lbFit').innerHTML = ICON.fit;
 
 function refreshMedia() {

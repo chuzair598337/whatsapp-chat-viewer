@@ -19,7 +19,7 @@ Read your exported WhatsApp chats in a familiar, WhatsApp-style interface, with 
 - Shows photos (with a zoomable viewer), stickers, GIFs, videos (including portrait), voice notes with waveforms (and optional autoplay of voice notes sent in a row), audio files, PDFs with page previews, documents, contact cards and link cards.
 - Marks messages WhatsApp leaves out of exports, such as events, instead of hiding them.
 - Search with highlighting, match navigation, Match case, Whole word and Regex options, and your recent searches (`/` to start), date-range and sender filters, jump-to-date and jump-to-bottom.
-- Star messages to collect them in a side panel while you read (never saved).
+- Star messages to collect them in a chat-style side panel while you read. Stars aren't saved, so you can export them to a file and import them the next time you open the chat.
 - Group chats show coloured names and initials avatars, and reaction lines become reaction pills.
 - A statistics window with message counts, top senders and activity charts.
 - A Settings screen like WhatsApp's for who you are, light, dark and system themes, the language, the background pattern, autoplay of voice messages, the date format and nicknames for anyone in the chat, and a responsive layout for desktop and phone.
