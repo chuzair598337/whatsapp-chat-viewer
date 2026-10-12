@@ -1013,7 +1013,7 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 /* ---- Responsive audit WS4: Right-to-left and bidi ---- */
 /* Chat titles and chat list labels have dir="auto", so an English title in Urdu or Arabic is cut at its
    end, not its start; they still line up with the interface, on the right. */
-:root[dir="rtl"] #headTitle, :root[dir="rtl"] #lbWho, :root[dir="rtl"] .chatrow b, :root[dir="rtl"] .chatrow small { text-align: right; }
+:root[dir="rtl"] #headTitle, :root[dir="rtl"] .lb-who, :root[dir="rtl"] .chatrow b, :root[dir="rtl"] .chatrow small { text-align: right; }
 .chatrow .cr-t { flex: 1; }
 /* The current chat's green bar sits on the start side, the right in Urdu and Arabic. */
 :root[dir="rtl"] .chatrow.cur { box-shadow: inset -3px 0 0 var(--accent); }

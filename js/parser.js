@@ -45,9 +45,10 @@ function parserModule() {
     const lat = +m[1], lng = +m[2];
     return Math.abs(lat) <= 90 && Math.abs(lng) <= 180 ? { lat, lng } : {};
   }
-  // "Waiting for this message" in the export languages we're sure of, alone or followed by one short
-  // sentence ("This may take a while.", "Check your phone."). See whatsapp-parser-skill for the list.
-  const WAITING = new RegExp('^(?:Waiting for this message|Esperando (?:el|este) mensaje|Aguardando (?:a |esta )?mensagem|En attente de ce message|Warte(?:n)? auf diese Nachricht|In attesa (?:del|di questo) messaggio|Menunggu pesan ini)(?:[.!…]+(?:\\s+[^.!?\\n]{1,60}[.!?…]*)?)?$', 'i');
+  // "Waiting for this message" in the export languages we're sure of, alone or followed by
+  // WhatsApp's own second sentence ("This may take a while.", "Check your phone." and their translations). Case-sensitive and whole-line, so a person's
+  // own message that starts the same way stays text. See whatsapp-parser-skill for the list.
+  const WAITING = new RegExp('^(?:Waiting for this message(?:\\. (?:This may take a while|Check your phone))?|Esperando (?:el|este) mensaje(?:\\. Esto puede tardar un poco)?|Aguardando (?:a |esta )?mensagem(?:\\. Isso pode levar alguns instantes)?|En attente de ce message(?:\\. Cela peut prendre du temps)?|Warte(?:n)? auf diese Nachricht(?:\\. Dies kann etwas dauern)?|In attesa (?:del|di questo) messaggio|Menunggu pesan ini)[.…]?$');
   function classify(raw) {
     let t = raw.replace(INV, '').replace(SP, ' ');
     let edited = false;

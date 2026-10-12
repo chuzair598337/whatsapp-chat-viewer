@@ -95,8 +95,10 @@ const tests = {
   'A normal message that starts like the notice stays text': async () => {
     const r = await parse(['11/07/2025, 15:07 - A: Waiting for this message to arrive before I reply to everyone in the group, it is taking a while today and I am bored.',
       '11/07/2025, 15:08 - A: Waiting for this message\nand another line',
-      '11/07/2025, 15:09 - A: This message was deleted'].join('\n'));
-    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['text', 'text', 'deleted']);
+      '11/07/2025, 15:09 - A: This message was deleted',
+      '11/07/2025, 15:10 - A: Waiting for this message. Call me when you get it!',
+      '11/07/2025, 15:11 - A: waiting for this message!!'].join('\n'));
+    assert.deepStrictEqual(Array.from(r.messages, m => m.kind), ['text', 'text', 'deleted', 'text', 'text']);
   }
 };
 (async () => {
