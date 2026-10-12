@@ -53,13 +53,16 @@ const Tour = {
     {
       sec: 'finding', key: 'settings', settings: true,
       prep: () => { closeDrawer(); Settings.open(); },
-      // Phones: only the "You are" card, so the tour card below doesn't cover the highlight.
-      target: () => [visEl(document.querySelector('#setModal .set-prof')), innerWidth > 640 && visEl(document.querySelector('#setModal .set-grp'))]
+      // The "You are" card, plus the first group when the tour card fits beside the sheet; otherwise
+      // the tour card sits below "You are" and would cover the group.
+      beside: () => document.querySelector('#setModal .sheet'),
+      target: () => { const sh = document.querySelector('#setModal .sheet'); return [visEl(document.querySelector('#setModal .set-prof')), roomBeside(sh) && visEl(document.querySelector('#setModal .set-grp'))]; }
     },
     {
       sec: 'finding', key: 'keys', settings: true,
       // Settings › Help › Keyboard shortcuts and the Single-key shortcuts switch under it (js/components/shortcuts.js).
-      prep: () => { closeDrawer(); Settings.open(); const r = keysRows()[1]; if (r) r.scrollIntoView({ block: 'center' }); },
+      prep: () => { closeDrawer(); Settings.open(); const r = keysRows()[1]; if (r) r.scrollIntoView({ block: innerHeight <= 520 ? 'end' : 'center' }); }, // short screens: room above for the card
+      beside: () => document.querySelector('#setModal .sheet'),
       target: () => keysRows().map(visEl)
     },
     chatStep({
@@ -104,7 +107,7 @@ const Tour = {
     }),
     chatStep({
       sec: 'media', key: 'voice_notes_and',
-      rows: () => [rowOf(m => hasAtt(m, a => a.type === 'audio' && isVoice(a.name))), rowOf(m => hasAtt(m, a => a.type === 'audio' && !isVoice(a.name)))]
+      rows: () => voiceAndMusicRows()
     }),
     chatStep({
       sec: 'media', key: 'built_in_pdf',
@@ -218,8 +221,8 @@ const Tour = {
     const spot = $('tourSpot'), pop = $('tourPop'), pad = 6, gap = 12, m = 12;
     let r = null;
     for (const el of t) {
-      const b = el.getBoundingClientRect();
-      r = r ? { l: Math.min(r.l, b.left), t: Math.min(r.t, b.top), r: Math.max(r.r, b.right), b: Math.max(r.b, b.bottom) } : { l: b.left, t: b.top, r: b.right, b: b.bottom };
+      const b = clipBox(el); // only the part its scrolling box shows (a Settings card cut off at the bottom of the sheet)
+      if (b) r = r ? { l: Math.min(r.l, b.l), t: Math.min(r.t, b.t), r: Math.max(r.r, b.r), b: Math.max(r.b, b.b) } : b;
     }
     if (r) { r = { l: Math.max(2, r.l - pad), t: Math.max(2, r.t - pad), r: Math.min(innerWidth - 2, r.r + pad), b: Math.min(innerHeight - 2, r.b + pad) }; }
     $('tour').classList.toggle('nospot', !r);
@@ -228,31 +231,69 @@ const Tour = {
     const k = 10, hole = r ? 'M' + (r.l + k) + ' ' + r.t + 'H' + (r.r - k) + 'Q' + r.r + ' ' + r.t + ' ' + r.r + ' ' + (r.t + k) + 'V' + (r.b - k) + 'Q' + r.r + ' ' + r.b + ' ' + (r.r - k) + ' ' + r.b +
       'H' + (r.l + k) + 'Q' + r.l + ' ' + r.b + ' ' + r.l + ' ' + (r.b - k) + 'V' + (r.t + k) + 'Q' + r.l + ' ' + r.t + ' ' + (r.l + k) + ' ' + r.t + 'Z' : '';
     $('tourDimPath').setAttribute('d', 'M0 0H' + innerWidth + 'V' + innerHeight + 'H0Z' + hole);
-    // Popover: phones get a full-width card at the top or bottom, away from the spotlight.
-    const pw = Math.min(pop.classList.contains('wide') ? 440 : 360, vw - 2 * m);
-    pop.style.width = pw + 'px';
-    const ph = pop.offsetHeight;
-    let x, y;
+    /* Popover. The card is never taller than the screen: its text scrolls and the buttons stay put (css: .tour-pop).
+       size(w) gives the card's full height at width w. */
+    const full = Math.min(pop.classList.contains('wide') ? 440 : 360, vw - 2 * m), maxH = vh - 2 * m, minW = Math.min(260, full), minH = vh <= 520 ? 120 : 170;
+    const size = w => { pop.style.maxHeight = 'none'; pop.style.width = w + 'px'; pop.classList.toggle('narrow', w < 320); return pop.offsetHeight; };
+    let pw = full, ph = size(full), x, y, capH = maxH;
+    const at = (w, h, px, py) => { pw = w; ph = Math.min(h, maxH); x = px; y = py; return true; };
     if (!r) { x = (vw - pw) / 2; y = (vh - ph) / 2; }
-    else if (vw <= 640) {
+    else if (vw <= 640 && vh > 520) {
       // Phones: the card sits at the bottom of the screen, where it is easiest to reach and never
       // under a browser or app bar at the top. It only moves up when the highlight is in the lower half.
       x = (vw - pw) / 2;
       const low = (r.t + r.b) / 2 > vt + vh * 0.55 && r.b - r.t < vh * 0.5;
       y = !low ? vt + vh - ph - m : Math.max(vt + 70, r.t - gap - ph);
     } else {
-      const cx = (r.l + r.r) / 2;
-      if (vh - r.b >= ph + gap + m) { y = r.b + gap; x = cx - pw / 2; }
-      else if (r.t >= ph + gap + m) { y = r.t - gap - ph; x = cx - pw / 2; }
-      else if (vw - r.r >= pw + gap + m) { x = r.r + gap; y = (r.t + r.b - ph) / 2; }
-      else if (r.l >= pw + gap + m) { x = r.l - gap - pw; y = (r.t + r.b - ph) / 2; }
-      else { x = cx - pw / 2; y = r.b - ph - 24; } // a big target (the timeline): sit inside it, near the bottom
+      /* Wider or short screens (a phone on its side): beside the open drawer or the Settings sheet when there is
+         room; else below, above, right or left of the highlight; else narrower (down to 260 px) at its side;
+         else at the top or bottom edge with the text scrolling. Only when nothing fits does it cover the target. */
+      const cx = (r.l + r.r) / 2, cy = (r.t + r.b) / 2, rtl = I18N.rtl();
+      const room = { below: vt + vh - r.b - gap - m, above: r.t - vt - gap - m, right: vw - r.r - gap - m, left: r.l - gap - m };
+      const side = (w, s, edge) => { const h = size(w); return h <= maxH && at(w, h, s === 'right' ? edge + gap : edge - gap - w, cy - h / 2); };
+      const ob = st.beside && st.beside(), o = ob && ob.getBoundingClientRect();
+      const order = rtl ? ['left', 'right'] : ['right', 'left'];
+      let done = false;
+      if (o && o.width) {
+        const orm = { right: vw - o.right - gap - m, left: o.left - gap - m };
+        const s = Math.abs(orm.right - orm.left) < 2 ? order[0] : orm.right > orm.left ? 'right' : 'left'; // a centred sheet: the reading side
+        if (orm[s] >= minW) done = side(Math.min(full, orm[s]), s, s === 'right' ? o.right : o.left);
+      }
+      if (!done && room.below >= ph) done = at(full, ph, cx - full / 2, r.b + gap);
+      if (!done && room.above >= ph) done = at(full, ph, cx - full / 2, r.t - gap - ph);
+      for (const s of order) if (!done && room[s] >= full && ph <= maxH) done = side(full, s, s === 'right' ? r.r : r.l);
+      for (const s of order) if (!done && room[s] >= minW) done = side(Math.min(full, room[s]), s, s === 'right' ? r.r : r.l);
+      if (!done) {
+        // At the top or bottom edge, as tall as the room there, with the text scrolling. It needs space for its
+        // title, its buttons and two lines of text; a short screen accepts a little overlap to get that.
+        ph = size(full);
+        const s = room.below >= room.above ? 'below' : 'above', need = Math.max(minH, ph - $('tourText').offsetHeight + 44);
+        const h = Math.min(ph, room[s] >= need ? room[s] : vh <= 520 ? need : 0);
+        if (h) { capH = h; done = at(full, h, cx - full / 2, s === 'below' ? Math.min(r.b + gap, vt + vh - m - h) : Math.max(r.t - gap - h, vt + m)); }
+      }
+      if (!done) { pw = full; ph = Math.min(size(full), maxH); x = cx - pw / 2; y = r.b - ph - 24; } // a big target (the timeline): sit inside it, near the bottom
     }
+    pop.style.width = pw + 'px'; pop.classList.toggle('narrow', pw < 320); pop.style.maxHeight = Math.min(capH, maxH) + 'px';
+    ph = pop.offsetHeight;
     x = Math.max(m, Math.min(vw - pw - m, x)); y = Math.max(vt + m, Math.min(vt + vh - ph - m, y));
     pop.style.left = Math.round(x) + 'px'; pop.style.top = Math.round(y) + 'px';
   }
 };
 function vis(id) { return visEl($(id)); }
+// el's box, cut to the boxes of the scrolling or clipping containers around it, or null when none of it shows.
+function clipBox(el) {
+  const b = el.getBoundingClientRect();
+  let l = b.left, t = b.top, r = b.right, bo = b.bottom;
+  for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+    const cs = getComputedStyle(p);
+    if (cs.overflowY === 'visible' && cs.overflowX === 'visible') continue;
+    const c = p.getBoundingClientRect();
+    l = Math.max(l, c.left); t = Math.max(t, c.top); r = Math.min(r, c.right); bo = Math.min(bo, c.bottom);
+  }
+  return r > l && bo > t ? { l, t, r, b: bo } : null;
+}
+// Room for a tour card (at least 260 px wide) beside an element: the Settings sheet on wide screens.
+function roomBeside(el) { const b = el && el.getBoundingClientRect(); return !!b && Math.max(innerWidth - b.right, b.left) - 24 >= 260; }
 // Settings › Keyboard shortcuts and the Single-key shortcuts switch under it.
 function keysRows() { const r = document.querySelector('#setModal [data-set="keys"]'), sw = $('singleKeys'); return [r, sw && sw.closest('.set-row')].filter(Boolean); }
 function visEl(el) {
@@ -266,13 +307,22 @@ $('twDemoIc').innerHTML = ICON.chat; $('twOwnIc').innerHTML = ICON.open;
 // Row of the first message matching pred in the current list, or -1 when it isn't shown.
 function rowOf(pred) { const i = S.msgs.findIndex(pred); return i < 0 ? -1 : S.m2i[i]; }
 const hasAtt = (m, test) => m.attachments.some(test);
+// The music file and the voice note closest before it, so the two sit together under one small spotlight.
+function voiceAndMusicRows() {
+  const voice = m => hasAtt(m, a => a.type === 'audio' && isVoice(a.name));
+  const song = S.msgs.findIndex(m => hasAtt(m, a => a.type === 'audio' && !isVoice(a.name)));
+  let v = -1;
+  for (let j = song - 1; j >= 0 && v < 0; j--) if (voice(S.msgs[j])) v = j;
+  if (v < 0) v = S.msgs.findIndex(voice);
+  return [v, song].map(i => i < 0 ? -1 : S.m2i[i]);
+}
 // A step about a message in the sample chat: scroll the timeline to it, then spotlight its bubble.
 function chatStep(o) {
   return Object.assign({
     prep() {
       closeDrawer();
       Tour.rows = o.rows().filter(k => k >= 0);
-      if (Tour.rows.length) VL.scrollTo(Tour.rows[0], innerWidth <= 640 ? undefined : 'center'); // phones: near the top, clear of the card
+      if (Tour.rows.length) VL.scrollTo(Tour.rows[0], innerWidth <= 640 || innerHeight <= 520 ? undefined : 'center'); // phones and short screens: near the top, clear of the card
     },
     target: () => Tour.rows.map(k => { const el = VL.nodes.get(k); return el && (el.querySelector(o.sel || '.bubble') || el); }).filter(Boolean)
   }, o);
@@ -282,6 +332,7 @@ function sideStep(o) {
   const el = () => { const e = $(o.id); return e && o.field ? e.closest('.field') : e; };
   return Object.assign({
     prep() { if (isNarrow()) openDrawer(); const e = el(); if (e) e.scrollIntoView({ block: 'nearest' }); },
+    beside: () => isNarrow() ? $('sidebar') : null, // tablets: the card sits next to the open drawer, not over it
     target: () => visEl(el())
   }, o);
 }
@@ -316,6 +367,9 @@ document.addEventListener('keydown', e => {
   } else if (e.key === 'Escape') { e.preventDefault(); if (welcome) Tour.closeWelcome(true); else Tour.end(); }
   else if (!welcome && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) { // the forward arrow points left in right-to-left
     e.preventDefault(); if ((e.key === 'ArrowRight') !== I18N.rtl()) Tour.next(); else Tour.back();
+  }
+  else if (!welcome && /^(ArrowUp|ArrowDown|PageUp|PageDown)$/.test(e.key)) { // scroll the card's text when it is cut short
+    e.preventDefault(); const tx = $('tourText'); tx.scrollTop += (/Up$/.test(e.key) ? -1 : 1) * (/^Page/.test(e.key) ? tx.clientHeight - 20 : 40);
   }
   else if (e.key !== 'Enter' && e.key !== ' ') e.preventDefault();
   e.stopImmediatePropagation();

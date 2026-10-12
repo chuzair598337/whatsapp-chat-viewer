@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS6)
+
+- **The guided tour fits every screen.** The card is never taller than the screen: its text scrolls (also with `↑` `↓`) and Skip, Back and Next stay in view, so the last card's **Finish** can be reached on a phone on its side. The card no longer covers what it points at: it tries below, above and each side of the highlight, gets narrower (down to 260 px) to fit beside it, or sits at the top or bottom edge, and on short screens the chat steps scroll the message near the top. On tablets the sidebar steps put the card next to the open side panel instead of over it.
+- **Tour, Settings step:** the card sits next to the Settings sheet when there is room; otherwise only **You are** is highlighted, with the card below it, so the card no longer covers the Settings it describes (also with the wider two-column Settings on large screens). Highlights are cut to the box that scrolls them, so they no longer run past the bottom of the sheet.
+- **Tour, Voice notes and audio step:** it highlights the music file and the voice note just before it, instead of a 600 px stretch from the first voice note. The sample chat is unchanged (the five voice notes and the music file stay where they were), so the Autoplay run still ends at the music file.
+- **Drag and drop:** the "Drop your WhatsApp export here" box is a solid panel with a folder icon, up to 520 px wide, instead of white text over the dimmed chat.
+- **Photo viewer on phones:** the top bar keeps the sender's name and the date on one line; Rotate and Download move to a bar at the bottom, and Fit shows only while zoomed in. The position ("7 / 9") no longer reverses in Urdu and Arabic.
+- **Photo viewer:** swiping across a video now moves to the next or previous item on phones, except over the video's controls bar.
+- **Sample chat:** its video and GIF show "Loading…" while they are recorded on the device, instead of "Not in this ZIP", and the side panel no longer counts them as missing meanwhile.
+- **The time on photos and videos** sits on a small dark pill, so it reads on light photos.
+- **Chat header on phones:** the summary shows the date range first (it used to be cut off after the message count), and hovering it shows the whole line.
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

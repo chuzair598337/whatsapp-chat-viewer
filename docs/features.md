@@ -41,7 +41,7 @@ This page describes what the WhatsApp Chat Viewer does today and how each part w
 
 ## 2. File ingestion: .txt and .zip
 
-- **Ways to open:** drag and drop anywhere on the page, **Browse files** on the start screen, **Open another chat** in the ⋮ menu, the side panel's open button, **Open chat** on the chat card, or the button in the sample chat's banner. Several files can be picked or dropped at once.
+- **Ways to open:** drag and drop anywhere on the page (a panel with a folder icon says "Drop your WhatsApp export here"), **Browse files** on the start screen, **Open another chat** in the ⋮ menu, the side panel's open button, **Open chat** on the chat card, or the button in the sample chat's banner. Several files can be picked or dropped at once.
 - **Type detection:** the first bytes are checked (`PK\x03\x04` means ZIP), then the extension and MIME type, so a renamed file still opens correctly.
 - **Plain text (.txt):** the file is read in 2 MB chunks through a streaming `TextDecoder`. Media references in the text appear as "not included" cards.
 - **ZIP archives:** opened with the built-in streaming reader (below). The viewer finds `_chat.txt` (iPhone) or the main `WhatsApp Chat with ….txt` (Android), and otherwise falls back to the largest `.txt` file.
@@ -92,7 +92,7 @@ The parser runs in a Web Worker built from an inline `Blob` URL, so the page sta
 
 - **Desktop (over 1024 px):** a two-pane layout. The side panel shows the chat card (messages, media, first and last date, file name, size and iPhone or Android format, with **Statistics** and **Open chat** buttons), the chat list when there are several, the filters, the media tiles, jump to date, the participants with their message counts (the first 80, then "and N more") and the privacy note. The chat pane fills the rest. Dragging the grip at the middle of the panel's inner edge makes it wider or narrower (280 px up to half the window, at most 640 px); the arrow keys do the same on the focused grip, Home and End jump to the limits, and a double-click resets it. The width lasts until the page is closed. The ☰ button in the chat header hides the sidebar so the chat takes the full width, and shows it again (not remembered between visits).
 - **Tablet and phone:** a single pane. The sidebar opens as a slide-in drawer from the menu button.
-- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel), the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Select messages**, **Chat statistics**, **Open another chat**, **Settings**, **Help and guided tour** and **Keyboard shortcuts**; the arrow keys, Home and End move through it, and Esc or Tab closes it. On a computer each item shows its keyboard shortcut at the end (section 19).
+- **Chat header:** the chat's name and summary (on a computer it opens Statistics; on a phone it opens the side panel). The summary gives the participants, the message count and the date range; on phones (640 px and narrower) the date range comes first, since the end of the line is cut off, and its tooltip has the whole line. Then the search button and the ⋮ menu. The ⋮ menu holds **Media, links and docs**, **Starred messages** (with a count badge, up to 99+), **Select messages**, **Chat statistics**, **Open another chat**, **Settings**, **Help and guided tour** and **Keyboard shortcuts**; the arrow keys, Home and End move through it, and Esc or Tab closes it. On a computer each item shows its keyboard shortcut at the end (section 19).
 - **Search** from the header's search button (or `/`, `Ctrl+F`, `⌘F` on a Mac) opens as a bar under the chat header on every screen size, with ↑ ↓ and a ✕ close button at the end.
 - **Not selectable:** the side panel, the header, banners, menus, buttons and date pills can't be selected by dragging or clicking, as in WhatsApp. Message text, search and date fields stay selectable.
 - **Phone polish:** no horizontal scrolling at phone widths, and safe-area insets for notched phones.
@@ -128,7 +128,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 
 | Type | How it is shown |
 |---|---|
-| **Photos** | Loaded lazily (`loading="lazy"`), with the space reserved from the image's aspect ratio. Clicking opens a full-screen viewer (details below). |
+| **Photos** | Loaded lazily (`loading="lazy"`), with the space reserved from the image's aspect ratio. The time sits on a small dark pill in the corner, so it reads on light photos too (videos the same). Clicking opens a full-screen viewer (details below). |
 | **Stickers** (`.webp`, `STK-`) | Shown without a bubble at WhatsApp's size: 190 px on desktop and 150 px on phones. Animated stickers play and loop, and the time sits in a small pill underneath. iPhone animated stickers (`.was`, a ZIP holding a Lottie animation) play and loop with the bundled Lottie player, in the chat and in the gallery; if one can't be read it falls back to an "Animated sticker" file card with a download button. |
 | **HEIC photos** (iPhone `.heic` / `.heif`) | Safari shows them itself. Other browsers get them decoded by the bundled libheif (`js/vendor/libheif`, WebAssembly, loaded only when needed, nothing fetched) and shown like any photo, in the chat, the photo viewer and the gallery. Download keeps the original file. |
 | **Files the browser can't show** | A photo, sticker or video the browser can't decode (a HEIC that can't be decoded, HEVC video in Firefox) turns into a file card saying "Can't show this file here", with its size and a download button. It is left out of the photo viewer and shows as a download tile in the media gallery. |
@@ -161,7 +161,8 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - Zoom with the buttons, the mouse wheel, a double-click, pinch, or the `+`, `-` and `0` keys.
 - Drag to pan.
 - Rotate 90° with the rotate button or the `R` key. Zoom and panning still work on a rotated photo, which is scaled to fit the screen.
-- Fit to screen, download, and swipe or use the arrow keys to move between photos.
+- Fit to screen, download, and swipe or use the arrow keys to move between photos. A swipe works on a video too, anywhere but its controls bar along the bottom.
+- On phones (640 px and narrower) the top bar keeps the sender, a one-line date, the position, Go to message and ✕; Rotate and Download sit in a bar at the bottom, and Fit shows only while zoomed in.
 - `Esc` closes it.
 
 **Sidebar media summary**
@@ -242,7 +243,7 @@ The statistics window shows:
 
   The start screen stays up if a file can't be read, with a message saying why. Shortcuts such as `/` do nothing there.
 - **Replacing the open chat:** drop or pick a new file at any time and it replaces the chat on screen. This includes while another file is still loading. Each load takes a ticket, and a newer one cancels the older one at its next step: an unfinished parse is stopped, its media is thrown away, and only the newest file reaches the screen.
-- **Sample chat:** a made-up group chat (`js/demo-data.js`) that shows every feature. Its media is drawn or synthesised on the device, and it is only built when asked for. It covers:
+- **Sample chat:** a made-up group chat (`js/demo-data.js`) that shows every feature. Its media is drawn or synthesised on the device, and it is only built when asked for. The video and the GIF are recorded in the background after the chat shows; until then they show "Loading…" and aren't counted as missing. It covers:
   - text across several days and into a second month (April), formatting, lists (including a numbered list that skips numbers), a code block, emoji and an edited message;
   - two long messages, for Read more;
   - Urdu and Arabic messages: a vowelled Arabic verse with its Urdu translation, an Arabic message, a line with Arabic spellings and vowel marks for search, and a message mixing English and Urdu lines;
@@ -268,10 +269,14 @@ The statistics window shows:
 - **Help and guided tour:** this item in the header's ⋮ menu opens a small dialog to take the tour again (with the sample chat) or open your own chat. It closes with `Esc`, ✕ or a click outside. If one of your own chats is open, it warns that the tour will switch to the sample chat. Your file isn't changed.
 - **Controls:**
   - Every step has **Skip tour**, **Back** (from step 2) and **Next**, which becomes **Finish** on the last step.
-  - Keyboard: `→` and `←` move between steps, `Esc` skips, and focus stays inside the tour card.
+  - Keyboard: `→` and `←` move between steps, `↑` `↓` `Page Up` `Page Down` scroll the card's text when it is cut short, `Esc` skips, and focus stays inside the tour card.
 - **Layout:**
-  - On a computer, the card sits next to the highlighted part and follows it when the window is resized or the chat scrolls.
+  - On a computer, a tablet or a phone on its side, the card sits next to the highlighted part and follows it when the window is resized or the chat scrolls: below, above, right or left of it, narrower (down to 260 px) to fit at its side, or at the top or bottom edge. It never covers the highlight unless nothing else fits.
+  - The card is never taller than the screen: its text scrolls and the buttons stay in view (on a phone on its side too).
+  - On tablets the sidebar steps put the card next to the open side panel, and the Settings steps put it next to the Settings sheet when there is room. Otherwise the Settings step highlights only **You are**, with the card below it.
+  - A highlight is cut to the box that scrolls it, so it never runs past the bottom of the Settings sheet.
   - On a phone, the card is a full-width panel at the bottom of the screen. It only moves up when the highlighted part is low on the screen, so it is never hidden under a browser or app bar at the top. It follows the visible viewport.
+  - The **Voice notes and audio** step highlights the music file and the voice note just before it, so the highlight stays small.
   - Step 3 points at the search button on every screen; on phones its text is shorter.
 - **No dependencies:** the tour is written for this app (`js/tour-controller.js`) instead of using a tour library, so the page still makes no network requests.
 

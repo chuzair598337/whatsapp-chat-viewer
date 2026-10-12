@@ -1392,6 +1392,20 @@ lbImg.addEventListener('dblclick', e => zTo(Z.s > 1.001 ? 1 : 2.5, e.clientX, e.
 lbImg.addEventListener('dragstart', e => e.preventDefault());
 const ptrs = new Map();
 let gest = null, moved = false;
+// A finger swipe across a video moves to the next or previous item, like on a photo. It starts anywhere but the
+// controls bar along the video's bottom (a GIF has none), and the video keeps its own taps (no pointer capture).
+let vSwipe = null;
+stage.addEventListener('pointerdown', e => {
+  if (e.target.tagName !== 'VIDEO') return;
+  const b = e.target.getBoundingClientRect();
+  vSwipe = e.isPrimary && e.pointerType !== 'mouse' && (!e.target.controls || e.clientY < b.bottom - 56) ? { id: e.pointerId, x: e.clientX, y: e.clientY } : null;
+});
+stage.addEventListener('pointerup', e => {
+  if (!vSwipe || vSwipe.id !== e.pointerId) return;
+  const dx = e.clientX - vSwipe.x, dy = e.clientY - vSwipe.y; vSwipe = null;
+  if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) lbStep((dx < 0) !== I18N.rtl() ? 1 : -1);
+});
+stage.addEventListener('pointercancel', () => { vSwipe = null; });
 stage.addEventListener('pointerdown', e => {
   if (e.target.closest('.lb-nav') || e.target.tagName === 'VIDEO') return; // leave the video's own controls alone
   ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });

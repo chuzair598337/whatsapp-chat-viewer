@@ -322,7 +322,10 @@ function renderChrome() {
   avatar($('headAv'), S.title); avatar($('cardAv'), S.title);
   $('headTitle').innerHTML = scriptHTML(S.title); $('cardTitle').innerHTML = scriptHTML(S.title);
   const pN = res.participants.length;
-  $('headSub').textContent = (S.isGroup ? t('chat.participants_sub', { n: nf(pN) }) + ' · ' : '') + t('chat.messages_sub', { n: nf(real) }) + ' · ' + range;
+  // Phones show the date range first, since the end of the line is cut off there; the tooltip has it all.
+  const counts = [S.isGroup && t('chat.participants_sub', { n: nf(pN) }), t('chat.messages_sub', { n: nf(real) })].filter(Boolean), sub = counts.concat(range).join(' · ');
+  $('headSub').title = sub;
+  $('headSub').innerHTML = '<span class="hs-wide">' + esc(sub) + '</span><span class="hs-narrow">' + esc([range].concat(counts).join(' · ')) + '</span>';
   $('cardSub').textContent = S.isGroup ? t('chat.group_sub', { n: nf(pN) }) : pN === 2 ? t('chat.between', { a: nick(res.participants[0].name), b: nick(res.participants[1].name) }) : t('chat.chat');
   const srcName = S.source.sample ? t('facts.sample_chat') : S.source.name;
   $('facts').innerHTML =
@@ -882,14 +885,17 @@ function refreshMedia() {
 }
 /* Loads the made-up sample chat (js/demo-data.js). Used at start-up and by the guided tour. */
 let sampleVideo = null;
+const SAMPLE_VIDEOS = ['00000017-VIDEO-2026-03-15-11-48-22.mp4', '00000016-GIF-2026-03-15-11-47-50.mp4'];
 async function loadSample() {
   const my = ++loadSeq;
   showLoading(t('load.preparing_sample')); setProgress(-1);
   let staged = new Map();
   try { staged = await makeSampleMedia(); } catch (e) { console.warn('Sample media could not be generated', e); }
   if (my !== loadSeq) { Media.discard(staged); return false; }
-  if (sampleVideo) for (const n of ['00000017-VIDEO-2026-03-15-11-48-22.mp4', '00000016-GIF-2026-03-15-11-47-50.mp4']) Media.stage(staged, n, sampleVideo);
+  if (sampleVideo) for (const n of SAMPLE_VIDEOS) Media.stage(staged, n, sampleVideo);
   Media.adopt(staged);
+  // Still being recorded: show the video and GIF as loading, not as missing from the ZIP, and leave them out of the missing count.
+  if (!sampleVideo) for (const n of SAMPLE_VIDEOS) Media.pending.add(Media.key(n));
   S.library = []; renderLibrary();
   S.source = { blob: new Blob([SAMPLE], { type: 'text/plain' }), name: 'Sample chat', size: SAMPLE.length, hint: 'Weekend Hiking Crew', sample: true, zip: true };
   try { await parseAndShow(false, my); } catch (e) { if (!isStale(e)) toast.error(e.message); return false; }
@@ -898,14 +904,11 @@ async function loadSample() {
   return true;
 }
 async function recordSampleVideo() {
-  try {
-    const vid = await makeSampleVideo();
-    if (vid) sampleVideo = vid;
-    if (vid && S.source.sample) {
-      Media.stage(Media.map, '00000017-VIDEO-2026-03-15-11-48-22.mp4', vid);
-      Media.stage(Media.map, '00000016-GIF-2026-03-15-11-47-50.mp4', vid);
-      refreshMedia();
-    }
-  } catch (e) { console.warn('Sample video could not be recorded', e); }
+  let vid = null;
+  try { vid = await makeSampleVideo(); } catch (e) { console.warn('Sample video could not be recorded', e); }
+  if (vid) sampleVideo = vid;
+  if (!S.source || !S.source.sample) return; // another chat was opened meanwhile
+  for (const n of SAMPLE_VIDEOS) { if (vid) Media.stage(Media.map, n, vid); Media.pending.delete(Media.key(n)); }
+  refreshMedia();
 }
 let sampleReady = null; // the sample loads only when asked for, from the start screen or the tour

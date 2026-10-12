@@ -974,3 +974,38 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 .start-keys kbd { min-width: 0; }
 @media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
 @media (max-width: 640px) { .krow dd { max-width: 55%; } }
+
+/* ---- Responsive audit WS6: Tour, viewers and chat polish ---- */
+/* Tour card: never taller than the screen (js/tour-controller.js also caps it to the room it has); the text scrolls, the buttons stay. */
+.tour-pop { display: flex; flex-direction: column; max-height: calc(100dvh - 24px); }
+.tour-pop > * { flex: none; }
+.tour-pop .tour-text { flex: 0 1 auto; min-height: 3em; overflow-y: auto; overscroll-behavior: contain; }
+.tour-nav .linkbtn { white-space: nowrap; }
+.tour-pop.narrow .tour-dots { display: none; } /* a card squeezed beside its target (js/tour-controller.js) */
+@media (max-height: 520px) {
+  .tour-pop { padding: 12px 14px 10px; }
+  .tour-pop h2 { margin: 2px 0 4px; font-size: 16px; }
+  .tour-text { margin-bottom: 10px; }
+}
+/* Drag-and-drop overlay: a solid panel with an icon, so the words never sit on the dimmed chat. */
+.dropzone > div { box-sizing: border-box; width: min(520px, 80vw); max-width: none; padding: 32px 24px; background: var(--panel); color: var(--ink); border-color: var(--accent); box-shadow: 0 12px 40px rgba(0, 0, 0, .35); line-height: 1.5; }
+.dropzone > div::before { content: ""; display: block; width: 56px; height: 56px; margin: 0 auto 12px; background: var(--accent);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'/%3E%3Cpath d='M12 16.5v-5M9.5 14L12 11.5l2.5 2.5'/%3E%3C/svg%3E") center / contain no-repeat;
+          mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 7.5a2 2 0 0 1 2-2h4l2 2h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z'/%3E%3Cpath d='M12 16.5v-5M9.5 14L12 11.5l2.5 2.5'/%3E%3C/svg%3E") center / contain no-repeat; }
+.dropzone small { color: var(--ink-3); font-size: 15px; }
+.lb-pos { direction: ltr; unicode-bidi: isolate; } /* "7 / 9" reads the same in Urdu and Arabic */
+/* Photo viewer on phones: the top bar keeps the name and a one-line date; Rotate and Download move to a bar at the bottom,
+   and Fit only shows while it does something (zoomed in). */
+@media (max-width: 640px) {
+  .lb { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 56px); }
+  .lb-who small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lb-tools, #lbDl { position: absolute; bottom: calc(env(safe-area-inset-bottom, 0px) + 6px); }
+  .lb-tools { inset-inline-start: 8px; }
+  #lbDl { inset-inline-end: 8px; }
+  #lbFit:disabled { display: none; }
+}
+/* The time on a photo or video sits on a soft dark pill, so it stays readable on light pictures. */
+.meta.ov { padding: 1px 7px; border-radius: 9px; background: rgba(11, 20, 26, .5); text-shadow: none; inset-inline-end: 8px; bottom: 7px; }
+/* Header subtitle: phones put the date range first (js/app.js), so the part that gets cut off is the counts. */
+.chat-head .s .hs-narrow { display: none; }
+@media (max-width: 640px) { .chat-head .s .hs-wide { display: none; } .chat-head .s .hs-narrow { display: inline; } }
