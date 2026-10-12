@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on development)
+## 1.12.0 (2026-10-12)
 
 - **Media, links and docs uses the whole screen on a laptop or desktop.** From 1100 px wide the gallery opens wider (up to 1180 px). When it is 640 px or wider, each Links, Documents, Audio and Contacts row shows all of its options as buttons, with tooltips, instead of hiding them behind ⋮: Go to message, Open (or Open link, View contact), Star or Unstar, Copy caption, Copy contact details, Copy link, Download and Share where the browser can share. Right-click, long-press and `Shift+F10` still open the menu. From 900 px the rows sit in two columns, the audio players fill their column, and the photo grid fits as many tiles as the width allows. Phones are unchanged: rows keep only ⋮.
 - **Photo and video views.** On **Photos** and **Videos**, a new View button in the gallery header shows them as a **List** (thumbnail, caption or file name, type, size, sender and date, with the same options as other rows), a **Small grid**, a **Medium grid** (the default, as before) or a **Large grid**. Press `V` in the gallery to switch to the next view. The choice is remembered on this device (`cv-gallery-view`) and can also be set in **Settings › Photos and videos in Media**. In English, Urdu and Arabic.

@@ -16,6 +16,31 @@
    ===================================================================== */
 const RELEASE_NOTES = [
   {
+    v: '1.12.0', date: '2026-10-12',
+    items: [
+      { kind: 'new',
+        en: 'Export and Import in Starred messages: save your stars to a file on your device and star the same messages again the next time you open that chat.',
+        ur: 'ستارہ لگے پیغامات میں ایکسپورٹ اور امپورٹ: اپنے ستارے اپنے آلے پر ایک فائل میں محفوظ کریں، اور اگلی بار یہ چیٹ کھولنے پر وہی پیغامات دوبارہ ستارہ لگے دیکھیں۔',
+        ar: 'تصدير واستيراد في الرسائل المميزة بنجمة: احفظ نجومك في ملف على جهازك، وميّز الرسائل نفسها بنجمة مجددًا عندما تفتح هذه الدردشة مرة أخرى.' },
+      { kind: 'improved',
+        en: 'Starred messages now look like the chat, with each message in its own bubble, its sender and its date.',
+        ur: 'ستارہ لگے پیغامات اب چیٹ جیسے دکھتے ہیں: ہر پیغام اپنے ببل میں، بھیجنے والے اور تاریخ کے ساتھ۔',
+        ar: 'تبدو الرسائل المميزة بنجمة الآن مثل الدردشة: كل رسالة في فقاعتها مع مرسلها وتاريخها.' },
+      { kind: 'new',
+        en: 'Photos and Videos in Media, links and docs can be shown as a list or a small, medium or large grid with the new View button, or V.',
+        ur: 'میڈیا، لنکس اور دستاویزات میں تصاویر اور ویڈیوز کو نئے منظر بٹن یا V سے فہرست، یا چھوٹے، درمیانے یا بڑے گرڈ میں دیکھا جا سکتا ہے۔',
+        ar: 'يمكن عرض الصور والفيديوهات في الوسائط والروابط والمستندات كقائمة أو شبكة صغيرة أو متوسطة أو كبيرة بزر طريقة العرض الجديد أو بالمفتاح V.' },
+      { kind: 'improved',
+        en: 'On a laptop or desktop, Media, links and docs opens wider and shows every option of a row as a button, in two columns.',
+        ur: 'لیپ ٹاپ یا ڈیسک ٹاپ پر میڈیا، لنکس اور دستاویزات زیادہ چوڑا کھلتا ہے اور ہر قطار کے سارے آپشن بٹن کی صورت میں، دو کالموں میں دکھاتا ہے۔',
+        ar: 'على الحاسوب المحمول أو المكتبي تُفتح الوسائط والروابط والمستندات بعرض أكبر، وتظهر كل خيارات الصف كأزرار في عمودين.' },
+      { kind: 'improved',
+        en: 'Less empty space on large screens: the app uses up to 1920 px, and Settings and Keyboard shortcuts open wider.',
+        ur: 'بڑی اسکرینوں پر کم خالی جگہ: ایپ 1920 px تک پھیلتی ہے، اور ترتیبات اور کی بورڈ شارٹ کٹس زیادہ چوڑے کھلتے ہیں۔',
+        ar: 'مساحة فارغة أقل على الشاشات الكبيرة: يمتد التطبيق حتى 1920 px، وتُفتح الإعدادات واختصارات لوحة المفاتيح بعرض أكبر.' }
+    ]
+  },
+  {
     v: '1.11.0', date: '2026-10-11',
     items: [
       { kind: 'new',
