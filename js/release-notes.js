@@ -16,6 +16,43 @@
    ===================================================================== */
 const RELEASE_NOTES = [
   {
+    v: '1.13.0', date: '2026-10-12',
+    items: [
+      { kind: 'new',
+        en: 'Settings › Text size makes the chat text smaller or bigger, from 90% to 150%. In a chat, + and - change it one step.',
+        ur: 'ترتیبات › متن کا سائز سے چیٹ کا متن 90% سے 150% تک چھوٹا یا بڑا کریں۔ چیٹ میں + اور - اسے ایک قدم بدلتے ہیں۔',
+        ar: 'من الإعدادات › حجم النص يمكنك تصغير نص الدردشة أو تكبيره من 90% إلى 150%. في الدردشة يغيّره + و- خطوة واحدة.' },
+      { kind: 'improved',
+        en: 'On phones, the photo and PDF viewers have a Back arrow and a ⋮ button that holds Rotate, Star, Download and the other options.',
+        ur: 'فون پر تصویر اور PDF دیکھنے والے میں واپس کا تیر اور ⋮ بٹن ہے جس میں گھمانا، ستارہ، ڈاؤن لوڈ اور باقی اختیارات ہیں۔',
+        ar: 'على الهاتف، أصبح لعارض الصور وعارض PDF سهم رجوع وزر ⋮ يضم التدوير والتمييز بنجمة والتنزيل وبقية الخيارات.' },
+      { kind: 'improved',
+        en: 'Search now counts every match, not every message, so ↑ and ↓ step through each highlighted word.',
+        ur: 'تلاش اب ہر پیغام نہیں بلکہ ہر مماثلت گنتی ہے، اس لیے ↑ اور ↓ ہر نمایاں لفظ پر جاتے ہیں۔',
+        ar: 'أصبح البحث يعدّ كل تطابق لا كل رسالة، فينتقل ↑ و↓ بين كل كلمة مميّزة.' },
+      { kind: 'improved',
+        en: 'A message that never loaded on the exporting phone now shows a clear "Message wasn\'t loaded" card.',
+        ur: 'جو پیغام ایکسپورٹ کرنے والے فون پر کبھی لوڈ نہیں ہوا، اب وہ واضح کارڈ "یہ پیغام لوڈ نہیں ہوا تھا" کے ساتھ دکھتا ہے۔',
+        ar: 'الرسالة التي لم يكتمل تحميلها على الهاتف الذي صدّر الدردشة تظهر الآن في بطاقة واضحة: "لم يكتمل تحميل الرسالة".' },
+      { kind: 'improved',
+        en: 'Media, links and docs shows only the kinds of media the chat has, with no empty "0" tiles.',
+        ur: 'میڈیا، لنکس اور دستاویزات اب صرف وہی اقسام دکھاتا ہے جو چیٹ میں ہیں، خالی "0" والی ٹائلیں نہیں۔',
+        ar: 'تعرض الوسائط والروابط والمستندات الآن الأنواع الموجودة في الدردشة فقط، دون مربعات فارغة بالرقم 0.' },
+      { kind: 'improved',
+        en: 'Better on every screen: two panes on an iPad in landscape, Starred messages as a third column from 1200 px, and a compact layout for phones on their side.',
+        ur: 'ہر اسکرین پر بہتر: لینڈ اسکیپ آئی پیڈ پر دو حصے، 1200 px سے ستارہ لگے پیغامات تیسرے کالم میں، اور فون کو ترچھا رکھنے پر مختصر لے آؤٹ۔',
+        ar: 'أفضل على كل شاشة: لوحتان على iPad بالوضع الأفقي، والرسائل المميزة بنجمة كعمود ثالث من 1200 px، وتخطيط مضغوط للهاتف في الوضع الأفقي.' },
+      { kind: 'fixed',
+        en: 'iPhone no longer zooms in when you tap the search box or a filter, and the page no longer slides sideways on phones.',
+        ur: 'آئی فون پر سرچ باکس یا فلٹر پر ٹیپ کرنے سے صفحہ اب زوم نہیں ہوتا، اور فون پر صفحہ اب دائیں بائیں نہیں کھسکتا۔',
+        ar: 'لم يعد iPhone يكبّر الصفحة عند النقر على مربع البحث أو مرشّح، ولم تعد الصفحة تنزلق جانبيًا على الهواتف.' },
+      { kind: 'fixed',
+        en: 'In Urdu and Arabic, the photo viewer\'s counter and time, PDF zoom, shortcut keys and English chat titles now read correctly.',
+        ur: 'اردو اور عربی میں تصویر دیکھنے والے کا شمار اور وقت، PDF زوم، شارٹ کٹ کیز اور انگریزی چیٹ کے نام اب درست پڑھے جاتے ہیں۔',
+        ar: 'في العربية والأردية، يظهر الآن عدّاد عارض الصور ووقته وتكبير PDF ومفاتيح الاختصار وأسماء الدردشات الإنجليزية بشكل صحيح.' }
+    ]
+  },
+  {
     v: '1.12.0', date: '2026-10-12',
     items: [
       { kind: 'new',

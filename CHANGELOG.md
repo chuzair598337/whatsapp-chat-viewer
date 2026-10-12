@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (on `development`)
+## 1.13.0 (2026-10-12)
 
 From the responsive UI audit of 1.11.0 (`/mnt/project-files/audit/responsive-audit.md` in the project) and the maintainer's follow-ups.
 
