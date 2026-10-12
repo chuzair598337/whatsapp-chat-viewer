@@ -25,6 +25,7 @@ const SAMPLE = [
   `[14/03/2026, 8:16:20${N}AM] Bilal Ahmed: اتوار ٹھیک ہے، میں گاڑی لے آؤں گا`,
   `${L}[14/03/2026, 8:16:40${N}AM] Omar Farooq: ${L}This message was deleted.`,
   `${L}[14/03/2026, 8:17:10${N}AM] Bilal Ahmed: ${L}You deleted this message.`,
+  `[14/03/2026, 8:17:35${N}AM] Sara Malik: ${L}Waiting for this message. This may take a while.`,
   `[14/03/2026, 9:20:13${N}PM] Bilal Ahmed: ${L}Missed voice call, ${L}Tap to call back`,
   `[14/03/2026, 9:21:55${N}PM] Ayesha Khan: sorry, was driving. Will call later`,
   `[15/03/2026, 6:00:02${N}AM] Weekend Hiking Crew: ${L}Your security code with Omar Farooq changed. Tap to learn more.`,

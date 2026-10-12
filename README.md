@@ -115,6 +115,7 @@ The viewer can only show what's in the export file. WhatsApp leaves out:
 - **Reactions.** If your export does contain `reacted … to "…"` lines, the viewer shows them as reaction pills.
 - **Replies:** which earlier message a reply was answering.
 - **Events:** the export has an empty line in their place, and the viewer marks it.
+- **Messages that never loaded** on the exporting phone: the export says "Waiting for this message" instead of the content, and the viewer shows a "Message wasn't loaded" card.
 - **View-once media.**
 - **Media** you chose not to include when exporting.
 

@@ -8,6 +8,13 @@
 - The gallery's chips leave out kinds with nothing in them too. If the open chip's kind has nothing in the next chat, it goes back to All. `1` to `8` pick the first to eighth chip shown.
 - A chat with no media, links or docs (a text-only chat, or a .txt export without its files) says so in the side panel instead of showing empty tiles, and hides **View all**. The gallery, still in the ⋮ menu and on `M`, shows an empty state with no chips or Sort button. Text in English, Urdu and Arabic.
 
+### Messages that never loaded
+
+- **Clearer card for "Waiting for this message":** when a message never finished loading on the phone that exported the chat, WhatsApp writes "Waiting for this message. This may take a while." in its place. The viewer showed that line as a grey, italic bubble with a ⊘ icon, which looked like the viewer itself was stuck. It now shows a card like the one for events: an hourglass, **Message wasn't loaded** and "This message never finished loading on the phone that exported the chat, so its content isn't in the export.", in English, Urdu and Arabic, with the sender's name, avatar and time kept.
+- The parser treats these lines as their own kind (`waiting`) on iPhone and Android, with or without the invisible U+200E mark, for "… This may take a while.", "… Check your phone." and the bare line, and for the Spanish, Portuguese, French, German, Italian and Indonesian wording.
+- Search no longer matches the notice's wording; a starred one is listed as "Message wasn't loaded"; Copy still copies the line as exported. It counts as a message (with no words) in Statistics.
+- The sample chat has one (14 March, 8:17 AM), and the tour's "Edited, deleted and replies" card mentions it.
+
 ### Responsive audit (WS5)
 
 - **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.
