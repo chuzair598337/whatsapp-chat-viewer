@@ -2,7 +2,9 @@
 
 ## Unreleased (on `development`)
 
-### iPhone 8 report (WS8)
+From the responsive UI audit of 1.11.0 (`/mnt/project-files/audit/responsive-audit.md` in the project) and the maintainer's follow-ups.
+
+### Search counts every match; pages fit small iPhones
 
 - **Search counts every match, not every message.** Searching "Develop" in the sample chat showed "1 of 1" for one message with five highlighted matches; it now shows "1 of 5", and ↑ ↓, `Enter` / `Shift+Enter` and `F3` / `Ctrl+G` step one match at a time, through every match in a message before the next message. Only the current match is a darker orange (with a ring), and the chat scrolls to it, also inside a long message. A message found only by its sender, nickname or file name counts once. Still one pass with no layout reads, so a 60,000-message chat searches as fast as before.
 - **Fixed on iPhone:** focusing the search field, a nickname or a date filter zoomed the page in and left it shifted and cut off at the left (for example "articipants and nicknames"). Fields on touch screens now use 16 px text, so Safari doesn't zoom; pinch zoom is still allowed.
@@ -27,7 +29,7 @@
 - **Photo viewer on phones:** the header is now a Back arrow, the sender with a one-line date and the position, and a ⋮ button. ⋮ opens a sheet from the bottom with Go to message, Rotate, Fit (while zoomed in), Star, Copy caption, Download and Share, so the header is no longer crowded. This replaces the bottom bar with Rotate and Download. Tablets and computers keep the full header with ✕, and every keyboard shortcut works as before.
 - **PDF viewer on phones:** the same Back, title and page count, and ⋮ with Zoom out, Zoom in, Fit and Download, instead of the zoom buttons along the bottom.
 
-### Responsive audit (WS5)
+### Notched phones, keyboard focus and contrast
 
 - **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.
 - **Keyboard and the drawer (tablets and phones):** the closed drawer can no longer be reached with Tab or Shift+Tab, and the chat behind an open drawer is out of reach too. Opening the drawer moves focus to its ✕; closing it, from ✕, `Esc`, the backdrop, or by picking a participant, a date or a chat, returns focus to ☰ instead of losing it.
@@ -38,7 +40,7 @@
 - Side panel section headings are all green ("Jump to date" was the only green one); only the counts are grey.
 - The chat card's **Open chat** button is now **Open another chat**, as in the ⋮ menu, in English, Urdu and Arabic.
 
-### Responsive audit (WS4)
+### Urdu and Arabic
 
 - **Fixed in Urdu and Arabic:** the photo viewer's counter read "7 / 3" for "3 of 7" and its time read "AM 8:14"; both now read left to right, after a localized date (MODALS-5).
 - **Fixed in Urdu and Arabic:** zooming a PDF showed the blank right edge of the page. The pages are now laid out left to right, and zooming in or out keeps the middle of the view where it was, in every language (MODALS-6).
@@ -47,7 +49,7 @@
 - **Chats list in Urdu and Arabic:** the current chat's green bar is on the right, Latin chat and file names are cut at their end, and the File fact always shows the file's size and format, shortening only its name (SIDE-9).
 - The side panel's subtitle ("for WhatsApp exports, offline") stays on one line with an ellipsis in every language, so it no longer grows past its header in Arabic or wraps at 360 px (SIDE-8).
 
-### Responsive audit (WS2)
+### Touch screens
 
 - **Bigger tap targets on touch screens.** On phones and tablets, header and toolbar buttons, the floating ↓ button, dialog, footer and tour buttons and the start screen's language buttons are 44 px; search ↑ ↓ ✕ and the date and sender fields are 40 px; menu items have more room. Small buttons inside messages and tables (voice note speed, Read more, a link card's Copy, the message ⌄, View all, statistics sort headers) look the same but get an invisible 44 px tap area, so messages don't change size. Computers with a mouse look exactly as before.
 - **Search options on touch tablets** now get the labelled Match case, Whole word and Regex row under the field, as on phones (landscape phones keep the compact toggles).
@@ -56,7 +58,7 @@
 - **Settings on touch-only phones and tablets** no longer shows the Keyboard shortcuts and Single-key shortcuts rows, and the guided tour skips its keyboard step there.
 - **Fixed:** the chat search field showed the browser's own ✕ next to the app's Close ✕; only the Close button is shown now (`Esc` clears the text).
 
-### Responsive audit (WS1)
+### Short screens and phones on their side
 
 - **Phones on their side and other short screens** (under 500 px tall) get a layout of their own. The chat header is 48 px, the sample chat's note is one line with its button beside it, the search bar and scroll buttons are smaller, and the sample note hides while searching, so a phone at 844×390 shows about 310 px of chat instead of 257 (CROSS-2, CHAT-2).
 - **Fixed:** the ⋮ menu ran off short screens, so Keyboard shortcuts (and in Urdu and Arabic, Help and guided tour) couldn't be reached. It now scrolls and is more compact on short screens (CROSS-1).
@@ -70,7 +72,7 @@
 - The Urdu sample chat note has more line spacing (CHAT-11).
 - The name search in "Which one is you?" and Participants and nicknames stays at the top while the list scrolls, and on touch screens the nickname fields are 44 px tall (MODALS-11).
 
-### Responsive audit (WS3)
+### Breakpoints and large screens
 
 - **Two panes from 1024 px**, so an iPad in landscape gets the side panel beside the chat. The side panel's width now follows the window (300 px at 1024 px up to 420 px on big monitors) instead of a fixed 380 px, so the chat no longer loses 380 px at once; dragging still sets it. Widening the window closes an open drawer, so it doesn't reappear when the window narrows again.
 - **One phone breakpoint, 640 px, everywhere.** Media, links and docs, the search toggles and stickers switched at 600 px while everything else switched at 640 px.
@@ -82,7 +84,7 @@
 - The start screen is wider (680 px) with slightly larger text from 1600 px.
 - Sample chat: no new lines; the existing Trip report message, photos, location and starred messages show these changes.
 
-### Responsive audit (WS7)
+### Text size
 
 - **Settings › Text size** (audit CROSS-4): Small (90%), Default (100%), Large (115%), Larger (130%) or Largest (150%). It scales the chat's text only, including messages, names, times, quotes, link cards, polls, notices, date pills and Read more, and Urdu and Arabic text with them. Photos, videos and stickers keep their size. Rows are measured again straight away, so nothing overlaps and you stay at the same place in the chat. It is remembered on this device (`cv-text-size`) and applied when the app starts. The pick sheet shows each choice at its size. In English, Urdu and Arabic.
 - **Keys:** `+` and `-` in the chat make the text one step bigger or smaller, with a notification that names the new size. They are single keys, so Settings › Single-key shortcuts turns them off. `Ctrl` / `⌘` with `+`, `-` and `0` are left to the browser's page zoom. The Text size row shows the keys on a computer, and they are in the Keyboard shortcuts list.
@@ -90,7 +92,7 @@
 - The guided tour's Settings step and the Settings privacy note mention the text size, in English, Urdu and Arabic.
 - Sample chat: no new line. The setting applies to every message already in it; open the sample chat, then Settings › Text size, or press `+`.
 
-### Responsive audit (WS6)
+### Tour, viewers and chat polish
 
 - **The guided tour fits every screen.** The card is never taller than the screen: its text scrolls (also with `↑` `↓`) and Skip, Back and Next stay in view, so the last card's **Finish** can be reached on a phone on its side and on short phones such as an iPhone 8 in Safari (375×553 visible). On short phones the card also gets shorter, rather than covering the highlight, when there is room above or below it. The card no longer covers what it points at: it tries below, above and each side of the highlight, gets narrower (down to 260 px) to fit beside it, or sits at the top or bottom edge, and on short screens the chat steps scroll the message near the top. On tablets the sidebar steps put the card next to the open side panel instead of over it.
 - **Tour, Settings step:** the card sits next to the Settings sheet when there is room; otherwise only **You are** is highlighted, with the card below it, so the card no longer covers the Settings it describes (also with the wider two-column Settings on large screens). Highlights are cut to the box that scrolls them, so they no longer run past the bottom of the sheet.
