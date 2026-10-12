@@ -3,8 +3,9 @@
    Options for one item in Media, links and docs, like the message menu
    in the chat: long-press an item on a phone, right-click it on a
    computer, press its ⋮ button, or use Shift+F10 / the menu key on a
-   focused item. On phones the rows show only the ⋮ button; larger
-   screens also keep the quick copy, open and download buttons.
+   focused item. On phones the rows show only the ⋮ button; small
+   tablets also keep the quick copy, open and download buttons, and wider
+   screens show every option below as the row's own buttons instead.
 
    The menu is a plain list of options with no title. Depending on the
    item: Go to message (closes the gallery and jumps to the message in
@@ -15,32 +16,32 @@
 const GalMenu = {
   el: $('galMenu'), k: -1, ret: null, run: [],
   isOpen() { return !this.el.hidden; },
-  // The actions for gallery item k: [icon, label, run]
+  // The actions for gallery item k: [icon, label, run, id]. Wider screens show them as the row's own buttons (galActs).
   actions(k) {
     const it = Gallery.list[k], m = S.msgs[it.i], e = it.e, out = [];
-    out.push(['chat', t('media_gallery.go_to_message'), () => Gallery.jump(it.i)]);
+    out.push(['chat', t('media_gallery.go_to_message'), () => Gallery.jump(it.i), 'go']);
     if (it.cat === 'links') {
-      out.push(['next', t('media_gallery.open_link'), () => window.open(it.x.href, '_blank', 'noopener,noreferrer')]);
+      out.push(['next', t('media_gallery.open_link'), () => window.open(it.x.href, '_blank', 'noopener,noreferrer'), 'openlink']);
     } else if (GAL_GRID.has(it.cat)) {
-      if (!Media.cantShow(e.name)) out.push([it.cat === 'videos' ? 'video' : it.cat === 'stickers' ? 'sticker' : 'image', t('media_gallery.view'), () => Gallery.view(k)]);
+      if (!Media.cantShow(e.name)) out.push([it.cat === 'videos' ? 'video' : it.cat === 'stickers' ? 'sticker' : 'image', t('media_gallery.view'), () => Gallery.view(k), 'view']);
     } else if (it.cat === 'docs') {
-      if (extOf(e.name) === 'pdf') out.push(['document', t('mm.open_document'), () => openPdf(e.name, it.a.title || '')]);
-      else out.push(['document', t('media_gallery.open'), () => openBlank(e.url)]);
+      if (extOf(e.name) === 'pdf') out.push(['document', t('mm.open_document'), () => openPdf(e.name, it.a.title || ''), 'open']);
+      else out.push(['document', t('media_gallery.open'), () => openBlank(e.url), 'open']);
     } else if (it.cat === 'audio') {
       const playing = AudioCtl.name === e.name && AudioCtl.playing();
-      out.push([playing ? 'pause' : 'play', t(playing ? 'media_gallery.pause' : 'media_gallery.play'), () => AudioCtl.toggle(e.name)]);
-    } else if (it.cat === 'contacts') out.push(['contact', t('vc.view_contact'), () => openContact(e.name)]);
+      out.push([playing ? 'pause' : 'play', t(playing ? 'media_gallery.pause' : 'media_gallery.play'), () => AudioCtl.toggle(e.name), 'play']);
+    } else if (it.cat === 'contacts') out.push(['contact', t('vc.view_contact'), () => openContact(e.name), 'contact']);
     const starred = galStarred(it);
-    out.push([starred ? 'unstar' : 'star', t(starred ? 'msg.unstar_short' : 'msg.star_short'), () => { toggleStar(it.i); Gallery.markStar(it.i); }]);
+    out.push([starred ? 'unstar' : 'star', t(starred ? 'msg.unstar_short' : 'msg.star_short'), () => { toggleStar(it.i); Gallery.markStar(it.i); }, 'star']);
     const caption = it.cat !== 'links' && m.message;
-    if (caption) out.push(['copy', t('media_gallery.copy_caption'), () => copyText(m.message, t('media_gallery.caption'))]);
+    if (caption) out.push(['copy', t('media_gallery.copy_caption'), () => copyText(m.message, t('media_gallery.caption')), 'caption']);
     if (it.cat === 'contacts') {
       const cs = Media.cards.get(e.name);
-      if (cs && cs.length) out.push(['copy', t('mm.copy_contact'), () => copyText(cs.map(contactText).join('\n\n'), t('mm.contact'))]);
+      if (cs && cs.length) out.push(['copy', t('mm.copy_contact'), () => copyText(cs.map(contactText).join('\n\n'), t('mm.contact')), 'copycontact']);
     }
-    if (it.cat === 'links') out.push(['link', t('link.copy'), () => copyText(it.x.href)]);
-    else out.push(['download', t('doc.download'), () => saveFile(e)]);
-    if (canShare()) out.push(['share', t('mm.share'), () => galShare(it)]);
+    if (it.cat === 'links') out.push(['link', t('link.copy'), () => copyText(it.x.href), 'copylink']);
+    else out.push(['download', t('doc.download'), () => saveFile(e), 'download']);
+    if (canShare()) out.push(['share', t('mm.share'), () => galShare(it), 'share']);
     return out;
   },
   open(k, x, y, anchor) {

@@ -3,7 +3,14 @@
    Media, links and docs: a gallery of everything shared in the open chat,
    like WhatsApp's screen of the same name. A row of filter chips picks a
    category; photos, videos and stickers show as a square grid, the rest as
-   rows. Items are newest first and grouped by month.
+   rows. Items are newest first and grouped by month. Photos and Videos
+   can also show as a list or a small, medium or large grid (Gallery.layout,
+   kept as cv-gallery-view and also set in Settings).
+
+   On wider screens (the list 640 px and up, see css/styles.css) each row
+   shows all of its options as buttons instead of behind ⋮, built from the
+   same list as the ⋮ menu (GalMenu.actions); from 900 px the rows sit in
+   two columns.
 
    It reuses the chat's own pieces: the photo viewer (stepping through the
    filtered items), the voice-note players, the PDF viewer and contact cards.
@@ -14,6 +21,8 @@ const GAL_CATS = [['all', 'media_gallery.all'], ['photos', 'media_gallery.photos
 const GAL_OF = { image: 'photos', gif: 'photos', video: 'videos', audio: 'audio', document: 'docs', sticker: 'stickers', contact: 'contacts' };
 const GAL_ICON = { photos: 'image', videos: 'video', audio: 'audio', docs: 'document', stickers: 'sticker', links: 'link', contacts: 'contact', all: 'image' };
 const GAL_GRID = new Set(['photos', 'videos', 'stickers']);
+const GAL_VIEWABLE = new Set(['photos', 'videos']); // the tabs with a View button
+const GAL_VIEWS = [['list', 'gallery.view_list'], ['small', 'gallery.view_small'], ['medium', 'gallery.view_medium'], ['large', 'gallery.view_large']];
 const GAL_PAGE = 120; // items added to the page at a time, so very media-heavy chats stay smooth
 const galBody = $('galBody'), galSm = ic => ICON[ic].replace('width="22" height="22"', 'width="16" height="16"');
 
@@ -31,6 +40,7 @@ function galSorted(list, sort) {
 }
 const Gallery = {
   key: null, items: [], counts: {}, cat: 'all', sort: 'new', list: [], n: 0, sec: null, io: null, durs: new Map(),
+  layout: GAL_VIEWS.some(v => v[0] === store('cv-gallery-view')) ? store('cv-gallery-view') : 'medium',
 
   /* ---------- Index: one entry per attachment or link, newest first ---------- */
   index() {
@@ -73,6 +83,17 @@ const Gallery = {
     if ($('galModal').hidden || this.shownKey === S.media) return;
     const st = galBody.scrollTop; this.show(this.cat); while (galBody.scrollHeight - galBody.clientHeight < st && this.n < this.list.length) this.more(); galBody.scrollTop = st;
   },
+  // Photos and Videos as a list or a small, medium or large grid. Kept like the other display preferences.
+  setLayout(v) {
+    if (!GAL_VIEWS.some(x => x[0] === v)) return;
+    this.layout = v; store('cv-gallery-view', v);
+    if (!$('galModal').hidden && GAL_VIEWABLE.has(this.cat)) this.show(this.cat);
+    if (typeof Settings !== 'undefined' && Settings.isOpen()) Settings.render();
+  },
+  nextLayout() { const k = GAL_VIEWS.findIndex(v => v[0] === this.layout); this.setLayout(GAL_VIEWS[(k + 1) % GAL_VIEWS.length][0]); },
+  layoutName(v) { return t(GAL_VIEWS.find(x => x[0] === (v || this.layout))[1]); },
+  listView() { return this.layout === 'list' && GAL_VIEWABLE.has(this.cat); },
+  pickLayout() { pickSheet(t('gallery.view_title'), GAL_VIEWS.map(([v, k]) => [v, esc(t(k))]), this.layout, v => this.setLayout(v)); },
   show(cat) {
     this.index();
     if (window.GalMenu) GalMenu.close(false);
@@ -83,6 +104,8 @@ const Gallery = {
     if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
     this.list = galSorted(cat === 'all' ? this.items : this.items.filter(x => x.cat === cat), this.sort);
     $('galSort').classList.toggle('on', this.sort !== 'new');
+    const vb = $('galView'); vb.hidden = !GAL_VIEWABLE.has(cat); vb.innerHTML = this.layout === 'list' ? ICON.list : ICON.grid;
+    galBody.dataset.view = GAL_VIEWABLE.has(cat) ? this.layout : '';
     if (typeof Autoplay !== 'undefined') Autoplay.paint(); // the Autoplay button shows on the Audio chip
     this.n = 0; this.sec = null;
     galBody.scrollTop = 0;
@@ -108,7 +131,7 @@ const Gallery = {
         galBody.appendChild(el);
         this.sec = { mk, grid: el.querySelector('.ggrid'), list: el.querySelector('.glist') };
       }
-      const grid = GAL_GRID.has(it.cat);
+      const grid = GAL_GRID.has(it.cat) && !this.listView();
       (grid ? this.sec.grid : this.sec.list).insertAdjacentHTML('beforeend', grid ? cellHTML(it, k) : rowHTML(it, k));
     }
     this.n = end;
@@ -146,6 +169,10 @@ const Gallery = {
       if (n.classList.contains('gcell')) { n.classList.toggle('starred', on); return; }
       const w = n.querySelector('.gwhen'), s = w && w.querySelector('.gstar');
       if (s && !on) s.remove(); else if (w && !s && on) w.insertAdjacentHTML('afterbegin', starMark());
+      const acts = n.querySelector('.gacts'); if (!acts) return; // the Star button becomes Unstar, keeping focus
+      const f = acts.contains(document.activeElement) && document.activeElement.dataset.ga;
+      acts.outerHTML = galActs(it, k);
+      const b = f && n.querySelector('[data-ga="' + f + '"]'); if (b) b.focus({ preventScroll: true });
     });
   }
 };
@@ -182,19 +209,34 @@ const optBtn = k => '<button class="ibtn sm gopt" data-gmenu="' + k + '" aria-ha
 function cellHTML(it, k) {
   return '<div class="gcell' + (galStarred(it) ? ' starred' : '') + '" data-gi="' + k + '">' + tileHTML(it, k) + starMark() + optBtn(k) + '</div>';
 }
+/* A row's buttons. Narrow lists: a few quick buttons (.gq, hidden on phones) and ⋮. Wider lists: every option of the
+   ⋮ menu as its own button (.gx) and no ⋮; Play stays on the player. The CSS picks which show. */
+function galActs(it, k) {
+  let quick = '';
+  if (it.cat === 'links') quick = '<button class="ibtn sm gq lcopy" data-url="' + esc(it.x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + galSm('copy') + '</button>' +
+    '<a class="ibtn sm gq gfwd" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>';
+  else if (it.cat === 'docs' || GAL_GRID.has(it.cat)) quick = '<a class="ibtn sm gq" href="' + it.e.url + '" download="' + esc(it.e.name) + '" aria-label="' + esc(t('doc.download_name', { name: it.a.title || it.e.name })) + '" title="' + t('doc.download') + '">' + galSm('download') + '</a>';
+  const all = GalMenu.actions(k).filter(a => a[3] !== 'play').map(([icon, label, , id]) =>
+    '<button class="ibtn sm gx' + (id === 'openlink' ? ' gfwd' : '') + '" data-ga="' + id + '" aria-label="' + esc(label) + '" title="' + esc(label) + '">' + galSm(icon) + '</button>').join('');
+  return '<span class="gacts">' + quick + all + optBtn(k) + '</span>';
+}
 function rowHTML(it, k) {
   const m = S.msgs[it.i], when = '<small class="gwhen">' + (galStarred(it) ? starMark() : '') + esc(galWhen(m)) + '</small>';
   if (it.cat === 'links') {
     const s = siteOf(it.x), ctx = m.message.replace(RE_URL, ' ').replace(/\s+/g, ' ').trim();
     return '<div class="grow glink" data-gi="' + k + '">' + s.badge +
       '<span class="gtxt"><b>' + esc(s.name) + linkDetailHTML(it.x, s) + '</b><a href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" title="' + esc(it.x.href) + '">' + esc(s.shown) + '</a>' +
-      (ctx ? '<small dir="auto" class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' +
-      '<span class="gacts"><button class="ibtn sm lcopy" data-url="' + esc(it.x.href) + '" aria-label="' + t('link.copy') + '" title="' + t('link.copy') + '">' + galSm('copy') + '</button>' +
-      '<a class="ibtn sm" href="' + esc(it.x.href) + '" target="_blank" rel="noopener noreferrer" aria-label="' + t('media_gallery.open_link') + '" title="' + t('media_gallery.open_link') + '">' + galSm('next') + '</a>' + optBtn(k) + '</span></div>';
+      (ctx ? '<small dir="auto" class="gctx">' + esc(ctx.length > 120 ? ctx.slice(0, 118) + '…' : ctx) + '</small>' : '') + when + '</span>' + galActs(it, k) + '</div>';
   }
   const e = it.e;
-  if (it.cat === 'audio') return '<div class="grow gaud" data-gi="' + k + '">' + audioHTML(e, m) + '<span class="gfoot">' + when + optBtn(k) + '</span></div>';
-  if (it.cat === 'contacts') return '<div class="grow gvc" data-gi="' + k + '">' + contactHTML(e) + '<span class="gfoot">' + when + optBtn(k) + '</span></div>';
+  if (it.cat === 'audio') return '<div class="grow gaud" data-gi="' + k + '">' + audioHTML(e, m) + '<span class="gfoot">' + when + galActs(it, k) + '</span></div>';
+  if (it.cat === 'contacts') return '<div class="grow gvc" data-gi="' + k + '">' + contactHTML(e) + '<span class="gfoot">' + when + galActs(it, k) + '</span></div>';
+  // Photos and videos in the List view: a small tile (opens the photo viewer), the caption or file name, type, size and date.
+  if (GAL_GRID.has(it.cat)) {
+    const cap = (m.message || '').replace(/\s+/g, ' ').trim(), title = cap || e.name;
+    return '<div class="grow gmed" data-gi="' + k + '">' + tileHTML(it, k) +
+      '<span class="gtxt"><b dir="auto" title="' + esc(title) + '">' + esc(title) + '</b><small>' + esc(typeLabel(it.a.type)) + ' · ' + fmtSize(e.size) + (cap ? ' · <bdi>' + esc(e.name) + '</bdi>' : '') + '</small>' + when + '</span>' + galActs(it, k) + '</div>';
+  }
   // Documents: type badge, title, size and date. PDFs open in the viewer, other files open in a new tab.
   const ext = extOf(e.name), label = (ext || 'file').toUpperCase().slice(0, 4), title = it.a.title || e.name, pdf = ext === 'pdf';
   const pages = pdf ? PdfView.pages.get(e.name) : 0, detail = pages ? t('doc.pages', { n: pages }) : it.a.detail || '';
@@ -202,7 +244,7 @@ function rowHTML(it, k) {
     : '<a class="gmain" href="' + e.url + '" target="_blank" rel="noopener" aria-label="' + esc(t('doc.open', { name: title })) + '">';
   return '<div class="grow gdoc" data-gi="' + k + '">' + main + '<span class="dext dx-' + (DX[ext] || 'other') + '">' + esc(label) + '</span>' +
     '<span class="gtxt"><b dir="auto" title="' + esc(title) + '">' + esc(title) + '</b><small>' + (detail ? esc(detail) + ' · ' : '') + esc(label) + ' · ' + fmtSize(e.size) + '</small>' + when + '</span>' + (pdf ? '</button>' : '</a>') +
-    '<span class="gacts"><a class="ibtn sm" href="' + e.url + '" download="' + esc(e.name) + '" aria-label="' + esc(t('doc.download_name', { name: title })) + '" title="' + t('doc.download') + '">' + galSm('download') + '</a>' + optBtn(k) + '</span></div>';
+    galActs(it, k) + '</div>';
 }
 
 /* ---------- Events ---------- */
@@ -232,6 +274,7 @@ galBody.addEventListener('media-bad', e => {
 galBody.addEventListener('click', e => {
   const tg = e.target;
   const o = tg.closest('[data-gmenu]'); if (o) { GalMenu.toggle(+o.dataset.gmenu, o); return; }
+  const ga = tg.closest('[data-ga]'); if (ga) { const a = GalMenu.actions(galItem(ga)).find(x => x[3] === ga.dataset.ga); if (a) a[2](); return; }
   const g = tg.closest('[data-gk]'); if (g) { Gallery.view(+g.dataset.gk); return; }
   const lc = tg.closest('.lcopy'); if (lc) { copyText(lc.dataset.url); return; }
   const ap = tg.closest('.aplay'); if (ap) { AudioCtl.toggle(ap.closest('.aplayer').dataset.audio); return; }
@@ -269,6 +312,9 @@ $('galBtn').onclick = () => Gallery.open('all');
 $('miGal').innerHTML = ICON.image;
 ICON.sort = ic('<path d="M7 4v16M3.5 16.5L7 20l3.5-3.5M17 20V4M13.5 7.5L17 4l3.5 3.5"/>');
 $('galSort').innerHTML = ICON.sort;
+ICON.grid = ic('<rect x="4" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2"/>');
+$('galView').innerHTML = ICON.grid;
+$('galView').onclick = () => Gallery.pickLayout();
 $('galSort').onclick = () => {
   const links = Gallery.cat === 'links';
   pickSheet(t('gallery.sort_by'), GAL_SORTS.filter(([v]) => !(links && (v === 'big' || v === 'small'))).map(([v, k]) => [v, esc(t(k))]), Gallery.sort, v => { Gallery.sort = v; Gallery.show(Gallery.cat); });

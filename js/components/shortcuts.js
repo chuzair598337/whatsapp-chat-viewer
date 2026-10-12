@@ -26,7 +26,7 @@ const KEY_HINTS = [
   ['searchBtn', 'search', 'chat.search'], ['sCase', 'matchCase', 'search.match_case_tip'], ['sWord', 'wholeWord', 'search.whole_word_tip'], ['sRegex', 'regex', 'search.regex_tip'],
   ['next2', 'nextMatch', 'common.next_match_newer'], ['prev2', 'prevMatch', 'common.previous_match_older'],
   ['fab', 'latest', 'chat.jump_to_latest_message'], ['fabTop', 'first', 'chat.jump_to_first_message'],
-  ['lbDl', 'viewerDownload', 'viewer.download_photo'], ['pdfDl', 'viewerDownload', 'pdf.download_pdf'], ['lbGo', 'lbGo', 'media_gallery.go_to_message'],
+  ['lbDl', 'viewerDownload', 'viewer.download_photo'], ['pdfDl', 'viewerDownload', 'pdf.download_pdf'], ['lbGo', 'lbGo', 'media_gallery.go_to_message'], ['galView', 'galView', 'gallery.view_title'],
   ['startBrowse', 'open', null], ['sbOpen', 'open', 'sidebar.open_a_chat_export']
 ];
 
@@ -113,10 +113,10 @@ const Keys = {
       return '<div class="krow' + (this.text(k.id) ? '' : ' off') + '"><dt>' + esc(t(k.label)) + '</dt><dd dir="ltr">' + caps + '</dd></div>';
     };
     $('keysBody').innerHTML = '<p class="lead">' + esc(t(MAC ? 'keys.lead_mac' : 'keys.lead_other')) + (this.single ? '' : ' ' + esc(t('keys.single_off'))) + '</p>' +
-      groups.map(([g, title]) => {
+      '<div class="kcols">' + groups.map(([g, title]) => {
         const rows = this.list.filter(k => k.group === g && (!start || (k.where || []).includes('start')));
         return rows.length ? '<section class="kgrp"><h3>' + esc(t(title)) + '</h3><dl>' + rows.map(row).join('') + '</dl></section>' : '';
-      }).join('');
+      }).join('') + '</div>';
   },
 
   /* ---------- What the shortcuts do ---------- */

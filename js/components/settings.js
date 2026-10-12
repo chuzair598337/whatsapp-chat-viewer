@@ -6,7 +6,7 @@
    date format, plus shortcuts to statistics, the tour and About (What's new).
 
    - Theme, language and background pattern are kept in localStorage
-     (cv-theme, app_language, cv-doodle, cv-online-links, cv-autoplay, cv-single-keys). Who you are and the date format
+     (cv-theme, app_language, cv-doodle, cv-online-links, cv-autoplay, cv-gallery-view, cv-single-keys). Who you are and the date format
      belong to the open chat and are not stored.
    - Participants and nicknames opens its own sheet
      (js/components/nicknames.js); nicknames are kept per chat.
@@ -62,6 +62,7 @@ const Settings = {
         '<label class="set-row"><span class="si">' + ICON.doodle + '</span><span class="st"><b>' + t('sidebar.background_pattern') + '</b><small>' + t('settings.pattern_sub') + '</small></span><input type="checkbox" class="switch" id="doodle"' + (doodleOn ? ' checked' : '') + '></label>' +
         '<label class="set-row"><span class="si">' + ICON.link + '</span><span class="st"><b>' + t('settings.online_links') + '</b><small>' + t('settings.online_links_sub') + '</small></span><input type="checkbox" class="switch" id="onlineLinks"' + (onlineLinks ? ' checked' : '') + '></label>' +
         '<label class="set-row"><span class="si">' + ICON.autoplay + '</span><span class="st"><b>' + t('settings.autoplay') + '</b><small>' + t('settings.autoplay_sub') + '</small></span><input type="checkbox" class="switch" id="autoplay"' + (Autoplay.on ? ' checked' : '') + '></label>' +
+        row('gview', 'image', t('settings.gallery_view'), esc(t('settings.gallery_view_sub', { view: Gallery.layoutName() }))) +
         row('order', 'calendar', t('sidebar.date_format'), orderSub, res.order === 'ymd' ? ' disabled' : '') +
       '</section>' +
       '<section class="set-grp" aria-labelledby="setG2"><h3 id="setG2">' + t('settings.this_chat') + '</h3>' +
@@ -82,6 +83,7 @@ const Settings = {
     else if (a === 'theme') pickSheet(t('menu.theme'), [['light', t('menu.light')], ['dark', t('menu.dark')], ['system', t('menu.match_system')]], theme, v => { setTheme(v); this.render(); });
     else if (a === 'lang') pickSheet(t('common.language'), LANGS.map(l => [l.code, '<span lang="' + l.code + '">' + esc(l.name) + '</span>']), I18N.lang, v => I18N.set(v));
     else if (a === 'order') pickSheet(t('sidebar.date_format'), [['auto', t('sidebar.automatic')], ['dmy', t('sidebar.day_month') + ' <bdi dir="ltr">(DD/MM/YYYY)</bdi>'], ['mdy', t('sidebar.month_day') + ' <bdi dir="ltr">(MM/DD/YYYY)</bdi>']], S.order, v => setOrder(v));
+    else if (a === 'gview') Gallery.pickLayout(); // also the View button on Photos and Videos (js/components/media-gallery.js)
     else if (a === 'nick') NickUI.open(); // js/components/nicknames.js
     else if (a === 'stats') openStats();
     else if (a === 'tour') { this.close(true); Tour.welcome(); }

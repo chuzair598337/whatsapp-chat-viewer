@@ -65,6 +65,9 @@ const SAMPLE = [
   `[16/03/2026, 9:16:20${N}AM] Bilal Ahmed: ${L}<attached: 00000031-Trail-playlist.mp3>`,
   `[16/03/2026, 9:16:45${N}AM] Bilal Ahmed: ${L}<attached: 00000032-Margalla Park Rangers.vcf>`,
   `[16/03/2026, 9:16:52${N}AM] Bilal Ahmed: Ranger desk number, in case anyone gets lost next time`,
+  // A second contact card, so on a laptop Contacts in Media, links and docs fills two columns, every option a button
+  // (on a phone each card keeps its ⋮ menu).
+  `[16/03/2026, 9:17:10${N}AM] Ayesha Khan: ${L}<attached: 00000039-Ridge Loop Guide.vcf>`,
   `[16/03/2026, 9:16:30${N}AM] Omar Farooq: 👍`,
   `[02/04/2026, 7:45:10${N}PM] Sara Malik: ${L}<attached: 00000033-PHOTO-2026-04-02-19-45-10.jpg>`,
   `[02/04/2026, 7:45:30${N}PM] Sara Malik: Scouting photo for April's trail. Route details: https://www.alltrails.com/trail/ridge-loop`,
@@ -104,6 +107,9 @@ const SAMPLE = [
   // A captioned photo far from the others: in Media, links and docs, open its options (⋮, long-press or right-click)
   // for Go to message, Star, Copy caption, Download and its details.
   `[03/04/2026, 8:14:00${N}AM] Kamran Shah: Group photo at the gate, all 14 of us 📸 ${L}<attached: 00000037-PHOTO-2026-04-03-08-14-00.jpg>`,
+  // A route sheet for April's hike (in Media, links and docs › Documents, with its options as buttons on a laptop).
+  `[03/04/2026, 8:15:00${N}AM] Hamza Iqbal: ${L}<attached: 00000038-Ridge-loop-route.pdf>`,
+  `[03/04/2026, 8:15:40${N}AM] Hamza Iqbal: Route sheet for Saturday`,
   // Someone saved only as a phone number (a made-up 555 number): give them a nickname in Settings › Participants and nicknames.
   `[03/04/2026, 8:20:00${N}AM] Weekend Hiking Crew: ${L}Ayesha Khan added +1 555 0142`,
   `[03/04/2026, 8:21:00${N}AM] +1 555 0142: Hi all, Zain here 👋 Ayesha's cousin. Save my number!`,
@@ -206,6 +212,9 @@ async function makeSampleMedia() {
   staged.set('song', ['00000031-Trail-playlist.mp3', makeWav(9)]);
   staged.set('vcf', ['00000032-Margalla Park Rangers.vcf', new Blob([['BEGIN:VCARD', 'VERSION:3.0', 'N:;Margalla Park Rangers;;;', 'FN:Margalla Park Rangers',
     'ORG:Margalla Park Rangers', 'TEL;type=WORK;type=VOICE;waid=15550100:+1 555 0100', 'EMAIL;type=WORK:desk@rangers.example', 'END:VCARD'].join('\r\n')], { type: 'text/vcard' })]);
+  staged.set('pdf2', ['00000038-Ridge-loop-route.pdf', makePdf(['Ridge loop route', 'Start: lower car park, 6:00', 'Spring: 2.1 km', 'Second viewpoint: 4.8 km', 'Summit: 6.2 km', 'Back down the east path'])]);
+  staged.set('vcf2', ['00000039-Ridge Loop Guide.vcf', new Blob([['BEGIN:VCARD', 'VERSION:3.0', 'N:;Ridge Loop Guide;;;', 'FN:Ridge Loop Guide',
+    'TEL;type=CELL;type=VOICE;waid=15550177:+1 555 0177', 'END:VCARD'].join('\r\n')], { type: 'text/vcard' })]);
   // April scouting photo (a second month, for the media gallery's month sections)
   c = document.createElement('canvas'); c.width = 720; c.height = 960; g = c.getContext('2d');
   let sky = g.createLinearGradient(0, 0, 0, 960); sky.addColorStop(0, '#f7b267'); sky.addColorStop(1, '#f4845f'); g.fillStyle = sky; g.fillRect(0, 0, 720, 960);
