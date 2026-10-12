@@ -849,7 +849,7 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .gempty svg { width: 44px; height: 44px; opacity: .7; }
 .gempty b { color: var(--ink-2); font-weight: 500; font-size: 15px; }
 .gmore { padding: 18px; text-align: center; color: var(--ink-3); font-size: 13px; }
-/* Item options (js/components/gallery-menu.js): a ⋮ button on each row, and on grid tiles on hover or focus; long-press and right-click open it too. */
+/* Item options (js/components/gallery-menu.js): a ⋮ button on each row, and on grid tiles on hover or focus (always on touch screens, see the WS2 block at the end); long-press and right-click open it too. */
 .gcell { position: relative; min-width: 0; }
 .gtile { -webkit-touch-callout: none; }
 .gcell .gopt { position: absolute; top: 4px; inset-inline-end: 4px; z-index: 1; width: 28px; height: 28px; border-radius: 50%; background: rgba(0, 0, 0, .5); color: #fff; opacity: 0; transition: opacity .12s; }
@@ -974,3 +974,52 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 .start-keys kbd { min-width: 0; }
 @media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
 @media (max-width: 640px) { .krow dd { max-width: 55%; } }
+
+/* ---- Responsive audit WS2: touch targets ---- */
+/* The search field's own clear ✕ looked like the Close search ✕ beside it; Esc (or selecting the text) clears it. */
+#q2::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
+/* Touch screens (a finger, not a mouse): every control gets about 44 px to tap, as Apple and Google ask.
+   Buttons in the app's chrome simply grow; small buttons inside messages and tables keep their look and get
+   an invisible ::before hit area around them instead, so bubbles and rows don't change size. */
+@media (pointer: coarse) {
+  .ibtn, .fab { width: 44px; height: 44px; }
+  .ibtn.sm { width: 40px; height: 40px; }
+  .btn, .tour-nav .btn { height: 44px; }
+  .tour-nav .linkbtn { min-height: 44px; padding-inline: 8px; }
+  .field select, .field input[type="date"] { height: 40px; }
+  .menu [role^="menuitem"] { padding-block: 12px; }
+  .samplebar button { min-height: 44px; padding: 4px 10px; margin-block: -8px; }
+  .start-lang button { min-height: 44px; padding-inline: 16px; }
+  .shx { width: 44px; height: 44px; margin-inline-end: 2px; }
+  .sstrip .searchbox, .sopts { height: 40px; }
+  .sopt { min-width: 40px; height: 36px; }
+  /* The side panel's resize grip shows all the time where there is no hover, with a wider strip to drag. */
+  .sb-resize { width: 24px; inset-inline-end: -12px; }
+  .sb-grip { opacity: .55; }
+  /* Media, links and docs: 40 px chips, 44 px row buttons (also PR #11's inline .gx buttons), and a ⋮ on photo tiles. */
+  .chip { height: 40px; }
+  .gacts { gap: 4px; }
+  .gacts .ibtn, .gacts .ibtn.sm { width: 44px; height: 44px; }
+  .gcell .gopt { display: grid; opacity: 1; width: 32px; height: 32px; top: 4px; }
+  /* Invisible hit areas: the control looks the same, the tappable box is about 44 px. */
+  :is(.linkbtn, .read-more-btn, .aspeed, .psort, .lcard .lcopy, .gacts .lcopy) { position: relative; }
+  :where(.linkbtn, .read-more-btn, .aspeed, .psort, .lcopy, .mmore, .gcell .gopt)::before { content: ""; position: absolute; inset: -12px -6px; }
+  .tour-nav .linkbtn::before { inset: 0; }
+  .read-more-btn::before { inset: -13px -4px; }
+  .aspeed::before { inset: -8px -10px -16px; } /* mostly downwards, away from the waveform above it */
+  .psort::before { inset: -10px -4px; }
+  .lcopy::before { inset: -4px; }
+  .gacts .lcopy::before { inset: 0; }
+  .mmore::before { inset: -10px -9px -12px; }
+  .bubble.mb .mmore::before, .row.stk .mmore::before { inset: -10px; }
+  .gcell .gopt::before { inset: -6px; }
+}
+/* Search toggles get their labelled row under the field on touch tablets too, not just on phones
+   (but not on a landscape phone, where the extra row would cost too much height). */
+@media (pointer: coarse) and (min-height: 501px) {
+  .sstrip { flex-wrap: wrap; row-gap: 6px; }
+  .sstrip .searchbox { min-width: 0; border-radius: 8px; }
+  .sopts { order: 10; flex-basis: 100%; flex-wrap: wrap; height: auto; gap: 6px; padding: 0; background: transparent; border-radius: 0; }
+  .sopt { height: 40px; padding: 0 12px; border-color: var(--line); background: var(--input); }
+  .sopt .sl { display: inline; }
+}

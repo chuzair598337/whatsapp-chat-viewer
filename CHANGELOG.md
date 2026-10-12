@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS2)
+
+- **Bigger tap targets on touch screens.** On phones and tablets, header and toolbar buttons, the floating ↓ button, dialog, footer and tour buttons and the start screen's language buttons are 44 px; search ↑ ↓ ✕ and the date and sender fields are 40 px; menu items have more room. Small buttons inside messages and tables (voice note speed, Read more, a link card's Copy, the message ⌄, View all, statistics sort headers) look the same but get an invisible 44 px tap area, so messages don't change size. Computers with a mouse look exactly as before.
+- **Search options on touch tablets** now get the labelled Match case, Whole word and Regex row under the field, as on phones (landscape phones keep the compact toggles).
+- **Media, links and docs on touch screens:** 40 px tabs, 44 px row buttons, and photo and video tiles show their ⋮ options button instead of needing a long-press.
+- **Side panel grip** is always visible on touch screens wider than 1024 px, with a wider strip to drag.
+- **Settings on touch-only phones and tablets** no longer shows the Keyboard shortcuts and Single-key shortcuts rows, and the guided tour skips its keyboard step there.
+- **Fixed:** the chat search field showed the browser's own ✕ next to the app's Close ✕; only the Close button is shown now (`Esc` clears the text).
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.
