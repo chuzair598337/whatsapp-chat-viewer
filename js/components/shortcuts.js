@@ -26,9 +26,9 @@ const KEY_HINTS = [
   ['searchBtn', 'search', 'chat.search'], ['sCase', 'matchCase', 'search.match_case_tip'], ['sWord', 'wholeWord', 'search.whole_word_tip'], ['sRegex', 'regex', 'search.regex_tip'],
   ['next2', 'nextMatch', 'common.next_match_newer'], ['prev2', 'prevMatch', 'common.previous_match_older'],
   ['fab', 'latest', 'chat.jump_to_latest_message'], ['fabTop', 'first', 'chat.jump_to_first_message'],
+  ['starExport', 'starExport', 'stars.export_tip'], ['starImport', 'starImport', 'stars.import_tip'],
   ['lbDl', 'viewerDownload', 'viewer.download_photo'], ['pdfDl', 'viewerDownload', 'pdf.download_pdf'], ['lbGo', 'lbGo', 'media_gallery.go_to_message'],
-  ['startBrowse', 'open', null], ['sbOpen', 'open', 'sidebar.open_a_chat_export'],
-  ['starExport', 'starExport', 'stars.export_tip'], ['starImport', 'starImport', 'stars.import_tip']
+  ['startBrowse', 'open', null], ['sbOpen', 'open', 'sidebar.open_a_chat_export']
 ];
 
 const Keys = {
