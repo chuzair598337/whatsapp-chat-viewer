@@ -196,7 +196,12 @@ I18N.add('en-US', {
     "name_az": "Name (A to Z)",
     "name_za": "Name (Z to A)",
     "largest": "Largest first",
-    "smallest": "Smallest first"
+    "smallest": "Smallest first",
+    "view_title": "View",
+    "view_list": "List",
+    "view_small": "Small grid",
+    "view_medium": "Medium grid",
+    "view_large": "Large grid"
   },
   "contact": {
     "contact": "Contact",
@@ -549,7 +554,7 @@ I18N.add('en-US', {
     },
     "media_links_and": {
       "title": "Media, links and docs",
-      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. Each item's ⋮ button (or a long-press or right-click) has Go to message, Star, Copy and Download. It is also in the ⋮ menu. On Audio, the Autoplay button plays each audio after the one before."
+      "text": "Every photo, video, voice note, document, sticker, link and contact in the chat, newest first and grouped by month. Tap a tile to open the gallery on that kind, then use the chips at the top to switch. Each item's ⋮ button (or a long-press or right-click) has Go to message, Star, Copy and Download; on a larger screen they sit on the row as buttons. On Photos and Videos, the View button shows them as a list or a small, medium or large grid. It is also in the ⋮ menu. On Audio, the Autoplay button plays each audio after the one before."
     },
     "whatsapp_formatting": {
       "title": "WhatsApp formatting",
@@ -668,7 +673,8 @@ I18N.add('en-US', {
     "pdf_page": "Next or previous page",
     "gal_tab": "Switch to a tab (All, Photos, Videos, …)",
     "gal_tabs": "Move between tabs",
-    "gal_menu": "Options for the focused item"
+    "gal_menu": "Options for the focused item",
+    "gal_view": "Next photo and video view"
   },
   "settings": {
     "title": "Settings",
@@ -691,7 +697,9 @@ I18N.add('en-US', {
     "online_links": "Online link previews",
     "online_links_sub": "Off: nothing is loaded from the internet. On: YouTube, Instagram, TikTok, Vimeo, Spotify, SoundCloud, Facebook video and Google Docs links get a Play or Show button and their titles, loaded only from those sites.",
     "autoplay": "Autoplay voice messages",
-    "autoplay_sub": "When a voice message ends, the next one plays if it comes right after it. In Media, links and docs, the next audio in the list plays."
+    "autoplay_sub": "When a voice message ends, the next one plays if it comes right after it. In Media, links and docs, the next audio in the list plays.",
+    "gallery_view": "Photos and videos in Media",
+    "gallery_view_sub": "{view} · how Photos and Videos show in Media, links and docs"
   },
   "mm": {
     "menu": "Message options",

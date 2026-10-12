@@ -24,6 +24,7 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 | Media, links and docs gallery, its sorting | `js/components/media-gallery.js` |
 | Message menu: View photo, Open document, Download, Share | `js/components/message-menu.js` |
 | Gallery item options (Go to message, View, Star, Copy, Download, Share) and the photo viewer's Go to message button | `js/components/gallery-menu.js` |
+| Gallery layout on larger screens: inline row buttons (`galActs`, built from `GalMenu.actions`, each with an id), two columns, and the photo and video views (`Gallery.layout`, `cv-gallery-view`) | `js/components/media-gallery.js`, `css/styles.css` (`@container gal`) |
 
 ## Lookup and lifetime
 
@@ -62,7 +63,7 @@ Never show a broken image or empty space. Never throw.
   - Only pages near the viewport are rendered.
 - **Lightbox controls:**
   - Buttons for zoom in and out, fit, rotate and download.
-  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
+  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs, `V` for the next photo and video view, and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
   - Pinch and double-click zoom.
   - When rotated, `zFit()` scales the photo so it still fits, and `zClamp` swaps width and height so panning stays within bounds.
 - **Showing an image:** use `e.view || e.url` for `src`, so a decoded HEIC copy is used; use `e.url` for downloads and sharing.
@@ -77,4 +78,4 @@ Never show a broken image or empty space. Never throw.
   - a vCard with HTML or `javascript:` in its fields must render as text;
   - a broken PDF must show a fallback.
 - **Clean run:** no network requests and no page errors.
-- **Visual checks:** light and dark mode, at 1300 px and 390 px.
+- **Visual checks:** light and dark mode, at 1440 px, 768 px and 390 px. In the gallery, check that a phone still shows only ⋮ on rows, and that a new item option shows up both in the ⋮ menu and as a row button (add it to `GalMenu.actions` with an id; `galActs` skips `play`).

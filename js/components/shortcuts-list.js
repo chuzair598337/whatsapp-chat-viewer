@@ -103,6 +103,7 @@ const KEY_LIST = [
   { id: 'galTab', group: 'gallery', label: 'keys.gal_tab', keys: ['1', '2', '3', '4', '5', '6', '7', '8'], where: ['gallery'],
     run: (e, k) => { const c = GAL_CATS[+k - 1]; if (!c) return false; Gallery.show(c[0]); $('galChips').querySelector('.on').focus(); } },
   { id: 'galTabs', group: 'gallery', label: 'keys.gal_tabs', keys: ['ArrowLeft', 'ArrowRight'] }, // media-gallery.js, on the tabs
+  { id: 'galView', group: 'gallery', label: 'keys.gal_view', keys: ['V'], where: ['gallery'], single: true, when: () => GAL_VIEWABLE.has(Gallery.cat), run: () => Gallery.nextLayout() },
   { id: 'galMenu', group: 'gallery', label: 'keys.gal_menu', keys: ['Shift+F10'] }, // gallery-menu.js
   { id: 'galDownload', group: 'gallery', label: 'keys.download', keys: ['Mod+S'], where: ['gallery'], when: () => galItem(document.activeElement) >= 0,
     run: () => { const it = Gallery.list[galItem(document.activeElement)]; if (!it || !it.e) return false; saveFile(it.e); } }
