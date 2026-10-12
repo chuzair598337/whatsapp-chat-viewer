@@ -1252,3 +1252,15 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 /* Header subtitle: phones put the date range first (js/app.js), so the part that gets cut off is the counts. */
 .chat-head .s .hs-narrow { display: none; }
 @media (max-width: 640px) { .chat-head .s .hs-wide { display: none; } .chat-head .s .hs-narrow { display: inline; } }
+
+/* ---- Media types with no items (WS11) ---- */
+/* The side panel lists only the types the chat has (js/app.js renderMediaSummary sets data-n), so the tiles wrap
+   into rows that fill the width: up to 4 a row (3 when there are 5 or 6), and a short last row stretches. */
+.mgrid { display: flex; flex-wrap: wrap; --cols: 4; }
+.mgrid[data-n="1"] { --cols: 1; }
+.mgrid[data-n="2"] { --cols: 2; }
+.mgrid[data-n="3"], .mgrid[data-n="5"], .mgrid[data-n="6"] { --cols: 3; }
+.mgrid > .mt { flex: 1 1 calc((100% - (var(--cols) - 1) * 6px) / var(--cols)); }
+/* No media, links or docs at all: one line in place of the tiles. */
+.mempty { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--panel-2); color: var(--ink-2); font-size: 13.5px; }
+.mempty > span:first-child { display: grid; flex: none; color: var(--ink-3); }

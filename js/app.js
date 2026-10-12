@@ -256,7 +256,11 @@ function linkMedia() {
 function renderMediaSummary() {
   const md = S.media, c = md.c, sm = ic => ic.replace('width="22" height="22"', 'width="14" height="14"');
   // Each tile opens the media gallery on that category (js/components/media-gallery.js), so the counts come from it.
-  $('mediaGrid').innerHTML = GAL_CATS.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + esc(t('media.tile_label', { label: t(label), n: nf(Gallery.count(k)) })) + '">' +
+  // Only the types the chat has get a tile; with none at all, a short line takes the grid's place (and View all goes).
+  const cats = Gallery.cats(), none = !cats.length && !Media.loading;
+  $('mediaGrid').dataset.n = cats.length;
+  $('mediaGrid').hidden = !cats.length; $('mediaAll').hidden = !cats.length;
+  $('mediaGrid').innerHTML = cats.map(([k, label]) => '<button class="mt" data-gcat="' + k + '" aria-label="' + esc(t('media.tile_label', { label: t(label), n: nf(Gallery.count(k)) })) + '">' +
     '<i>' + sm(ICON[GAL_ICON[k]]) + '</i><b>' + nf(Gallery.count(k)) + '</b><span>' + esc(k === 'docs' ? t('media.docs_short') : t(label)) + '</span></button>').join('');
   const total = c.image + c.gif + c.video + c.audio + c.sticker + c.document + c.contact + c.media;
   $('mediaTotal').textContent = nf(Gallery.count('all'));
@@ -267,6 +271,10 @@ function renderMediaSummary() {
   else if (md.files || md.found) note.textContent = [t('media.note_found', { found: nf(md.found) }), md.missing && t('media.note_missing', { n: nf(md.missing) }), md.omitted && t('media.note_omitted', { n: nf(md.omitted) })].filter(Boolean).join(' · ') + '.';
   else if (md.missing) note.textContent = t(S.source && S.source.zip ? 'media.note_zip_missing' : 'media.note_text_only', { n: md.missing, count: nf(md.missing) });
   else note.textContent = total ? t('media.note_no_media_export') : t('media.note_none');
+  const empty = $('mediaEmpty'), why = md.missing || md.omitted; // attachments the export doesn't include: the note says why
+  empty.hidden = !none;
+  if (none) $('mediaEmptyTx').textContent = t(why ? 'media.none_shown' : 'media_gallery.no_items');
+  note.hidden = none && !why && !total; // "No media in this chat" would only repeat the line above
 }
 function computeTitle() {
   const names = S.res.participants.map(p => p.name);

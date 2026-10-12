@@ -271,7 +271,8 @@ I18N.add('en-US', {
     "note_none": "No media in this chat.",
     "open_photo": "Open photo",
     "note_zip_missing": "This ZIP doesn't include the {count} attached files.",
-    "note_zip_missing_one": "This ZIP doesn't include the attached file."
+    "note_zip_missing_one": "This ZIP doesn't include the attached file.",
+    "none_shown": "No media, links or docs to show"
   },
   "facts": {
     "messages": "Messages",

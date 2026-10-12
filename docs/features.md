@@ -176,12 +176,14 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - `Esc` closes it.
 
 **Sidebar media summary**
-- A tile for each kind (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts) with its count. Tapping one opens the media gallery on that kind, and **View all** opens it on All.
-- How many referenced files were found and how many are missing.
+- A tile for each kind the chat has (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts) with its count. A kind with nothing in it gets no tile, and All shows only when something does. The tiles wrap into full rows (up to 4 a row, 3 a row when there are 5 or 6, a short last row stretches), so there are no gaps. Tapping one opens the media gallery on that kind, and **View all** opens it on All. The counts are what the gallery lists: files in the export, plus links.
+- With no media, links or docs at all (a text-only chat, or a .txt export whose attachments aren't included), a short line ("No media, links or documents in this chat", or "No media, links or docs to show" when the export left the files out) takes the tiles' place and **View all** is hidden.
+- How many referenced files were found and how many are missing, or why none can be shown (opened as text only, not in this ZIP).
 
 **Media, links and docs gallery** (`js/components/media-gallery.js`)
 - Opens from the sidebar tiles or **Media, links and docs** in the ⋮ menu, on **All** unless a tile picked a kind.
-- A row of chips at the top (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts), each with its count. It scrolls sideways on narrow screens, and the arrow keys move between chips.
+- A row of chips at the top (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts), each with its count, leaving out any kind with nothing in it. It scrolls sideways on narrow screens, and the arrow keys move between chips. If the shown kind has nothing in it (another chat was opened), the gallery goes back to All.
+- A chat with no media, links or docs still opens it from the ⋮ menu or `M`: it shows an empty state (an icon, "No media, links or documents in this chat" and a hint, or the text-only hint for a .txt export) with no chips and no Sort button.
 - By default everything is newest first, under month headings ("This month", then "March 2026" and so on).
 - Photos (with GIFs), videos and stickers are a square grid: 4 across, or 3 on phones. Videos show their length and a play icon. Tapping one opens the full-screen viewer, and Previous and Next (or swiping) step through the items in the current filter, playing videos and GIFs in place.
 - Documents, audio, links and contacts are rows:
@@ -446,7 +448,7 @@ The scripts are plain browser scripts with no build step. They share globals and
 - **Search bar:** `Enter` / `Shift+Enter`, `F3` / `Shift+F3` and `Ctrl+G` / `Ctrl+Shift+G` (`⌘G` / `⇧⌘G`) step through matches; `Alt+C`, `Alt+W`, `Alt+R` (`⌥C`, `⌥W`, `⌥R`) switch Match case, Whole word and Regex; `↓` goes into the recent searches.
 - **Selecting messages:** `Space` or `Enter` picks or unpicks a message; `Ctrl+C` / `⌘C` copies the picked messages; `S` stars them; `Esc` stops selecting.
 - **Photo and PDF viewer:** `←` `→` previous and next photo (swapped in Urdu and Arabic); `+` `-` zoom; `0` fit (in a PDF, switches between page width and whole page); `R` rotate; `Space` plays or pauses a video; `Page Down` / `Page Up` move through a PDF; `G` goes to the photo's message; `Ctrl+S` / `⌘S` downloads the photo or PDF; `Esc` closes.
-- **Media, links and docs:** `1` to `8` switch to All, Photos, Videos, Audio, Documents, Stickers, Links or Contacts; `←` `→` move between those tabs; `Shift+F10` opens the focused item's options; `Ctrl+S` / `⌘S` downloads it; `Esc` closes.
+- **Media, links and docs:** `1` to `8` switch to the first to eighth chip shown (All, Photos, Videos, Audio, Documents, Stickers, Links, Contacts, leaving out kinds with nothing in them); `←` `→` move between those tabs; `Shift+F10` opens the focused item's options; `Ctrl+S` / `⌘S` downloads it; `Esc` closes.
 - **When they don't fire:** while the guided tour or a menu is open, behind another dialog (only `Esc` works there), and, for keys without Ctrl, ⌘ or Alt, while typing in a field or composing with an input method. Single keys can be turned off in Settings; the list then shows them greyed out.
 - **Browser keys are left alone:** new and close tab or window, page zoom (`Ctrl` `+` `-` `0`), back and forward, the address bar, reload, print, bookmarks, history and downloads. `Ctrl+S` is only taken where there is a file to save. On a Mac, `⌘,` may open the browser's own settings in some browsers; `⇧⌘S` works there instead. In Firefox and Edge, `Ctrl+Shift+S` may open the browser's screenshot tool; `Ctrl+,` works there instead.
 - **Any keyboard layout:** letter keys also work with an Urdu or Arabic layout, matched by the key's position.

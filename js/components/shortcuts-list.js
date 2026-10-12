@@ -103,7 +103,7 @@ const KEY_LIST = [
 
   /* ---------- Media, links and docs ---------- */
   { id: 'galTab', group: 'gallery', label: 'keys.gal_tab', keys: ['1', '2', '3', '4', '5', '6', '7', '8'], where: ['gallery'],
-    run: (e, k) => { const c = GAL_CATS[+k - 1]; if (!c) return false; Gallery.show(c[0]); $('galChips').querySelector('.on').focus(); } },
+    run: (e, k) => { const c = Gallery.cats()[+k - 1]; /* the Nth chip shown: types with no items have none */ if (!c) return false; Gallery.show(c[0]); $('galChips').querySelector('.on').focus(); } },
   { id: 'galTabs', group: 'gallery', label: 'keys.gal_tabs', keys: ['ArrowLeft', 'ArrowRight'] }, // media-gallery.js, on the tabs
   { id: 'galMenu', group: 'gallery', label: 'keys.gal_menu', keys: ['Shift+F10'] }, // gallery-menu.js
   { id: 'galDownload', group: 'gallery', label: 'keys.download', keys: ['Mod+S'], where: ['gallery'], when: () => galItem(document.activeElement) >= 0,

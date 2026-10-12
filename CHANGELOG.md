@@ -2,6 +2,12 @@
 
 ## Unreleased (on `development`)
 
+### Media types with no items
+
+- **Media, links and docs** in the side panel shows a tile only for the kinds the chat has: no more "Videos 0", "Audio 0" or "Contacts 0". All shows only when something does, and the tiles wrap into full rows with no gaps.
+- The gallery's chips leave out kinds with nothing in them too. If the open chip's kind has nothing in the next chat, it goes back to All. `1` to `8` pick the first to eighth chip shown.
+- A chat with no media, links or docs (a text-only chat, or a .txt export without its files) says so in the side panel instead of showing empty tiles, and hides **View all**. The gallery, still in the ⋮ menu and on `M`, shows an empty state with no chips or Sort button. Text in English, Urdu and Arabic.
+
 ### Responsive audit (WS5)
 
 - **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.

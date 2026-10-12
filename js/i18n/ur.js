@@ -271,7 +271,8 @@ I18N.add('ur', {
     "note_none": "اس چیٹ میں کوئی میڈیا نہیں۔",
     "open_photo": "تصویر کھولیں",
     "note_zip_missing": "اس ZIP میں {count} منسلک فائلیں شامل نہیں۔",
-    "note_zip_missing_one": "اس ZIP میں منسلک فائل شامل نہیں۔"
+    "note_zip_missing_one": "اس ZIP میں منسلک فائل شامل نہیں۔",
+    "none_shown": "دکھانے کے لیے کوئی میڈیا، لنکس یا دستاویزات نہیں"
   },
   "facts": {
     "messages": "پیغامات",

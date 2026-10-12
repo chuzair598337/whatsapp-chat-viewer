@@ -271,7 +271,8 @@ I18N.add('ar', {
     "note_none": "لا توجد وسائط في هذه الدردشة.",
     "open_photo": "فتح الصورة",
     "note_zip_missing": "لا يتضمن ملف ZIP هذا الملفات المرفقة وعددها {count}.",
-    "note_zip_missing_one": "لا يتضمن ملف ZIP هذا الملف المرفق."
+    "note_zip_missing_one": "لا يتضمن ملف ZIP هذا الملف المرفق.",
+    "none_shown": "لا توجد وسائط أو روابط أو مستندات لعرضها"
   },
   "facts": {
     "messages": "الرسائل",
