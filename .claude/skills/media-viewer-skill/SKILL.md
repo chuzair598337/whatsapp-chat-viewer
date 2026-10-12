@@ -24,6 +24,7 @@ description: Use when changing how media renders. Covers photos (including HEIC)
 | Media, links and docs gallery, its sorting. `Gallery.cats()` gives the kinds that have items: the chips and the side panel's tiles (`renderMediaSummary` in `js/app.js`) show only those, and an empty chat gets an empty state | `js/components/media-gallery.js` |
 | Message menu: View photo, Open document, Download, Share | `js/components/message-menu.js` |
 | Gallery item options (Go to message, View, Star, Copy, Download, Share) and the photo viewer's Go to message button | `js/components/gallery-menu.js` |
+| Phone header of the photo and PDF viewers (640 px and narrower): Back, the title and ⋮, whose bottom sheet (`VMenu`, no title) lists the other header buttons plus Star, Copy caption and Share. A new viewer button also needs a row in `VMenu.lbActions` / `pdfActions`, and the `.lb-top` hide list in the WS9 CSS block | `js/components/viewer-menu.js` |
 
 ## Lookup and lifetime
 
@@ -61,8 +62,8 @@ Never show a broken image or empty space. Never throw.
   - It never fetches fonts or CMaps.
   - Only pages near the viewport are rendered.
 - **Lightbox controls:**
-  - Buttons for zoom in and out, fit, rotate and download.
-  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs (the Nth chip shown, as `Gallery.cats()` leaves out kinds with no items) and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
+  - Buttons for zoom in and out, fit, rotate and download. On phones they move into the ⋮ sheet (`js/components/viewer-menu.js`) and ✕ becomes a Back arrow.
+  - Keys: `+`, `-`, `0` (reset), `R` (rotate 90°), `←`/`→` (previous and next), `Space` (a video), `G` (go to message), `Mod+S` (download), `Esc` (close). The PDF viewer has `+`, `-`, `0`, `Page Up`/`Page Down`, `Mod+S` and `Esc`; the gallery has `1` to `8` for its tabs and `Mod+S` on a focused item. They are entries in `js/components/shortcuts-list.js` (places `lb`, `pdf`, `gallery`), not listeners in the viewer. A new viewer or gallery action gets its key there too: see `keyboard-shortcuts-skill`.
   - Pinch and double-click zoom.
   - When rotated, `zFit()` scales the photo so it still fits, and `zClamp` swaps width and height so panning stays within bounds.
 - **Showing an image:** use `e.view || e.url` for `src`, so a decoded HEIC copy is used; use `e.url` for downloads and sharing.

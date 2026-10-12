@@ -29,6 +29,7 @@ const KEY_HINTS = [
   ['next2', 'nextMatch', 'common.next_match_newer'], ['prev2', 'prevMatch', 'common.previous_match_older'],
   ['fab', 'latest', 'chat.jump_to_latest_message'], ['fabTop', 'first', 'chat.jump_to_first_message'],
   ['lbDl', 'viewerDownload', 'viewer.download_photo'], ['pdfDl', 'viewerDownload', 'pdf.download_pdf'], ['lbGo', 'lbGo', 'media_gallery.go_to_message'],
+  ['lbBack', 'viewerClose', 'common.back'], ['pdfBack', 'viewerClose', 'common.back'],
   ['startBrowse', 'open', null], ['sbOpen', 'open', 'sidebar.open_a_chat_export']
 ];
 
@@ -44,7 +45,7 @@ const Keys = {
   places() {
     const p = new Set();
     if (Tour.active() || !$('tourWelcome').hidden) return p; // the tour has its own keys (tour-controller.js)
-    if (!moreMenu.hidden || MsgMenu.isOpen() || GalMenu.isOpen()) return p; // menus move with the arrow keys and close with Esc themselves
+    if (!moreMenu.hidden || MsgMenu.isOpen() || GalMenu.isOpen() || VMenu.isOpen()) return p; // menus move with the arrow keys and close with Esc themselves
     const top = Dialogs.stack[Dialogs.stack.length - 1];
     if (top) { p.add(top.id === 'lb' ? 'lb' : top.id === 'pdfv' ? 'pdf' : top.id === 'galModal' ? 'gallery' : top.id === 'keysModal' ? 'keys' : 'dialog'); return p; }
     if (!$('start').hidden) { p.add('start'); return p; }

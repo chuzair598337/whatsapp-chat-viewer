@@ -157,6 +157,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - Every page is drawn on the device with pdf.js. Only the pages near the screen are rendered.
 - Zoom with the buttons or the `+` and `-` keys. The Fit button (or `0`) switches between fitting the page width and fitting the whole page; after zooming it first goes back to the current fit. A phone on its side opens on the whole page; everywhere else it opens on the page width.
 - A download button, and `Esc` closes it.
+- On phones (640 px and narrower) the header is a **Back** arrow, the file name with its page count, and a **⋮** button whose bottom sheet (no title) has **Zoom out**, **Zoom in**, the Fit option (named for what it will do next) and **Download**. Larger screens keep the zoom buttons, Download and ✕ in the header.
 
 **Contact details**
 - Shows each contact in the file: phone numbers with their labels (Mobile, Home, Work, and whether they're on WhatsApp), email addresses and websites.
@@ -173,7 +174,7 @@ Media from a ZIP is matched to its message by file name. WhatsApp's invisible di
 - Drag to pan.
 - Rotate 90° with the rotate button or the `R` key. Zoom and panning still work on a rotated photo, which is scaled to fit the screen.
 - Fit to screen, download, and swipe or use the arrow keys to move between photos. A swipe works on a video too, anywhere but its controls bar along the bottom.
-- On phones (640 px and narrower) the top bar keeps the sender, a one-line date, the position, Go to message and ✕; Rotate and Download sit in a bar at the bottom, and Fit shows only while zoomed in.
+- On phones (640 px and narrower) the header is a **Back** arrow (it does what ✕ does; mirrored in Urdu and Arabic), the sender with a one-line date, the position ("3 / 9") and a **⋮** button (`js/components/viewer-menu.js`). ⋮ opens a sheet from the bottom with no title: **Go to message**, **Rotate photo** and **Fit to screen** (photos only; Fit only while zoomed in), **Star** or **Unstar**, **Copy caption** (when there is one), **Download** and **Share** (where the device can share). It closes with `Esc`, a tap outside or after picking an option; the arrow keys move through it. Larger screens, including a phone on its side, keep the full header with ✕. The keys are the same on every screen.
 - `Esc` closes it.
 
 **Sidebar media summary**
@@ -295,7 +296,7 @@ The statistics window shows:
 
 ## 12. Code layout
 
-The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `vendor/brand-icons`, `viewer`, `components/link-cards`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/select-messages`, `components/autoplay`, `components/settings`, `components/nicknames`, `components/search-history`, `components/shortcuts-list`, `components/shortcuts`, `tour-controller`, `release-notes`, `components/whats-new`. pdf.js, lottie-web and libheif are loaded later, only when needed.
+The scripts are plain browser scripts with no build step. They share globals and load in the order of `index.html`: `jszip`, `i18n/i18n`, `i18n/en`, `i18n/ur`, `i18n/ar`, `vendor/notyf`, `components/toast`, `parser`, `media`, `text-truncator`, `vendor/brand-icons`, `viewer`, `components/link-cards`, `demo-data`, `app`, `components/media-gallery`, `components/message-menu`, `components/gallery-menu`, `components/viewer-menu`, `components/select-messages`, `components/autoplay`, `components/settings`, `components/nicknames`, `components/search-history`, `components/shortcuts-list`, `components/shortcuts`, `tour-controller`, `release-notes`, `components/whats-new`. pdf.js, lottie-web and libheif are loaded later, only when needed.
 
 | File | Responsibility |
 |---|---|

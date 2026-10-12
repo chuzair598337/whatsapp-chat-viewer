@@ -15,6 +15,11 @@
 - Search no longer matches the notice's wording; a starred one is listed as "Message wasn't loaded"; Copy still copies the line as exported. It counts as a message (with no words) in Statistics.
 - The sample chat has one (14 March, 8:17 AM), and the tour's "Edited, deleted and replies" card mentions it.
 
+### Phone viewer header
+
+- **Photo viewer on phones:** the header is now a Back arrow, the sender with a one-line date and the position, and a ⋮ button. ⋮ opens a sheet from the bottom with Go to message, Rotate, Fit (while zoomed in), Star, Copy caption, Download and Share, so the header is no longer crowded. This replaces the bottom bar with Rotate and Download. Tablets and computers keep the full header with ✕, and every keyboard shortcut works as before.
+- **PDF viewer on phones:** the same Back, title and page count, and ⋮ with Zoom out, Zoom in, Fit and Download, instead of the zoom buttons along the bottom.
+
 ### Responsive audit (WS5)
 
 - **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.

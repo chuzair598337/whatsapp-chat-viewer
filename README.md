@@ -80,7 +80,7 @@ whatsapp-chat-viewer/
 │   ├── demo-data.js                      # made-up sample chat and its generated media
 │   ├── app.js                            # file loading, search, stats, theme, boot
 │   ├── release-notes.js                  # What's new notes per version, in English, Urdu and Arabic
-│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, autoplay.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js, shortcuts-list.js, shortcuts.js, whats-new.js
+│   ├── components/                       # toast.js, media-gallery.js, gallery-menu.js, viewer-menu.js, autoplay.js, link-cards.js, message-menu.js, select-messages.js, settings.js, nicknames.js, search-history.js, shortcuts-list.js, shortcuts.js, whats-new.js
 │   └── tour-controller.js                # welcome dialog and guided tour
 ├── .claude/skills/                       # agent guides: parser, virtual scroll, media, release
 ├── CHANGELOG.md                          # release notes
@@ -135,7 +135,7 @@ python3 -m http.server 8000      # or: npx serve .
 Run the parser tests with `node tests/parser.test.js` and the keyboard shortcut tests with `node tests/shortcuts.test.js`, and the What's new notes with `node tests/release-notes.test.js` (Node 18 or later, nothing to install).
 
 Notes:
-- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/select-messages` → `components/autoplay` → `components/settings` → `components/nicknames` → `components/search-history` → `components/shortcuts-list` → `components/shortcuts` → `tour-controller` → `release-notes` → `components/whats-new`. Keep that order when adding files.
+- The scripts are classic `<script>` files that share globals, loaded in order: `jszip` → `i18n/i18n` → `i18n/en` → `i18n/ur` → `i18n/ar` → `vendor/notyf` → `components/toast` → `parser` → `media` → `text-truncator` → `vendor/brand-icons` → `viewer` → `components/link-cards` → `demo-data` → `app` → `components/media-gallery` → `components/message-menu` → `components/gallery-menu` → `components/viewer-menu` → `components/select-messages` → `components/autoplay` → `components/settings` → `components/nicknames` → `components/search-history` → `components/shortcuts-list` → `components/shortcuts` → `tour-controller` → `release-notes` → `components/whats-new`. Keep that order when adding files.
 - Keep the app offline. Don't add CDN links, web fonts, analytics or anything that fetches at runtime. Vendor any library into `js/vendor/`. The only exception is the opt-in Online link previews in `js/components/link-cards.js` (see PROJECT_RULES.md, section 1).
 - Test chats are ignored by `.gitignore` (`*.zip`, `*.txt`). Never commit a real chat export.
 
