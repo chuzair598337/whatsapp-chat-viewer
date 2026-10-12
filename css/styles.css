@@ -680,16 +680,64 @@ button.mdoc-main { border: 0; background: transparent; font: inherit; text-align
 .starpanel header { height: 59px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 16px; background: var(--header); }
 .starpanel h2 { flex: 1; margin: 0; font-size: 16px; font-weight: 500; color: var(--ink); }
 .starlist { overflow: auto; display: grid; align-content: start; }
-/* Starred messages rows (their style went missing when the sidebar search was removed) */
-.res { display: grid; gap: 2px; text-align: start; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: inherit; font: inherit; padding: 10px 16px; cursor: pointer; min-width: 0; }
-.res:hover { background: var(--panel-2); }
-.res:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
-.res .rh { display: flex; justify-content: space-between; gap: 10px; font-size: 12.5px; color: var(--ink-3); }
-.res .rh b { font-weight: 500; color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.res .rs { font-size: 13.5px; color: var(--ink-2); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .star-empty { display: grid; justify-items: center; gap: 12px; padding: 40px 28px; text-align: center; color: var(--ink-3); font-size: 14px; margin: 0; }
 .star-empty svg { width: 40px; height: 40px; }
 @keyframes slidein { from { transform: translateX(30px); opacity: 0; } }
+/* Starred messages (js/components/starred.js): the list looks like the chat. Each message is a bubble on the chat
+   wallpaper, yours on the right and everyone else's on the left (always, as in the chat, even in Urdu and Arabic),
+   under a line with the sender, who it went to and the date. */
+.starpanel header { padding-inline: 4px 16px; gap: 4px; }
+.star-tools { flex: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.star-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 34px; padding: 0 14px 0 10px; border: 1px solid var(--line); border-radius: 17px; background: var(--panel); color: var(--ink-2); font-size: 13.5px; font-weight: 500; cursor: pointer; }
+.star-chip svg { width: 18px; height: 18px; color: var(--accent-ink); flex: none; }
+.star-chip:hover:not(:disabled) { background: var(--panel-2); }
+.star-chip:disabled { opacity: .45; cursor: default; }
+.star-note { flex: none; display: flex; align-items: flex-start; gap: 8px; margin: 0; padding: 8px 16px; font-size: 12.8px; line-height: 1.4; background: var(--enc); color: var(--enc-ink); }
+.star-note svg { flex: none; margin-top: 1px; }
+.star-note.ok { background: var(--accent-soft); color: var(--ink-2); }
+.star-note.ok svg { color: var(--accent-ink); }
+.starpanel .starlist { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); background: var(--chat-bg); padding: 8px 0 16px; gap: 2px; }
+.sit { min-width: 0; }
+.sit { padding: 6px 12px 8px; }
+.shd { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
+.shd .av { width: 26px; height: 26px; font-size: 11px; }
+.sfrom { flex: 1; min-width: 0; display: flex; align-items: center; gap: 4px; overflow: hidden; white-space: nowrap; }
+.sfrom b { font-weight: 600; color: var(--ink); overflow: hidden; text-overflow: ellipsis; flex: 0 1 auto; min-width: 0; }
+.sto { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sarr::before { content: "\25B8"; color: var(--ink-3); font-size: 11px; }
+[dir="rtl"] .sarr::before { content: "\25C2"; }
+.shd time { flex: none; color: var(--ink-3); font-size: 12px; }
+.sbw { direction: ltr; display: flex; align-items: center; gap: 4px; padding: 0 8px; }
+.sit.out .sbw { flex-direction: row-reverse; }
+.sbub { position: relative; display: flex; flex-direction: column; gap: 4px; max-width: 85%; min-width: 0; padding: 6px 8px 6px 9px; border: 0; border-radius: 7.5px; background: var(--in); color: var(--ink); box-shadow: 0 1px .5px var(--shadow); text-align: start; font: inherit; cursor: pointer; overflow-wrap: anywhere; }
+.sit.out .sbub { background: var(--out); }
+.sit.in .sbub { border-top-left-radius: 0; }
+.sit.out .sbub { border-top-right-radius: 0; }
+.sbub::before { content: ""; position: absolute; top: 0; width: 8px; height: 13px; background: inherit; }
+.sit.in .sbub::before { left: -8px; clip-path: polygon(0 0, 100% 0, 100% 100%); }
+.sit.out .sbub::before { right: -8px; clip-path: polygon(0 0, 100% 0, 0 100%); }
+.sbub:hover { filter: brightness(.97); }
+.sbub:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stxt { font-size: 14.2px; line-height: 1.4; white-space: pre-wrap; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 8; -webkit-box-orient: vertical; unicode-bidi: plaintext; }
+.smeta { align-self: flex-end; display: inline-flex; align-items: center; gap: 4px; margin-top: -2px; font-size: 11px; color: var(--ink-3); white-space: nowrap; }
+.smeta svg { width: 11px; height: 11px; }
+.sthumb { position: relative; display: block; margin: -2px -4px 0 -5px; border-radius: 6px; overflow: hidden; background: var(--panel-2); }
+.sthumb img, .sthumb video { display: block; width: 240px; max-width: 100%; max-height: 220px; object-fit: cover; }
+.sthumb.stk { background: transparent; margin: 0; }
+.sthumb.stk img { width: 120px; height: 120px; object-fit: contain; }
+.sthumb.vid i { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; pointer-events: none; }
+.sthumb.vid i svg { width: 44px; height: 44px; padding: 10px; border-radius: 50%; background: rgba(0, 0, 0, .45); }
+.satt { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 6px 8px; border-radius: 6px; background: var(--quote); font-size: 13px; color: var(--ink-2); }
+.satt svg { width: 20px; height: 20px; flex: none; color: var(--ink-3); }
+.satt span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; unicode-bidi: plaintext; }
+.sun { flex: none; width: 34px; height: 34px; color: var(--ink-3); opacity: 0; transition: opacity .12s; }
+.sun svg { width: 18px; height: 18px; }
+.sit:hover .sun, .sun:focus-visible { opacity: 1; }
+@media (hover: none) { .sun { opacity: .7; } }
+.sun:hover { background: var(--panel-2); color: var(--danger); }
+.starpanel .star-empty { display: grid; justify-items: center; gap: 10px; margin: 24px 16px; padding: 28px 20px; border-radius: 12px; background: var(--panel); box-shadow: 0 1px .5px var(--shadow); }
+.star-empty p { margin: 0; max-width: 300px; }
+.star-empty .star-empty-im { font-size: 13px; color: var(--ink-3); }
 
 /* ---------- Reactions ---------- */
 .row.hasr { padding-bottom: 16px; }

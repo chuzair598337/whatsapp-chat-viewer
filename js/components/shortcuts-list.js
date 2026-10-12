@@ -43,6 +43,8 @@ const KEY_LIST = [
     run: (e, k) => { if (k === '?' && Keys.typing(e)) return false; Keys.toggle(); } },
   { id: 'gallery', group: 'general', label: 'common.media_links_and_docs', keys: ['M'], where: CHAT, single: true, run: () => Gallery.open() },
   { id: 'starred', group: 'general', label: 'common.starred_messages', keys: ['*'], where: CHAT, single: true, run: () => $('starBtn').click() },
+  { id: 'starExport', group: 'general', label: 'keys.star_export', keys: ['E'], where: CHAT, single: true, run: () => Stars.exportFile() },
+  { id: 'starImport', group: 'general', label: 'keys.star_import', keys: ['L'], where: CHAT, single: true, run: () => Stars.pick() },
   { id: 'select', group: 'general', label: 'sel.select_messages', keys: ['X'], where: ['chat'], single: true, run: () => Sel.start(Keys.msg()) },
   { id: 'stats', group: 'general', label: 'common.chat_statistics', keys: ['I'], where: CHAT, single: true, run: () => openStats() },
   { id: 'nicks', group: 'general', label: 'nick.title', keys: ['P'], where: CHAT, single: true, run: () => NickUI.open() },

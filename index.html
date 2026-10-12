@@ -159,8 +159,15 @@
     </div>
   </main>
   <aside id="starPanel" class="starpanel" hidden aria-labelledby="starTitle">
-    <header><h2 id="starTitle" data-i18n="common.starred_messages">Starred messages</h2><button class="ibtn" id="starClose" aria-label="Close starred messages" data-i18n-attr="aria-label:stars.close_starred_messages"></button></header>
-    <div class="starlist" id="starList"></div>
+    <header><button class="ibtn" id="starClose" aria-label="Close starred messages" data-i18n-attr="aria-label:stars.close_starred_messages"></button><h2 id="starTitle" data-i18n="common.starred_messages">Starred messages</h2></header>
+    <div class="star-tools" role="toolbar" aria-label="Starred messages" data-i18n-attr="aria-label:common.starred_messages">
+      <button class="star-chip" id="starExport" data-i18n="stars.export">Export</button>
+      <button class="star-chip" id="starImport" data-i18n="stars.import">Import</button>
+      <button class="star-chip" id="starText" data-i18n="stars.save_text">Save as text</button>
+    </div>
+    <p class="star-note" id="starNote" role="status" hidden></p>
+    <div class="starlist" id="starList" role="list"></div>
+    <input type="file" id="starFile" accept=".json,application/json" multiple hidden>
   </aside>
 </div>
 
@@ -275,7 +282,7 @@
     <div class="foot"><button class="btn" id="cfCancel" data-i18n="common.cancel">Cancel</button><button class="btn danger" id="cfOk"></button></div>
   </div>
 </div>
-<input type="file" id="file" accept=".txt,.zip,text/plain,application/zip" multiple hidden>
+<input type="file" id="file" accept=".txt,.zip,.json,text/plain,application/zip,application/json" multiple hidden>
 
 <script src="js/vendor/jszip.min.js"></script>
 <script src="js/i18n/i18n.js"></script>
@@ -296,6 +303,7 @@
 <script src="js/components/message-menu.js"></script>
 <script src="js/components/gallery-menu.js"></script>
 <script src="js/components/select-messages.js"></script>
+<script src="js/components/starred.js"></script>
 <script src="js/components/autoplay.js"></script>
 <script src="js/components/settings.js"></script>
 <script src="js/components/nicknames.js"></script>

@@ -124,6 +124,9 @@ const SAMPLE = [
   // Keyboard shortcuts (js/components/shortcuts-list.js): on a computer press ? for the list, J and K to move between
   // messages, then S stars the focused one, Ctrl+C or ⌘C copies it and Enter opens its photo.
   `[03/04/2026, 8:30:00${N}AM] Sana Mirza: On a laptop? Press ? to see every keyboard shortcut. J and K move between messages, S stars one and Ctrl+C (⌘C on a Mac) copies it`,
+  // Starred messages (js/components/starred.js): star a few messages, open Starred messages (⋮ menu or *), press Export
+  // (or E), reopen the sample and press Import (or L) to bring the stars back. Stars from Bilal (you) sit on the right.
+  `[03/04/2026, 8:32:00${N}AM] Bilal Ahmed: Star the messages you want to keep, then Export them from Starred messages. Stars vanish when the tab closes, Import brings them back`,
 ].join('\r\n');
 /* Generated stand-ins for the sample's media (nothing is fetched). */
 // A two-second Lottie animation: a yellow star that spins and pulses over a bouncing shadow.

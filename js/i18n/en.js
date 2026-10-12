@@ -134,7 +134,33 @@ I18N.add('en-US', {
     "starred": "Message starred",
     "removed": "Star removed",
     "title_n": "Starred messages ({n})",
-    "empty": "No starred messages yet. Hover over a message (or tap it on a phone) and press the star to keep it here while this chat is open."
+    "empty": "No starred messages yet. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star.",
+    "empty_import": "Exported your stars from this chat before? Import the file to bring them back.",
+    "export": "Export",
+    "import": "Import",
+    "save_text": "Save as text",
+    "export_tip": "Export starred messages to a file you can import later",
+    "import_tip": "Import starred messages from an exported file",
+    "note_unsaved": "These {count} stars last only while this tab is open. Export them to keep them, then import the file the next time you open this chat.",
+    "note_unsaved_one": "This star lasts only while this tab is open. Export it to keep it, then import the file the next time you open this chat.",
+    "note_saved": "Saved to a file. Import it the next time you open this chat to get these stars back.",
+    "go_to": "{name}, {date} at {time}. Go to message",
+    "location": "Location",
+    "nothing": "There are no starred messages to export yet",
+    "exported": "{count} starred messages exported",
+    "exported_one": "1 starred message exported",
+    "saved_text": "Starred messages saved as text",
+    "text_head": "Starred messages from {chat} ({count})",
+    "bad_file": "{name} isn't a starred messages file from this app",
+    "import_later": "Open the chat these stars belong to and they will be restored",
+    "import_none": "None of these starred messages are in this chat",
+    "import_none_from": "None of these starred messages are in this chat. The file is from {chat}.",
+    "import_had": "All {count} messages in the file are already starred",
+    "import_had_one": "The message in the file is already starred",
+    "import_some": "{count} starred messages restored. {missing} weren't found in this chat.",
+    "import_some_one": "1 starred message restored. {missing} weren't found in this chat.",
+    "imported": "{count} starred messages restored",
+    "imported_one": "1 starred message restored"
   },
   "drop": {
     "drop_your_whatsapp_export_here": "Drop your WhatsApp export here<br><small>.txt or .zip</small>"
@@ -618,7 +644,7 @@ I18N.add('en-US', {
     },
     "menu": {
       "title": "The ⋮ menu",
-      "text": "Media, links and docs, your starred messages, chat statistics, Settings, this tour and the keyboard shortcuts are all here. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star."
+      "text": "Media, links and docs, your starred messages, chat statistics, Settings, this tour and the keyboard shortcuts are all here. To star a message, open its menu (right-click it, long-press it on a phone, or press its ⌄ button) and pick Star. Stars last only while the tab is open, so Starred messages has Export to save them to a file and Import to bring them back next time."
     },
     "all_set": {
       "title": "You're all set",
@@ -635,6 +661,8 @@ I18N.add('en-US', {
     }
   },
   "keys": {
+    "star_export": "Export starred messages",
+    "star_import": "Import starred messages",
     "title": "Keyboard shortcuts",
     "settings_sub": "Every shortcut, and where it works. Press ? to open this list.",
     "single": "Single-key shortcuts",
