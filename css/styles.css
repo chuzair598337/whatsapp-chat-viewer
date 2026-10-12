@@ -62,7 +62,7 @@ button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .sb-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 0 0 24px; }
 .sb-sec { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
 .sb-sec > h3 { margin: 0; font-size: 13px; font-weight: 500; color: var(--accent-ink); letter-spacing: .02em; display: flex; justify-content: space-between; align-items: baseline; }
-.sb-sec > h3 span { color: var(--ink-3); font-weight: 400; }
+.sb-sec > h3 span:not([data-i18n]) { color: var(--ink-3); font-weight: 400; }
 .chatcard { text-align: center; padding: 22px 16px 16px; }
 .chatcard .av { width: 84px; height: 84px; font-size: 30px; margin: 0 auto; }
 .chatcard h2 { margin: 10px 0 2px; font-size: 19px; font-weight: 500; text-wrap: balance; overflow-wrap: anywhere; }
@@ -974,3 +974,38 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 .start-keys kbd { min-width: 0; }
 @media (any-hover: none) { .menu .mk, .start-keys { display: none; } }
 @media (max-width: 640px) { .krow dd { max-width: 55%; } }
+
+/* ---- Responsive audit WS5: Safe areas, focus, contrast and drawer accessibility ---- */
+/* Safe areas (the page uses viewport-fit=cover): the notch, the rounded corners and the home indicator.
+   The insets are physical (left and right never swap in right-to-left). They live in custom properties
+   so they are written once and can be faked for testing. */
+:root { --sat: env(safe-area-inset-top, 0px); --sar: env(safe-area-inset-right, 0px); --sab: env(safe-area-inset-bottom, 0px); --sal: env(safe-area-inset-left, 0px); }
+.app { padding: var(--sat) var(--sar) 0 var(--sal); background: var(--header); }
+.scroller { padding-bottom: var(--sab); }
+.sidebar { padding-bottom: var(--sab); }
+.modal { padding: max(16px, var(--sat)) max(16px, var(--sar)) max(16px, var(--sab)) max(16px, var(--sal)); }
+.lb { padding: var(--sat) var(--sar) var(--sab) var(--sal); }
+.starpanel { padding: var(--sat) var(--sar) var(--sab) 0; }
+[dir="rtl"] .starpanel { padding-left: var(--sal); padding-right: 0; }
+.start { padding-left: max(16px, var(--sal)); padding-right: max(16px, var(--sar)); }
+@media (max-width: 1024px) {
+  .sidebar { padding-left: var(--sal); }
+  [dir="rtl"] .sidebar { padding-left: 0; padding-right: var(--sar); }
+}
+@media (max-width: 640px) {
+  .modal { padding: var(--sat) var(--sar) 0 var(--sal); }
+  .sheet.settings { padding-left: var(--sal); padding-right: var(--sar); }
+}
+@media (max-width: 600px) { .sheet.gal { padding-left: var(--sal); padding-right: var(--sar); } }
+/* Dark mode: the time and ticks on your own green bubbles, 4.9:1 instead of 2.6:1. */
+:root[data-theme="dark"] .out .meta:not(.ov) { color: rgba(233, 237, 239, .8); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .out .meta:not(.ov) { color: rgba(233, 237, 239, .8); } }
+/* Keyboard focus that can be seen: a ring on menu items, and a solid green grip on the side panel's edge. */
+.menu [role^="menuitem"]:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.sb-resize:focus-visible .sb-grip { opacity: 1; width: 6px; background: var(--accent); }
+/* Primary buttons: white on a darker green in light mode (4.9:1), dark text on the green in dark mode. */
+.btn.primary, .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); }
+:root[data-theme="dark"] .btn.primary, :root[data-theme="dark"] .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #111b21; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary, :root:not([data-theme="light"]) .btn.primary:hover { background: var(--accent); border-color: var(--accent); color: #111b21; } }
+/* Reduced motion: the "working" bar can't slide, so it fills the track at half strength instead of freezing at a third. */
+@media (prefers-reduced-motion: reduce) { .prog.indet i { width: 100% !important; transform: none; opacity: .5; } }

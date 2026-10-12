@@ -69,7 +69,7 @@ I18N.add('ar', {
     "and_more": "و{n} آخرون",
     "show_only": "اعرض رسائل {name} فقط",
     "statistics": "الإحصائيات",
-    "open_chat": "فتح الدردشة",
+    "open_chat": "فتح دردشة أخرى",
     "jump_to_date": "الانتقال إلى تاريخ",
     "first_message_on_or_after": "أول رسالة في أو بعد",
     "resize": "تغيير حجم اللوحة الجانبية",

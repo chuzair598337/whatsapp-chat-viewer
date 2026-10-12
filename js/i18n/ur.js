@@ -69,7 +69,7 @@ I18N.add('ur', {
     "and_more": "اور {n} مزید",
     "show_only": "صرف {name} کے پیغامات دکھائیں",
     "statistics": "اعداد و شمار",
-    "open_chat": "چیٹ کھولیں",
+    "open_chat": "دوسری چیٹ کھولیں",
     "jump_to_date": "تاریخ پر جائیں",
     "first_message_on_or_after": "اس دن یا اس کے بعد کا پہلا پیغام",
     "resize": "سائیڈ پینل کا سائز بدلیں",

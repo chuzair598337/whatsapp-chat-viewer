@@ -69,7 +69,7 @@ I18N.add('en-US', {
     "and_more": "and {n} more",
     "show_only": "Show only {name}'s messages",
     "statistics": "Statistics",
-    "open_chat": "Open chat",
+    "open_chat": "Open another chat",
     "jump_to_date": "Jump to date",
     "first_message_on_or_after": "First message on or after",
     "resize": "Resize side panel",

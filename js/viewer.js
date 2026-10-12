@@ -387,7 +387,7 @@ const VL = {
       const tg = this.target;
       if (tg) {
         let top;
-        if (tg.bottom) top = fw.sum(n) + END_PAD - vh;
+        if (tg.bottom) top = scroller.scrollHeight - vh; // includes the room kept clear of the home indicator
         else if (tg.center) top = fw.sum(tg.i) - (vh - h[tg.i]) / 2;
         else if (tg.frac !== undefined) top = fw.sum(tg.i) + tg.frac * h[tg.i];
         else top = fw.sum(tg.i) + (tg.off || 0);

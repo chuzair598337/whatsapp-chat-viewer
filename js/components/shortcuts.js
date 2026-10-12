@@ -21,9 +21,11 @@ const MAC = /Mac|iPhone|iPad|iPod/i.test((navigator.userAgentData && navigator.u
 const KEY_CODE = { ',': ['Comma', false], '/': ['Slash', false], '?': ['Slash', true], '[': ['BracketLeft', false], '*': ['Digit8', true], '+': ['Equal', true], '-': ['Minus', false] };
 const KEY_ALIAS = { '+': ['+', '='], '*': ['*'], '-': ['-'] };
 const KEY_NAME = { Escape: 'Esc', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→', PageUp: 'Page Up', PageDown: 'Page Down', '+': '+', '-': '−' };
-// Buttons whose tooltip names their shortcut: [element id, shortcut id, dictionary key of the tooltip (or null to keep it)].
+// Buttons whose tooltip names their shortcut: [element id, shortcut id, dictionary key of the tooltip (or null to keep it,
+// or a function returning the key when the button's name changes with its state)].
 const KEY_HINTS = [
   ['searchBtn', 'search', 'chat.search'], ['sCase', 'matchCase', 'search.match_case_tip'], ['sWord', 'wholeWord', 'search.whole_word_tip'], ['sRegex', 'regex', 'search.regex_tip'],
+  ['menuBtn', 'panel', () => $('menuBtn').getAttribute('aria-expanded') === 'true' && !isNarrow() ? 'chat.hide_chat_details' : 'chat.show_chat_details'],
   ['next2', 'nextMatch', 'common.next_match_newer'], ['prev2', 'prevMatch', 'common.previous_match_older'],
   ['fab', 'latest', 'chat.jump_to_latest_message'], ['fabTop', 'first', 'chat.jump_to_first_message'],
   ['lbDl', 'viewerDownload', 'viewer.download_photo'], ['pdfDl', 'viewerDownload', 'pdf.download_pdf'], ['lbGo', 'lbGo', 'media_gallery.go_to_message'],
@@ -84,17 +86,20 @@ const Keys = {
   // Tooltips and menu hints: run at start-up and after every language change, since those redraw the tooltips.
   // root: only the hints inside it (a menu just drawn).
   decorate(root) {
-    if (!root) for (const [el, id, key] of KEY_HINTS) {
-      const b = $(el); if (!b) continue;
-      const base = key ? t(key) : b.textContent.trim();
-      const k = this.text(id);
-      b.title = k ? base + ' (' + k + ')' : base;
-      if (k) b.setAttribute('aria-keyshortcuts', this.aria(id)); else b.removeAttribute('aria-keyshortcuts');
-    }
+    if (!root) for (const h of KEY_HINTS) this.hint(h[0]);
     for (const s of (root || document).querySelectorAll('[data-key]')) {
       s.textContent = this.text(s.dataset.key, true);
       const b = s.closest('button'); if (b) { if (s.textContent) b.setAttribute('aria-keyshortcuts', this.aria(s.dataset.key)); else b.removeAttribute('aria-keyshortcuts'); }
     }
+  },
+
+  // One button's tooltip, again after its name changed (☰ says Show or Hide chat details).
+  hint(el) {
+    const h = KEY_HINTS.find(x => x[0] === el), b = $(el); if (!h || !b) return;
+    const [, id, key] = h, base = typeof key === 'function' ? t(key()) : key ? t(key) : b.textContent.trim();
+    const k = this.text(id);
+    b.title = k ? base + ' (' + k + ')' : base;
+    if (k) b.setAttribute('aria-keyshortcuts', this.aria(id)); else b.removeAttribute('aria-keyshortcuts');
   },
 
   /* ---------- The Keyboard shortcuts sheet ---------- */

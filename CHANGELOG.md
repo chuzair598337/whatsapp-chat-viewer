@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS5)
+
+- **Notched phones:** safe-area insets on every side. The notch, rounded corners and home indicator no longer cover the ☰ button, the header avatar, the drawer, the starred panel, the edges of sheets, the photo and PDF viewers' ✕ and ‹ › buttons, or the last message in the chat.
+- **Keyboard and the drawer (tablets and phones):** the closed drawer can no longer be reached with Tab or Shift+Tab, and the chat behind an open drawer is out of reach too. Opening the drawer moves focus to its ✕; closing it, from ✕, `Esc`, the backdrop, or by picking a participant, a date or a chat, returns focus to ☰ instead of losing it.
+- **The ☰ button** now says whether the side panel is showing (`aria-expanded`) from the start and after every change, no longer reads "Show chat details" on a computer when the panel is already showing, and its tooltip names the `[` shortcut.
+- **Visible keyboard focus:** a green ring on items in the ⋮ menu and the message and gallery menus, and a solid green grip on the side panel's edge.
+- **Contrast:** white text on primary buttons is 4.9:1 (darker green) in light mode, and dark text on green in dark mode; the time on your own messages in dark mode goes from 2.6:1 to 4.9:1.
+- **Reduced motion:** the loading bar shows a still, full-width bar instead of freezing at about a third.
+- Side panel section headings are all green ("Jump to date" was the only green one); only the counts are grey.
+- The chat card's **Open chat** button is now **Open another chat**, as in the ⋮ menu, in English, Urdu and Arabic.
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.

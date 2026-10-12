@@ -795,8 +795,24 @@ moreMenu.addEventListener('keydown', e => {
 moreBtn.addEventListener('keydown', e => { if (e.key === 'ArrowDown' && moreMenu.hidden) { e.preventDefault(); openMenu(); } });
 
 /* ---------- Drawer ---------- */
-function openDrawer() { if (!isNarrow()) return; document.body.classList.add('drawer-open'); $('scrim').hidden = false; }
-function closeDrawer() { document.body.classList.remove('drawer-open'); $('scrim').hidden = true; }
+// Narrow screens: the closed drawer is inert (Tab never reaches it off screen), and while it is open the chat
+// behind the backdrop is. Opening it moves the keyboard to its ✕; closing it hands the keyboard back to ☰.
+function openDrawer() {
+  if (!isNarrow()) return;
+  document.body.classList.add('drawer-open'); $('scrim').hidden = false; syncMenuBtn();
+  // Only take focus from the chat itself, not from the guided tour's card, which opens the drawer to point into it.
+  const a = document.activeElement; if (!a || a === document.body || $('app').contains(a)) $('sbClose').focus();
+}
+function closeDrawer() {
+  const was = document.body.classList.contains('drawer-open'), a = document.activeElement;
+  document.body.classList.remove('drawer-open'); $('scrim').hidden = true; syncMenuBtn();
+  if (was && isNarrow() && (!a || a === document.body || $('sidebar').contains(a))) $('menuBtn').focus();
+}
+function syncDrawer() {
+  const narrow = isNarrow(), open = narrow && document.body.classList.contains('drawer-open');
+  $('sidebar').inert = narrow && !open;
+  for (const el of document.querySelectorAll('#app > .main, #starPanel')) el.inert = open;
+}
 // Wide screens: the side panel can be hidden for a wider chat (not remembered: it is back next time).
 function toggleSide() {
   const hide = document.body.classList.toggle('side-hidden');
@@ -839,11 +855,14 @@ function syncMenuBtn() {
   $('menuBtn').setAttribute('aria-expanded', open);
   $('menuBtn').setAttribute('aria-label', t(open && wide ? 'chat.hide_chat_details' : 'chat.show_chat_details'));
   $('menuBtn').title = $('menuBtn').getAttribute('aria-label');
+  if (typeof Keys !== 'undefined') Keys.hint('menuBtn'); // adds the [ shortcut to the tooltip
+  syncDrawer();
 }
 $('menuBtn').onclick = () => isNarrow() ? openDrawer() : toggleSide();
 window.matchMedia('(max-width: 1024px)').addEventListener('change', syncMenuBtn);
 document.addEventListener('langchange', syncMenuBtn); $('whoBtn').onclick = () => isNarrow() ? openDrawer() : openStats();
 $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
+syncMenuBtn();
 
 /* ---------- File input + drag and drop ---------- */
 const fileInput = $('file');
