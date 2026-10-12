@@ -1264,3 +1264,26 @@ kbd { display: inline-block; min-width: 22px; padding: 2px 6px; border: 1px soli
 /* No media, links or docs at all: one line in place of the tiles. */
 .mempty { display: flex; align-items: center; gap: 10px; margin: 0; padding: 12px 14px; border-radius: 10px; background: var(--panel-2); color: var(--ink-2); font-size: 13.5px; }
 .mempty > span:first-child { display: grid; flex: none; color: var(--ink-3); }
+
+/* ---- iPhone 8 report (WS8) ---- */
+/* The page never scrolls or pans sideways: <html> hides overflow and <body>, now the containing block of
+   the absolutely placed panels (same box as the viewport), clips it. Before, the Starred panel's slide-in
+   (translateX 30px) made the page wider for a moment, and phone browsers then zoomed the whole page out
+   or let it pan, so it no longer fitted the screen. clip (Safari 16+) can't be scrolled by script either;
+   hidden is the fallback. */
+html { overflow: hidden; }
+body { position: relative; overflow: hidden; overflow: clip; }
+/* iOS Safari zooms in when a field with text under 16 px gets focus, and doesn't zoom back out, which
+   leaves the page shifted and cut off at the edge (the search bar, Participants and nicknames, the date
+   filters). Touch screens get 16 px text in fields; their heights are fixed, so they keep their size.
+   User zoom stays allowed (no maximum-scale in the viewport tag). */
+@media (pointer: coarse) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"]), select, textarea { font-size: 16px !important; }
+}
+@supports (-webkit-touch-callout: none) {
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="color"], [type="file"], [type="button"], [type="submit"]), select, textarea { font-size: 16px !important; }
+}
+/* Search steps hit by hit: only the current hit is orange, with a ring so it stands out from the others. */
+mark.cur { box-shadow: 0 0 0 2px var(--hl-cur); }
+/* A tour card whose text scrolls can be scrolled from the keyboard (Tour.place() gives it a tabindex). */
+.tour-pop .tour-text:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }

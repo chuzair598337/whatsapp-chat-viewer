@@ -195,6 +195,8 @@ const Tour = {
     $('tourBack').hidden = this.i === 0;
     $('tourNext').textContent = last ? t('tour.finish') : t('tour.next');
     $('tourDots').innerHTML = '<b style="width:' + Math.round((this.i + 1) / n * 100) + '%"></b>';
+    $('tourText').scrollTop = 0;
+    resetPageScroll(); // a step's scrollIntoView must never leave the page itself scrolled
     // Let the virtual list render the scrolled-to row before measuring it.
     requestAnimationFrame(() => requestAnimationFrame(() => { this.place(); $('tourNext').focus({ preventScroll: true }); }));
   },
@@ -206,6 +208,7 @@ const Tour = {
     closeDrawer(); Settings.close(true);
     const sb = document.querySelector('#sidebar .sb-scroll'); if (sb) sb.scrollTop = 0; // undo the scrolling done for sidebar steps
     document.body.classList.remove('touring');
+    resetPageScroll();
     this.complete();
     const f = this.prevFocus; this.prevFocus = null;
     if (f && f.focus && document.contains(f) && f.offsetParent !== null) f.focus(); else $('moreBtn').focus();
@@ -239,7 +242,7 @@ const Tour = {
     const size = w => { pop.style.maxHeight = 'none'; pop.style.width = w + 'px'; pop.classList.toggle('narrow', w < 320); return pop.offsetHeight; };
     let pw = full, ph = size(full), x, y, capH = maxH;
     const at = (w, h, px, py) => { pw = w; ph = Math.min(h, maxH); x = px; y = py; return true; };
-    if (!r) { x = (vw - pw) / 2; y = (vh - ph) / 2; }
+    if (!r) { x = (vw - pw) / 2; y = vt + (vh - Math.min(ph, maxH)) / 2; } // no highlight: centred in what is visible
     else if (vw <= 640 && vh > 520) {
       // Phones: the card sits at the bottom of the screen, where it is easiest to reach and never
       // under a browser or app bar at the top. It only moves up when the highlight is in the lower half.
@@ -282,6 +285,7 @@ const Tour = {
     ph = pop.offsetHeight;
     x = Math.max(m, Math.min(vw - pw - m, x)); y = Math.max(vt + m, Math.min(vt + vh - ph - m, y));
     pop.style.left = Math.round(x) + 'px'; pop.style.top = Math.round(y) + 'px';
+    const tt = $('tourText'); if (tt.scrollHeight > tt.clientHeight + 1) tt.tabIndex = 0; else tt.removeAttribute('tabindex'); // text that scrolls can be scrolled from the keyboard
   }
 };
 function vis(id) { return visEl($(id)); }

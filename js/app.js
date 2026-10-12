@@ -467,45 +467,93 @@ function searchIndex(key) {
   const lc = S.lc || (S.lc = {}), fn = key === 'keep' ? foldKeep : fold;
   return lc[key] || (lc[key] = S.msgs.map(m => fn(m.message + (m.sender ? '\u0002' + m.sender + (Nick.has(m.sender) ? '\u0002' + nick(m.sender) : '') : '') + (m.extra && m.extra.options ? ' ' + m.extra.q + ' ' + m.extra.options.map(o => o.label).join(' ') : '') + m.attachments.map(a => ' ' + (a.name || '')).join(''))));
 }
+/* How many hits message i shows, so the counter and ↑ / ↓ go hit by hit ("2 of 5"), not message by message.
+   ranges are the hits in its index text f (searchIndex). Hits in the message text count one each; a poll
+   counts its question and options (what the bubble highlights); a call or deleted message shows no text.
+   A message found only by its sender, nickname or file name counts once. No layout reads: this runs over
+   every matching message of a 60,000-message chat. */
+// WhatsApp formatting (*bold*, lists, quotes, `code`) changes the text a bubble shows, so a message that has
+// any is counted the way the bubble marks it (formatText + markHTML); plain text counts straight from the index.
+const RE_MARKUP = /[*_~`]|^(?:>|[-•] |\d{1,3}\. )/m;
+const shownHits = (s, sq) => RE_MARKUP.test(s) ? (markHTML(formatText(s), sq, '').match(/<mark>/g) || []).length : searchRanges(sq, sq.fn(s)).length;
+function hitCount(i, ranges, f, sq) {
+  const m = S.msgs[i];
+  let n = 0;
+  if (m.kind === 'poll' && m.extra && m.extra.options) {
+    n = (m.extra.q ? shownHits(m.extra.q, sq) : 0) + m.extra.options.reduce((a, o) => a + (o.label ? searchRanges(sq, sq.fn(o.label)).length : 0), 0);
+  } else if (m.kind !== 'call' && m.kind !== 'deleted' && m.message) {
+    // The index is the message text, then \u0002 and the sender (searchIndex), so hits before it are in the text.
+    const cut = f.indexOf('\u0002'), end = cut < 0 ? f.length : cut;
+    if (m.sender && RE_MARKUP.test(m.message)) n = shownHits(m.message, sq); // system lines (no sender) show plain text
+    else for (const r of ranges) if (r[1] <= end) n++;
+  }
+  return n || 1;
+}
 function runSearch(q) {
   S.q = q; const sq = makeSearch(q, SOPT);
-  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.sq = null; S.sqErr = sq && sq.error || '';
+  S.matches = []; S.matchSet = new Set(); S.cur = -1; S.sub = 0; S.mc = []; S.mBase = []; S.total = 0; S.sq = null; S.sqErr = sq && sq.error || '';
   if (sq && sq.re) {
     const lc = searchIndex(sq.key);
-    for (let i = 0; i < lc.length; i++) if (S.m2i[i] >= 0 && searchRanges(sq, lc[i], 1).length) S.matches.push(i);
-    S.matchSet = new Set(S.matches); S.sq = sq;
-    if (S.matches.length) {
-      // start from the first match at or below the top of the screen
-      const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
-      let k = S.matches.findIndex(i => S.m2i[i] >= topItem);
-      S.cur = k < 0 ? S.matches.length - 1 : k;
+    for (let i = 0; i < lc.length; i++) {
+      if (S.m2i[i] < 0) continue;
+      const r = searchRanges(sq, lc[i]);
+      if (!r.length) continue;
+      const c = hitCount(i, r, lc[i], sq);
+      S.matches.push(i); S.mBase.push(S.total); S.mc.push(c); S.total += c;
     }
+    S.matchSet = new Set(S.matches); S.sq = sq;
+  }
+  let first = -1;
+  if (S.matches.length) {
+    // start from the first match at or below the top of the screen
+    const topItem = VL.fw ? VL.fw.find(scroller.scrollTop) : 0;
+    first = S.matches.findIndex(i => S.m2i[i] >= topItem);
+    if (first < 0) first = S.matches.length - 1;
   }
   VL.refresh();
-  if (S.cur >= 0) jumpToMatch(S.cur);
+  if (first >= 0) jumpToMatch(first, 0);
   updateCounts();
 }
 function clearSearch() { q2.value = ''; runSearch(''); }
 function updateCounts() {
-  const n = S.matches.length, bad = !!S.sqErr && !!S.q.trim();
-  const txt = !S.q.trim() ? '' : bad ? t('search.invalid_pattern') : n ? t('search.n_of_m', { i: nf(S.cur + 1), n: nf(n) }) : t('search.no_matches');
+  const n = S.total, bad = !!S.sqErr && !!S.q.trim();
+  const txt = !S.q.trim() ? '' : bad ? t('search.invalid_pattern') : n ? t('search.n_of_m', { i: nf(S.mBase[S.cur] + S.sub + 1), n: nf(n) }) : t('search.no_matches');
   const c = $('count2'); c.textContent = txt; c.classList.toggle('bad', bad);
   if (bad) c.title = S.sqErr; else c.removeAttribute('title');
   if (bad) q2.setAttribute('aria-invalid', 'true'); else q2.removeAttribute('aria-invalid');
   for (const id of ['prev2', 'next2']) $(id).disabled = n === 0;
 }
+// d = 1 or -1: the next or previous hit, inside the same message first, wrapping round at the ends.
 function step(d) {
-  if (!S.matches.length) return;
-  S.cur = (S.cur + d + S.matches.length) % S.matches.length;
-  jumpToMatch(S.cur);
+  const L = S.matches.length;
+  if (!L) return;
+  let k = S.cur, s = S.sub + d;
+  if (s >= S.mc[k]) { k = (k + 1) % L; s = 0; }
+  else if (s < 0) { k = (k - 1 + L) % L; s = S.mc[k] - 1; }
+  jumpToMatch(k, s);
 }
-function jumpToMatch(k) {
-  S.cur = k;
+// Scrolls the chat just enough to show the current hit (the middle of a long message may be off screen).
+function showCurHit(el) {
+  const mk = el && el.querySelector('mark.cur');
+  if (!mk) return;
+  const r = mk.getBoundingClientRect(), b = scroller.getBoundingClientRect(), pad = 56; // clear of the floating date
+  if (r.top >= b.top + pad && r.bottom <= b.bottom - 16) return;
+  scroller.scrollTop += (r.top + r.bottom) / 2 - (b.top + b.bottom) / 2;
+  VL.update();
+}
+function jumpToMatch(k, sub) {
+  const prev = S.cur >= 0 ? S.matches[S.cur] : -1;
+  S.cur = k; S.sub = sub || 0;
   const i = S.matches[k];
-  VL.clear();
-  VL.scrollTo(S.m2i[i], 'center');
-  const el = VL.nodes.get(S.m2i[i]);
-  if (el) el.classList.add('flash');
+  let el = VL.nodes.get(S.m2i[i]);
+  if (i === prev && el && el.isConnected) curHit(el, i); // another hit in the same message: no redraw, no flash
+  else {
+    VL.clear();
+    VL.scrollTo(S.m2i[i], 'center');
+    el = VL.nodes.get(S.m2i[i]);
+    if (el) el.classList.add('flash');
+  }
+  showCurHit(el);
   updateCounts();
 }
 q2.addEventListener('input', onSearchInput);
