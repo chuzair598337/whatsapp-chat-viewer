@@ -415,7 +415,7 @@ function msgSnippet(m) {
   if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
   const a = m.attachments[0];
   return a ? (TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file')) + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? t('common.poll_prefix', { q: m.extra.q })
-    : m.kind === 'location' ? (m.extra && m.extra.live ? t('loc.live') : t('loc.location')) : '';
+    : m.kind === 'location' ? (m.extra && m.extra.live ? t('loc.live') : t('loc.location')) : m.kind === 'waiting' ? t('msg.waiting_title') : '';
 }
 function renderStars() {
   const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;

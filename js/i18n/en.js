@@ -373,6 +373,8 @@ I18N.add('en-US', {
     "poll_votes_one": "Poll · 1 vote",
     "event_title": "Message not included in the export",
     "event_note": "Usually an event. WhatsApp leaves events out of exported chats, so the name, time and replies aren't available.",
+    "waiting_title": "Message wasn't loaded",
+    "waiting_note": "This message never finished loading on the phone that exported the chat, so its content isn't in the export.",
     "star": "Star message",
     "unstar": "Unstar message",
     "star_short": "Star",
@@ -563,7 +565,7 @@ I18N.add('en-US', {
     },
     "edited_deleted_and": {
       "title": "Edited, deleted and replies",
-      "text": "Edited messages carry an \"Edited\" tag by the time, deleted ones show \"This message was deleted\", and quoted lines appear as a reply quote."
+      "text": "Edited messages carry an \"Edited\" tag by the time, deleted ones show \"This message was deleted\", and quoted lines appear as a reply quote. A message that never loaded on the exporting phone gets a card saying so."
     },
     "reactions": {
       "title": "Reactions",

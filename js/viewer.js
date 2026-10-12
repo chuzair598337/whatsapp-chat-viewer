@@ -160,6 +160,7 @@ const ICON = {
   group: ic('<circle cx="9" cy="9" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 6.2a3 3 0 0 1 0 5.6M17 13.6a5.5 5.5 0 0 1 3.5 5.4"/>'),
   more: '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><circle cx="12" cy="5.5" r="1.9" fill="currentColor"/><circle cx="12" cy="12" r="1.9" fill="currentColor"/><circle cx="12" cy="18.5" r="1.9" fill="currentColor"/></svg>',
   help: ic('<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.7M12 17h.01"/>'),
+  hourglass: ic('<path d="M7 3.5h10M7 20.5h10M8 3.5v3.2a4 4 0 0 0 1.6 3.2L12 12l2.4-2.1A4 4 0 0 0 16 6.7V3.5M8 20.5v-3.2a4 4 0 0 1 1.6-3.2L12 12l2.4 2.1a4 4 0 0 1 1.6 3.2v3.2"/>'),
   event: ic('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8 13.5h3"/>'),
   warn: ic('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/>'),
   next: ic('<path d="M9 5l7 7-7 7"/>'),
@@ -445,6 +446,7 @@ function estimate(it, W) {
   else if (m.kind === 'call') h += 44;
   else if (m.kind === 'location') h += m.extra && m.extra.lat != null ? 186 : 60;
   else if (m.kind === 'unsupported') h += 64;
+  else if (m.kind === 'waiting') h += 64 + (W <= 480 ? 51 : 34) * f; // a longer note than the event card's: 3 lines, 4 on phones
   else if (m.kind === 'deleted') return h + lh;
   if (m.message) {
     if (it.jumbo) return h + 46 * f;
@@ -1130,6 +1132,9 @@ function makeRow(it, idx) {
     }
     case 'unsupported':
       body += '<div class="unsup"><span class="atti">' + ICON.event + '</span><span class="attt"><b>' + t('msg.event_title') + '</b><small>' + t('msg.event_note') + '</small></span></div>';
+      break;
+    case 'waiting': // a message that never loaded on the exporting phone: say so instead of WhatsApp's "Waiting for this message"
+      body += '<div class="unsup wait"><span class="atti">' + ICON.hourglass + '</span><span class="attt"><b>' + t('msg.waiting_title') + '</b><small>' + t('msg.waiting_note') + '</small></span></div>';
       break;
     case 'location':
       body += locHTML(m.extra);

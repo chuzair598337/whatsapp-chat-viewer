@@ -87,8 +87,10 @@ const MsgMenu = {
     if (focusBack && this.ret && document.contains(this.ret)) this.ret.focus({ preventScroll: true });
   }
 };
-// What Copy puts on the clipboard: the message as exported; a poll's question and options; a location's link.
+// What Copy puts on the clipboard: the message as exported; a poll's question and options; a location's link;
+// for a message that never loaded, the line the export has ("Waiting for this message. This may take a while.").
 function copyable(m) {
+  if (m.kind === 'waiting') return (m.extra && m.extra.raw) || '';
   if (m.kind === 'poll' && m.extra) return [m.extra.q].concat((m.extra.options || []).map(o => '• ' + o.label)).join('\n');
   if (m.kind === 'location' && m.extra) return m.message || m.extra.url || '';
   return m.message || '';
