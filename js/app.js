@@ -411,7 +411,8 @@ function resTime(m) { return '<time><bdi>' + esc(shortFmt.format(dkToT(m.dateKey
 function msgSnippet(m) {
   if (m.message) return m.message.replace(/\s+/g, ' ').slice(0, 160);
   const a = m.attachments[0];
-  return a ? (TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file')) + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? t('common.poll_prefix', { q: m.extra.q }) : '';
+  return a ? (TYPE_LABEL[a.type] ? typeLabel(a.type) : t('common.file')) + (a.title || a.name ? ': ' + (a.title || a.name) : '') : m.kind === 'poll' && m.extra ? t('common.poll_prefix', { q: m.extra.q })
+    : m.kind === 'location' ? (m.extra && m.extra.live ? t('loc.live') : t('loc.location')) : '';
 }
 function renderStars() {
   const list = [...(S.starred || [])].sort((a, b) => a - b), n = list.length;
@@ -435,7 +436,8 @@ function jumpToMsg(i, focus) {
 }
 $('starBtn').onclick = () => { if ($('starPanel').hidden) openStars(); else closeStars(); };
 $('starClose').onclick = closeStars;
-$('starList').addEventListener('click', e => { const b = e.target.closest('.res'); if (!b) return; jumpToMsg(+b.dataset.i); if (isNarrow()) closeStars(); });
+// From 1200 px the panel is a column beside the chat and stays open; narrower, it covers the chat, so it closes (css/styles.css).
+$('starList').addEventListener('click', e => { const b = e.target.closest('.res'); if (!b) return; jumpToMsg(+b.dataset.i); if (window.matchMedia('(max-width: 1199px)').matches) closeStars(); });
 
 /* =====================================================================
    Search
@@ -526,7 +528,9 @@ q2.addEventListener('focus', () => { if (q2.value && q2.value === S.q) selectSea
 q2.addEventListener('mouseup', e => { if (q2Tap && q2.value && q2.value === S.q) e.preventDefault(); q2Tap = false; });
 $('prev2').onclick = () => step(-1);
 $('next2').onclick = () => step(1);
-const isNarrow = () => window.matchMedia('(max-width: 1024px)').matches;
+// Narrow: one pane, the side panel is a drawer (css/styles.css: max-width 1023px). Two panes from 1024 px, so iPad landscape gets them.
+const NARROW_MQ = '(max-width: 1023px)';
+const isNarrow = () => window.matchMedia(NARROW_MQ).matches;
 // Search is a bar under the chat header on every screen size, like WhatsApp.
 function openSearch() { $('sstrip').hidden = false; q2.focus(); q2.select(); VL.schedule(); }
 function closeSearch() { SHist.close(); $('sstrip').hidden = true; clearSearch(); VL.schedule(); }
@@ -841,7 +845,8 @@ function syncMenuBtn() {
   $('menuBtn').title = $('menuBtn').getAttribute('aria-label');
 }
 $('menuBtn').onclick = () => isNarrow() ? openDrawer() : toggleSide();
-window.matchMedia('(max-width: 1024px)').addEventListener('change', syncMenuBtn);
+// Becoming wide closes the drawer, so it doesn't come back unasked when the window narrows again.
+window.matchMedia(NARROW_MQ).addEventListener('change', e => { if (!e.matches) closeDrawer(); syncMenuBtn(); });
 document.addEventListener('langchange', syncMenuBtn); $('whoBtn').onclick = () => isNarrow() ? openDrawer() : openStats();
 $('scrim').onclick = closeDrawer; $('sbClose').onclick = closeDrawer;
 

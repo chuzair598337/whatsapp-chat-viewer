@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased (on `development`)
+
+### Responsive audit (WS3)
+
+- **Two panes from 1024 px**, so an iPad in landscape gets the side panel beside the chat. The side panel's width now follows the window (300 px at 1024 px up to 420 px on big monitors) instead of a fixed 380 px, so the chat no longer loses 380 px at once; dragging still sets it. Widening the window closes an open drawer, so it doesn't reappear when the window narrows again.
+- **One phone breakpoint, 640 px, everywhere.** Media, links and docs, the search toggles and stickers switched at 600 px while everything else switched at 640 px.
+- **Bubbles no longer get narrower as the window gets wider** (they dropped from 504 to 350 px between 640 and 641 px). On big monitors photos and videos show at up to 400 px and link cards at 360 px, and the jump-to-first and jump-to-latest buttons sit by the message column instead of the far edge of the pane.
+- **Fixed:** in Urdu and Arabic the jump buttons moved to the left and covered the received messages; they stay on the right, as the chat is left to right.
+- **Starred messages** sits inside the app: from 1200 px it is a third column and the chat narrows beside it, narrower it slides over the chat, and on phones it fills the screen (it left a 10 px strip of chat, and on big monitors it floated outside the app). A starred location now shows "Location" instead of an empty line.
+- **Fixed:** Chat statistics was wider than 360 and 375 px phones and scrolled sideways.
+- **Fixed:** the confirmation dialog and What's new ignored their own widths (440 px instead of 380 and 480).
+- The start screen is wider (680 px) with slightly larger text from 1600 px.
+- Sample chat: no new lines; the existing Trip report message, photos, location and starred messages show these changes.
+
 ## 1.11.0 (2026-10-11)
 
 - **Keyboard shortcuts for every major action**, with `⌘` on a Mac and `Ctrl` on Windows and Linux. You can open a chat (`Ctrl+O` / `⌘O`), search (`Ctrl+F` / `⌘F` or `/`), open Settings (`Ctrl+,` or `Ctrl+Shift+S`, `⌘,` or `⇧⌘S` on a Mac) and download a photo or PDF (`Ctrl+S` / `⌘S`). Single keys open the gallery (`M`), starred messages (`*`), Select (`X`), statistics (`I`), nicknames (`P`) and jump to date (`D`), and `[` shows or hides the side panel. `J` / `K` move between messages, `Ctrl+Home` / `Ctrl+End` (`⌘↑` / `⌘↓`) jump to the first or latest message, and `Alt+↓` / `Alt+↑` switch chats. On a focused message, `S` stars it, `Ctrl+C` copies it, `Enter` opens its photo, PDF or contact, `Space` plays its voice note and `←` / `→` skip 5 seconds. In search, `F3` and `Ctrl+G` step through matches. In the photo viewer, `G` goes to the message and `Space` plays a video; in a PDF, `Page Down` and `Page Up` turn pages; in the gallery, `1` to `8` switch tabs. Keys the browser needs (new tab, zoom, back, reload, print and so on) are left alone.
