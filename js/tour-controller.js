@@ -244,6 +244,9 @@ const Tour = {
       x = (vw - pw) / 2;
       const low = (r.t + r.b) / 2 > vt + vh * 0.55 && r.b - r.t < vh * 0.5;
       y = !low ? vt + vh - ph - m : Math.max(vt + 70, r.t - gap - ph);
+      // A short phone screen (Safari's bars take a lot of it): shorten the card, text scrolling, rather than cover the highlight.
+      const fit = !low ? vt + vh - m - r.b - gap : r.t - gap - vt - 70, need = Math.max(minH, ph - $('tourText').offsetHeight + 44);
+      if (ph > fit && fit >= need) { capH = fit; y = !low ? vt + vh - m - fit : r.t - gap - fit; }
     } else {
       /* Wider or short screens (a phone on its side): beside the open drawer or the Settings sheet when there is
          room; else below, above, right or left of the highlight; else narrower (down to 260 px) at its side;
