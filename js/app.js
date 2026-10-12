@@ -543,7 +543,7 @@ function showCurHit(el) {
 }
 function jumpToMatch(k, sub) {
   const prev = S.cur >= 0 ? S.matches[S.cur] : -1;
-  S.cur = k; S.sub = sub || 0;
+  S.cur = k; S.sub = sub || 0; S.hitAt = performance.now();
   const i = S.matches[k];
   let el = VL.nodes.get(S.m2i[i]);
   if (i === prev && el && el.isConnected) curHit(el, i); // another hit in the same message: no redraw, no flash

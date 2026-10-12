@@ -389,6 +389,11 @@ const VL = {
     spacer.style.height = this.fw.sum(this.items.length) + END_PAD + 'px';
     if (i < a) scroller.scrollTop = this.fw.sum(a) + aOff;
     this.schedule();
+    // A photo above or at the current search match grew just after jumping to it: bring the match back into view.
+    if (S.cur >= 0 && S.hitAt && performance.now() - S.hitAt < 1500 && typeof showCurHit === 'function') {
+      const ci = S.m2i[S.matches[S.cur]];
+      if (ci >= i) requestAnimationFrame(() => showCurHit(this.nodes.get(ci)));
+    }
   },
   schedule() { if (!this.raf) this.raf = requestAnimationFrame(() => { this.raf = 0; this.update(); }); },
   scrollTo(i, how) { this.target = { i, center: how === 'center' }; this.update(); },

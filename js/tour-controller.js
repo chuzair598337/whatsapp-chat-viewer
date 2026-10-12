@@ -72,7 +72,8 @@ const Tour = {
     }),
     chatStep({
       sec: 'messages', key: 'read_more',
-      rows: () => [rowOf(m => m.message.startsWith('Trip report'))]
+      rows: () => [rowOf(m => m.message.startsWith('Trip report'))],
+      sel: () => innerHeight <= 520 ? '.rm-tail' : '.bubble' // short screens: just the Read more link, so the card fits beside it
     }),
     chatStep({
       sec: 'messages', key: 'edited_deleted_and',
@@ -336,7 +337,7 @@ function chatStep(o) {
       Tour.rows = o.rows().filter(k => k >= 0);
       if (Tour.rows.length) VL.scrollTo(Tour.rows[0], innerWidth <= 640 || innerHeight <= 520 ? undefined : 'center'); // phones and short screens: near the top, clear of the card
     },
-    target: () => Tour.rows.map(k => { const el = VL.nodes.get(k); return el && (el.querySelector(o.sel || '.bubble') || el); }).filter(Boolean)
+    target: () => { const sel = (typeof o.sel === 'function' ? o.sel() : o.sel) || '.bubble'; return Tour.rows.map(k => { const el = VL.nodes.get(k); return el && (el.querySelector(sel) || el.querySelector('.bubble') || el); }).filter(Boolean); }
   }, o);
 }
 // A step about part of the sidebar. On narrow screens the sidebar is a drawer, so it opens for the step.
