@@ -414,8 +414,11 @@ const VL = {
     afterRender();
   }
 };
+// Mirrors the CSS: rows are inset 10 px on phones (640 px and narrower) and clamp(10px, 10% - 54px, 64px) elsewhere; a bubble is
+// at most min(620px, max(65%, min(86%, 533px))) of its row; when the layer's content box is 900 px or wider, media go up to 400 px.
 function estimate(it, W) {
-  const bw = Math.max(120, Math.min(W * (W < 600 ? 0.86 : 0.65), 620) - 18);
+  const rw = W - 2 * (innerWidth <= 640 ? 10 : Math.max(10, Math.min(W * 0.1 - 54, 64))), wide = W - 2 * Math.max(12, Math.min(W * 0.05, 64)) >= 900;
+  const bw = Math.max(120, Math.min(620, Math.max(rw * 0.65, Math.min(rw * 0.86, 533))) - 18);
   const cw = 7.4;
   if (it.type === 'date') return 44;
   const m = it.m;
@@ -423,12 +426,12 @@ function estimate(it, W) {
   let h = (it.first ? 10 : 2) + 14 + (m.reactions && m.reactions.length ? 16 : 0);
   if (it.showName) h += 19;
   if (m.kind === 'media') {
-    const a = m.attachments[0], w2 = Math.min(330, bw);
+    const a = m.attachments[0], w2 = Math.min(wide ? 400 : 330, bw);
     if (a && a.url) {
       const d = Media.dims.get((Media.get(a.name) || a).name);
       if (a.type === 'image' || a.type === 'gif') h += w2 / (d ? clampR(d.w / d.h) : 4 / 3) - (m.message ? 0 : 14);
-      else if (a.type === 'video') { const r = d ? clampV(d.w / d.h) : 16 / 9; h += Math.min(w2, 400 * r) / r; }
-      else if (a.type === 'sticker') h += W <= 600 ? 150 : 190;
+      else if (a.type === 'video') { const r = d ? clampV(d.w / d.h) : 16 / 9; h += Math.min(w2, (wide ? 480 : 400) * r) / r; }
+      else if (a.type === 'sticker') h += innerWidth <= 640 ? 150 : 190;
       else if (a.type === 'audio') h += isVoice(a.name) ? 58 : 72;
       else if (a.type === 'contact') h += 108;
       else { const e = Media.get(a.name); h += extOf(a.name) === 'pdf' && !PdfView.failed.has(e ? e.name : a.name) ? 66 + 146 : 66; } // failed is keyed by the ZIP's file name
@@ -560,7 +563,8 @@ function audioHTML(e, m) {
 // With reduced motion turned on, GIFs start paused: a tap plays them (in the chat) or the photo viewer does.
 const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : null, reducedMotion = () => !!(RM && RM.matches);
 const clampV = r => Math.min(1.9, Math.max(0.5625, r));
-const vBox = r => 'aspect-ratio:' + r + ';width:' + Math.min(330, Math.round(400 * r)) + 'px';
+// The width comes from the CSS (.mvid: 330 px, or 400 px on wide rows), narrower for tall videos so they stay at most 400 (480) px high.
+const vBox = r => 'aspect-ratio:' + r + ';--vr:' + r;
 function videoHTML(e, gif) {
   const d = Media.dims.get(e.name), r = d ? (gif ? clampR(d.w / d.h) : clampV(d.w / d.h)) : 16 / 9;
   if (gif) return '<div class="mvid gifv" data-r="' + r + '" style="aspect-ratio:' + r + '"><video src="' + e.url + '"' + (reducedMotion() ? '' : ' autoplay') + ' muted loop playsinline preload="auto" data-dim="' + esc(e.name) + '" data-bad="' + esc(e.name) + '"></video><span class="gifbadge">GIF</span></div>';
